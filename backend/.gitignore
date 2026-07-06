@@ -1,0 +1,7 @@
+.env
+node_modules/
+*.sqlite
+*.sqlite-journal
+service-account.json
+.idea/
+.vscode/

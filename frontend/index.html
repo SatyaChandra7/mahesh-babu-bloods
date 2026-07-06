@@ -1,0 +1,1619 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahesh Babu Bloods | Donate Blood, Save Life</title>
+    <meta name="description"
+        content="A premium blood donation platform for Mahesh Babu Bloods foundation. Donate blood, save lives, and impact humanity.">
+    <link rel="icon" href="assets/mbbbb.png" type="image/png">
+    <!-- Tailwind CSS v4 Browser Script -->
+    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --blood-red: #D32F2F;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        h1,
+        h2,
+        h3,
+        .font-display {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .font-poppins {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 800;
+        }
+
+        /* High-Fidelity Neon ECG Pulse */
+        .ecg-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            overflow: hidden;
+            background: transparent;
+        }
+
+        .ecg-path-base {
+            stroke: rgba(220, 38, 38, 0.1);
+            stroke-width: 2;
+            fill: none;
+        }
+
+        .ecg-path-neon {
+            stroke: #ff1a1a;
+            stroke-width: 3;
+            fill: none;
+            filter: drop-shadow(0 0 5px #ff0000) drop-shadow(0 0 15px #ff0000);
+            stroke-dasharray: 2000;
+            stroke-dashoffset: 2000;
+            animation: ecg-draw 4s linear infinite;
+        }
+
+        /* Leading head glow */
+        .ecg-head {
+            fill: #fff;
+            filter: blur(2px) drop-shadow(0 0 10px #ff0000);
+            animation: ecg-head-move 4s linear infinite;
+        }
+
+        @keyframes ecg-draw {
+            0% {
+                stroke-dashoffset: 2000;
+            }
+
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes ecg-head-move {
+            0% {
+                offset-distance: 0%;
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 1;
+            }
+
+            95% {
+                opacity: 1;
+            }
+
+            100% {
+                offset-distance: 100%;
+                opacity: 0;
+            }
+        }
+
+        .neon-text-glow {
+            text-shadow: 0 0 10px rgba(220, 38, 38, 0.5), 0 0 20px rgba(220, 38, 38, 0.3);
+        }
+
+        /* Improved Scanline Wipe Effect using mask */
+        .scanline-wipe {
+            mask-image: linear-gradient(to right,
+                    transparent 0%,
+                    black 5%,
+                    black 95%,
+                    transparent 100%);
+            mask-size: 200% 100%;
+            animation: scanline 4s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% {
+                mask-position: 100% 0%;
+            }
+
+            100% {
+                mask-position: -100% 0%;
+            }
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.6);
+            border-left: 1.5px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+        }
+
+        /* Premium 3D Glassmorphic Red Button */
+        .chrome-3d {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(220, 38, 38, 0.06) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-top: 2px solid rgba(255, 255, 255, 0.7);
+            border-left: 2px solid rgba(255, 255, 255, 0.55);
+            border-right: 1.5px solid rgba(0, 0, 0, 0.18);
+            border-bottom: 2px solid rgba(0, 0, 0, 0.22);
+            box-shadow:
+                0 15px 30px rgba(0, 0, 0, 0.18),
+                0 5px 15px rgba(220, 38, 38, 0.12),
+                inset 0 3px 6px rgba(255, 255, 255, 0.45),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            color: #dc2626;
+            font-weight: 800;
+            text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            animation: button-float 3s ease-in-out infinite;
+        }
+
+        @keyframes button-float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .chrome-3d:hover {
+            transform: scale(1.03) translateY(-4px);
+            background: rgba(220, 38, 38, 0.9);
+            border-color: rgba(220, 38, 38, 0.9);
+            box-shadow:
+                inset 0 3px 6px rgba(255, 255, 255, 0.45),
+                inset 0 -3px 6px rgba(0, 0, 0, 0.2),
+                0 25px 45px rgba(220, 38, 38, 0.4),
+                0 10px 20px rgba(0, 0, 0, 0.2);
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+            filter: brightness(1.1);
+        }
+
+        .chrome-3d:active {
+            transform: scale(0.97) translateY(-2px);
+            box-shadow:
+                inset 0 4px 10px rgba(0, 0, 0, 0.4),
+                0 5px 10px rgba(220, 38, 38, 0.2);
+        }
+
+        .chrome-3d:hover .icon-red {
+            filter: brightness(0) invert(1) !important;
+        }
+
+        /* Metallic shine sweeping effect */
+        .chrome-3d::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -120%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.45) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg);
+            animation: glass-shine 3.5s infinite linear;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        @keyframes glass-shine {
+            0% {
+                left: -120%;
+            }
+
+            100% {
+                left: 150%;
+            }
+        }
+
+        /* Spherical Top reflective dome for 3D feel */
+        .chrome-3d::after {
+            content: '';
+            position: absolute;
+            top: 2%;
+            left: 5%;
+            width: 90%;
+            height: 45%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 100px 100px 0 0;
+            pointer-events: none;
+        }
+
+
+
+        .hover-scale {
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+
+        /* Premium 3D Glassmorphic Card */
+        .glass-3d-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.15) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.65);
+            border-left: 1.5px solid rgba(255, 255, 255, 0.55);
+            box-shadow: 
+                0 20px 50px rgba(0, 0, 0, 0.05),
+                inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .glass-3d-card:hover {
+            transform: translateY(-4px);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.2) 100%);
+            box-shadow: 
+                0 30px 60px rgba(220, 38, 38, 0.12),
+                inset 0 1px 1px rgba(255, 255, 255, 0.4);
+            border-color: rgba(220, 38, 38, 0.3);
+        }
+
+        /* Red-tinted Glassmorphic Card */
+        .glass-red-card {
+            background: linear-gradient(135deg, rgba(254, 242, 242, 0.5) 0%, rgba(254, 242, 242, 0.2) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(220, 38, 38, 0.25);
+            border-top: 2px solid rgba(255, 255, 255, 0.7);
+            border-left: 2px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 
+                0 20px 40px rgba(220, 38, 38, 0.05),
+                inset 0 1px 1px rgba(255, 255, 255, 0.45);
+            border-radius: 2rem;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .glass-red-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(220, 38, 38, 0.45);
+            box-shadow: 
+                0 25px 45px rgba(220, 38, 38, 0.1),
+                inset 0 1px 1px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Dark-tinted Glassmorphic Card */
+        .glass-dark-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(15, 23, 42, 0.6) 100%);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-top: 1.5px solid rgba(255, 255, 255, 0.25);
+            border-left: 1.5px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 30px 60px rgba(0, 0, 0, 0.35),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            border-radius: 2rem;
+        }
+
+        /* Responsive Glass Polish for Mobile Containers */
+        @media (max-width: 767px) {
+            .glass-3d-card {
+                background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
+                backdrop-filter: blur(8px);
+                -webkit-backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.5);
+                box-shadow:
+                    0 8px 32px rgba(0, 0, 0, 0.1),
+                    inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            }
+
+            /* Make inputs slightly more transparent on mobile for better glass effect */
+            .glass-3d-card input,
+            .glass-3d-card select {
+                background-color: rgba(255, 255, 255, 0.3) !important;
+            }
+        }
+
+        /* High-Fidelity physical "sunken well" container for buttons */
+        .sunken-well {
+            background: linear-gradient(135deg, rgba(220, 224, 230, 0.45) 0%, rgba(245, 247, 250, 0.25) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-top: 2px solid rgba(0, 0, 0, 0.12);
+            border-left: 2px solid rgba(0, 0, 0, 0.1);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.95);
+            border-right: 2px solid rgba(255, 255, 255, 0.95);
+            border-radius: 9999px;
+            padding: 16px 24px;
+            box-shadow:
+                inset 0 12px 28px rgba(0, 0, 0, 0.14),
+                inset 0 -12px 24px rgba(255, 255, 255, 0.9),
+                0 4px 8px rgba(0, 0, 0, 0.02);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+
+        @media (max-width: 767px) {
+            .sunken-well {
+                padding: 10px 16px;
+                gap: 1rem;
+                border-top-width: 1.5px;
+                border-left-width: 1.5px;
+                box-shadow:
+                    inset 0 8px 16px rgba(0, 0, 0, 0.16),
+                    inset 0 -8px 16px rgba(255, 255, 255, 0.9);
+            }
+        }
+
+        .sunken-well:hover {
+            border-top-color: rgba(220, 38, 38, 0.25);
+            border-left-color: rgba(220, 38, 38, 0.2);
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.04) 0%, rgba(255, 255, 255, 0.4) 100%);
+            box-shadow:
+                inset 0 16px 36px rgba(220, 38, 38, 0.08),
+                inset 0 -16px 32px rgba(255, 255, 255, 0.95),
+                0 6px 15px rgba(220, 38, 38, 0.03);
+        }
+
+        .icon-red {
+            filter: invert(16%) sepia(89%) saturate(6054%) hue-rotate(358deg) brightness(96%) contrast(114%);
+            transition: filter 0.3s ease;
+        }
+
+        .sunken-well button:hover,
+        .sunken-well a:hover {
+            color: #000000 !important;
+        }
+
+        .sunken-well button:hover .icon-red,
+        .sunken-well a:hover .icon-red {
+            filter: brightness(0) !important;
+        }
+
+        /* Premium Button Liquid Shine Animation */
+        .btn-shine {
+            position: relative !important;
+            overflow: hidden !important;
+            transition: all 0.3s ease !important;
+        }
+
+        .btn-shine:hover {
+            transform: scale(1.05) !important;
+        }
+
+        .btn-shine:active {
+            transform: scale(0.95) !important;
+        }
+
+        /* Liquid Metallic Shine Sweep Animation */
+        .btn-shine::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -60%;
+            width: 30%;
+            height: 200%;
+            background: linear-gradient(to right,
+                    rgba(255, 255, 255, 0) 0%,
+                    rgba(255, 255, 255, 0.1) 20%,
+                    rgba(255, 255, 255, 0.65) 45%,
+                    rgba(255, 255, 255, 0.95) 50%,
+                    rgba(255, 255, 255, 0.65) 55%,
+                    rgba(255, 255, 255, 0.1) 80%,
+                    rgba(255, 255, 255, 0) 100%);
+            transform: skewX(-25deg) translateX(-100%);
+            animation: liquid-shine 3s infinite cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        @keyframes liquid-shine {
+            0% {
+                transform: skewX(-25deg) translateX(-100%);
+            }
+
+            30% {
+                transform: skewX(-25deg) translateX(400%);
+            }
+
+            100% {
+                transform: skewX(-25deg) translateX(400%);
+            }
+        }
+
+        [x-cloak] {
+            display: none !important;
+        }
+
+        /* Netflix-style Intro Animation */
+        .intro-overlay {
+            background-color: #000000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+        }
+
+        .intro-logo-container {
+            position: relative;
+            width: 280px;
+            height: 280px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        .intro-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.45));
+            animation: netflix-reveal 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        /* 3D and light sweep layers */
+        .intro-logo-glow {
+            position: absolute;
+            inset: -40px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.2) 0%, rgba(0, 0, 0, 0) 70%);
+            transform: scale(0.8);
+            opacity: 0;
+            animation: glow-pulse 3.2s ease-out forwards;
+            pointer-events: none;
+        }
+
+        .intro-shine {
+            position: absolute;
+            top: 0;
+            left: -150%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.25) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            transform: skewX(-20deg);
+            animation: intro-shining 2.2s ease-in-out infinite;
+            animation-delay: 0.6s;
+            pointer-events: none;
+        }
+
+        @keyframes netflix-reveal {
+            0% {
+                transform: scale(0.65) translateZ(-200px);
+                opacity: 0;
+                filter: brightness(0.2) drop-shadow(0 0 0px rgba(220, 38, 38, 0));
+            }
+            15% {
+                opacity: 1;
+                filter: brightness(1.2) drop-shadow(0 0 30px rgba(220, 38, 38, 0.8));
+            }
+            75% {
+                transform: scale(1.1) translateZ(0);
+                opacity: 1;
+                filter: brightness(1) drop-shadow(0 0 20px rgba(220, 38, 38, 0.5));
+            }
+            90% {
+                transform: scale(2.8) translateZ(100px);
+                opacity: 0.2;
+                filter: blur(10px) brightness(1.5) drop-shadow(0 0 45px rgba(220, 38, 38, 0.95));
+            }
+            100% {
+                transform: scale(3.5) translateZ(150px);
+                opacity: 0;
+                filter: blur(25px) brightness(2) drop-shadow(0 0 0px rgba(220, 38, 38, 0));
+            }
+        }
+
+        @keyframes glow-pulse {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            20% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            75% {
+                opacity: 0.8;
+                transform: scale(1.3);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(2);
+            }
+        }
+
+        @keyframes intro-shining {
+            0% {
+                left: -150%;
+            }
+            100% {
+                left: 150%;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-900" x-data="{ 
+        showIntro: true,
+        donateOpen: false, 
+        galleryOpen: false,
+        reviewOpen: false,
+        successOpen: false,
+        sorryOpen: false,
+        declareOpen: false,
+        mobileMenuOpen: false,
+        activeImageIndex: 0,
+        galleryImages: [],
+        displayCount: 0,
+        isSubmitting: false,
+        emergencyMessage: '',
+        get apiBase() {
+            return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
+        },
+        async fetchAlert() {
+            try {
+                const res = await fetch(`${this.apiBase}/api/v1/public/alert`);
+                const data = await res.json();
+                if (data.alert?.isActive) this.emergencyMessage = data.alert.message;
+            } catch (err) { console.log('Failed to load alert'); }
+        },
+        animateCounter(target) {
+            let start = this.displayCount;
+            let duration = 2000; // 2 seconds animation
+            let startTime = null;
+
+            const step = (timestamp) => {
+                if (!startTime) startTime = timestamp;
+                let progress = Math.min((timestamp - startTime) / duration, 1);
+                this.displayCount = Math.floor(progress * (target - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        },
+        async fetchGallery() {
+            try {
+                const res = await fetch(`${this.apiBase}/api/v1/public/gallery`);
+                const data = await res.json();
+                if (data.success) {
+                    this.galleryImages = data.images;
+                    this.donationCount = data.images.length;
+                    this.animateCounter(this.donationCount);
+                }
+            } catch (err) { console.log('Failed to fetch gallery'); }
+        },
+        async fetchDonationCount() {
+            try {
+                const res = await fetch(`${this.apiBase}/api/v1/donations/count`);
+                const data = await res.json();
+                if (data.count !== undefined) {
+                    this.donationCount = data.count;
+                    this.animateCounter(this.donationCount);
+                }
+            } catch (err) {
+                console.log('Backend not connected, using default count');
+            }
+        },
+        // Cascading Location logic removed as per request for manual entry
+        
+        async submitDonation(event) {
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+
+            // Weight validation: Must be 50kg or more
+            if (parseFloat(data.weight) < 50) {
+                this.donateOpen = false;
+                this.sorryOpen = true;
+                return;
+            }
+
+            // Declaration validation
+            if (!data.declaration) {
+                this.declareOpen = true;
+                return;
+            }
+
+            this.isSubmitting = true;
+            try {
+                const response = await fetch(`${this.apiBase}/api/v1/donors`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: data.fullName,
+                        dateOfBirth: data.dateOfBirth,
+                        gender: data.gender,
+                        weight: data.weight,
+                        phoneNumber: data.phoneNumber,
+                        bloodGroup: data.bloodGroup,
+                        address: {
+                            state: data.state,
+                            district: data.district,
+                            mandal: data.mandal,
+                            village: data.village,
+                            pincode: data.pincode
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    this.successOpen = true;
+                    // Play success sound
+                    const sound = document.getElementById('successSound');
+                    if (sound) sound.play().catch(e => console.log('Audio play failed', e));
+                    
+                    this.donateOpen = false;
+                    event.target.reset();
+                    this.fetchDonationCount();
+                } else {
+                    alert('Registration failed: ' + result.message);
+                }
+            } catch (error) {
+                alert('Connection Error: Please ensure the backend is running at http://localhost:5000');
+            } finally {
+                this.isSubmitting = false;
+            }
+        },
+        feedbacks: [],
+        feedbackName: '',
+        feedbackRating: 5,
+        feedbackComment: '',
+        feedbackSubmitting: false,
+        feedbackSubmitted: false,
+        async fetchFeedbacks() {
+            try {
+                const res = await fetch(`${this.apiBase}/api/v1/public/feedbacks`);
+                const data = await res.json();
+                if (data.success) {
+                    this.feedbacks = data.feedbacks;
+                }
+            } catch (err) { console.log('Failed to fetch feedbacks'); }
+        },
+        async submitFeedback() {
+            if (!this.feedbackName || !this.feedbackComment) return;
+            this.feedbackSubmitting = true;
+            try {
+                const res = await fetch(`${this.apiBase}/api/v1/feedbacks`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: this.feedbackName,
+                        rating: this.feedbackRating,
+                        comment: this.feedbackComment
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.feedbackSubmitted = true;
+                    this.feedbackName = '';
+                    this.feedbackComment = '';
+                    this.feedbackRating = 5;
+                    setTimeout(() => { this.feedbackSubmitted = false; }, 6000);
+                } else {
+                    alert(data.message || 'Failed to submit review');
+                }
+            } catch (err) {
+                alert('Connection Error: Please ensure the backend is running.');
+            } finally {
+                this.feedbackSubmitting = false;
+            }
+        }
+    }" x-init="fetchDonationCount(); fetchGallery(); fetchAlert(); fetchFeedbacks(); setTimeout(() => showIntro = false, 3200)"
+    x-bind:class="galleryOpen || donateOpen || reviewOpen || showIntro ? 'overflow-hidden' : ''">
+
+    <!-- Netflix-style Intro Splash Overlay -->
+    <div x-show="showIntro" 
+         x-transition:leave="transition ease-in-out duration-500"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="intro-overlay"
+         x-cloak>
+        <div class="intro-logo-container">
+            <div class="intro-logo-glow"></div>
+            <img src="assets/MB%20BLOODS%20LOGO%202.png" alt="MB Bloods Logo" class="intro-logo">
+            <div class="intro-shine"></div>
+        </div>
+    </div>
+
+    <!-- Floating Glowing Background Blobs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0 bg-gradient-to-tr from-rose-50/30 via-slate-50/50 to-red-50/20">
+        <div class="absolute top-[10%] left-[-15%] w-[450px] h-[450px] rounded-full bg-red-400/12 blur-[120px] animate-pulse" style="animation-duration: 8s;"></div>
+        <div class="absolute bottom-[15%] right-[-15%] w-[500px] h-[500px] rounded-full bg-rose-500/10 blur-[130px] animate-pulse" style="animation-duration: 12s;"></div>
+        <div class="absolute top-[45%] left-[30%] w-[380px] h-[380px] rounded-full bg-red-300/8 blur-[100px] animate-pulse" style="animation-duration: 10s;"></div>
+    </div>
+
+    <!-- Emergency Marquee -->
+    <div x-show="emergencyMessage" class="bg-red-600 text-white py-3 sticky top-0 z-[60] overflow-hidden" x-cloak>
+        <div class="flex items-center gap-4 flex-nowrap whitespace-nowrap animate-marquee">
+            <span class="font-black uppercase tracking-widest flex items-center gap-4 px-4 bg-white/20">
+                <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z">
+                    </path>
+                </svg>
+                URGENT URGENT
+            </span>
+            <span class="font-bold text-lg px-4" x-text="emergencyMessage"></span>
+            <span class="font-bold text-lg px-4" x-text="emergencyMessage"></span>
+            <span class="font-bold text-lg px-4" x-text="emergencyMessage"></span>
+        </div>
+    </div>
+    <style>
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .animate-marquee {
+            display: inline-flex;
+            animation: marquee 20s linear infinite;
+            width: max-content;
+        }
+    </style>
+
+    <!-- Floating Glass Navbar -->
+    <div class="sticky top-0 z-50 px-4 py-3 md:px-8">
+        <nav
+            class="glass-3d-card px-6 md:px-8 py-3 flex items-center justify-between shadow-lg border border-white/50 backdrop-blur-xl">
+            <!-- Logo Container: Centered on mobile, left-aligned on desktop -->
+            <div class="flex items-center md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0">
+                <img src="assets/MB%20BLOODS%20LOGO%202.png" alt="MB Bloods Logo"
+                    class="h-10 md:h-16 w-auto object-contain">
+            </div>
+
+            <div class="hidden md:flex items-center gap-8 text-sm font-bold text-black uppercase tracking-wide">
+                <a href="index.html" class="hover:text-red-600 transition-colors">Home</a>
+                <a href="#about" class="hover:text-red-600 transition-colors">About</a>
+                <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
+                <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation." target="_blank"
+                    class="hover:text-red-600 transition-colors">Request</a>
+                <a href="#" @click.prevent="galleryOpen = true" class="hover:text-red-600 transition-colors">Our Work</a>
+                <a href="#" @click.prevent="reviewOpen = true" class="hover:text-red-600 transition-colors">Review</a>
+            </div>
+
+            <!-- Mobile Menu Button: Pushed to the right -->
+            <div class="md:hidden ml-auto">
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                    class="p-2 text-black hover:text-red-600 transition-colors">
+                    <svg x-show="!mobileMenuOpen" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                        </path>
+                    </svg>
+                    <svg x-show="mobileMenuOpen" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        x-cloak>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu Overlay -->
+            <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
+                x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-4"
+                class="absolute top-full left-0 right-0 glass-3d-card border border-white/30 shadow-2xl overflow-hidden z-40 md:hidden mt-2"
+                style="backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; background: rgba(255, 255, 255, 0.75) !important;"
+                @click.away="mobileMenuOpen = false" x-cloak>
+                <div class="flex flex-col p-6 gap-4 text-center font-bold text-black uppercase tracking-widest text-sm">
+                    <a href="index.html" @click="mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Home</a>
+                    <a href="#about" @click="mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">About</a>
+                    <a href="#" @click.prevent="donateOpen = true; mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Donate</a>
+                    <a href="https://wa.me/918758754005?text=I_need_blood_request" target="_blank"
+                        @click="mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Request</a>
+                    <a href="#" @click.prevent="galleryOpen = true; mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Our Work</a>
+                    <a href="#" @click.prevent="reviewOpen = true; mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 transition-colors">Review</a>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-6">
+
+
+        <div class="w-full px-4 md:px-6 lg:px-10 py-4 lg:py-6">
+            <div
+                class="glass-dark-card shadow-[0_60px_120px_-30px_rgba(0,0,0,0.7)] border border-white/20 relative overflow-hidden aspect-[1.8/1] md:aspect-[16/7] w-full flex items-center group">
+
+                <!-- Full-Size Background Image -->
+                <img src="assets/hands%20drop.jpeg" alt="Blood Donation"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[3s] ease-out">
+
+                <!-- Contrast Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-r from-black via-black/40 to-transparent z-0"></div>
+
+                <!-- Decorative elements slightly visible -->
+                <div class="absolute -top-32 -left-32 w-96 h-96 bg-red-900 rounded-full opacity-20 blur-3xl z-0"></div>
+                <div class="absolute -bottom-32 -right-32 w-96 h-96 bg-gray-900 rounded-full opacity-30 blur-3xl z-0">
+                </div>
+
+                <div
+                    class="grid grid-cols-2 md:grid-cols-[1.2fr_1fr] gap-2 md:gap-16 items-center relative z-10 w-full px-4 md:px-24 py-2 md:py-16">
+                    <!-- Left Side: Bold Typography -->
+                    <div class="text-left space-y-4 md:space-y-8 flex justify-center md:justify-start">
+                        <img src="assets/donate%20blood%20save%20life.png" alt="Donate Blood, Save Life"
+                            class="w-full max-w-[85px] sm:max-w-md h-auto drop-shadow-2xl transform hover:scale-[1.02] transition-transform duration-500 brightness-150">
+                    </div>
+
+                    <!-- Right Side: Ambassador Portrait (Balanced Size) -->
+                    <div class="flex justify-center md:justify-end group">
+                        <div
+                            class="relative w-full max-w-[130px] md:max-w-2xl transition-all duration-700 hover:scale-[1.02]">
+                            <img src="assets/mahesh%20babu.png" alt="Mahesh Babu"
+                                class="w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(211,47,47,0.3)]">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons and Org Note with ECG Pulse -->
+        <div class="relative w-full flex flex-col justify-center items-center gap-12 py-16 animate-fade-in-up">
+            <!-- Shared Wrapper to Align Buttons with Note Edges on Desktop -->
+            <div class="w-full md:w-fit flex flex-col items-center gap-12">
+                <!-- Organization Note Highlighted -->
+                <div
+                    class="relative z-10 w-full max-w-none md:max-w-fit glass-red-card border-l-[6px] border-l-red-600 border border-white/20 px-8 py-4 md:py-8 rounded-r-[2.5rem] shadow-[0_15px_30px_-5px_rgba(211,47,47,0.1)] transition-transform hover:scale-[1.03] duration-500">
+                    <p
+                        class="text-[10px] sm:text-xs md:text-2xl font-black text-red-950 uppercase tracking-[0.1em] sm:tracking-[0.25em] whitespace-normal md:whitespace-nowrap text-center">
+                        A non profit organization founded by proud fan.
+                    </p>
+                </div>
+
+                <div class="relative z-10 w-full flex flex-row justify-center items-center flex-nowrap shrink-0 py-8">
+                    <!-- Dedicated Button Pulse Animation -->
+                    <div
+                        class="absolute left-1/2 -translate-x-1/2 w-screen pointer-events-none z-0 opacity-100 overflow-hidden select-none">
+                        <svg width="100%" height="120" viewBox="0 0 1400 200" preserveAspectRatio="none" class="w-full">
+                            <defs>
+                                <path id="buttonEcgWave"
+                                    d="M0,100 L100,100 L115,100 Q125,100 130,90 Q135,100 145,100 L200,100 L215,120 L235,20 L255,180 L275,100 L330,100 Q350,100 370,80 Q390,100 410,100 L600,100 L615,100 Q625,100 630,90 Q635,100 645,100 L700,100 L715,120 L735,20 L755,180 L775,100 L830,100 Q850,100 870,80 Q890,100 910,100 L1100,100 L1115,100 Q1125,100 1130,90 Q1135,100 1145,100 L1200,100 L1215,120 L1235,20 L1255,180 L1275,100 L1400,100" />
+                            </defs>
+                            <use href="#buttonEcgWave" class="ecg-path-base" />
+                            <use href="#buttonEcgWave" class="ecg-path-neon" style="animation-duration: 4s;" />
+                        </svg>
+                    </div>
+
+                    <div class="w-full flex flex-row justify-center items-center gap-4 md:gap-16 lg:gap-32 md:justify-center">
+                        <button type="button" @click="donateOpen = true"
+                            class="chrome-3d relative z-10 px-6 md:px-8 lg:px-10 py-3 md:py-4 lg:py-5 rounded-full font-poppins text-[10px] md:text-lg lg:text-xl uppercase tracking-widest whitespace-nowrap flex items-center gap-2 md:gap-3 active:scale-95 transition-all duration-300">
+                            BE A DONOR
+                            <img src="assets/donor-icon.png" alt="Donor"
+                                class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 icon-red">
+                        </button>
+                        <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation."
+                            target="_blank"
+                            class="chrome-3d relative z-10 px-6 md:px-8 lg:px-10 py-3 md:py-4 lg:py-5 rounded-full font-poppins text-[10px] md:text-lg lg:text-xl flex items-center gap-2 md:gap-3 uppercase tracking-widest whitespace-nowrap active:scale-95 transition-all duration-300">
+                            REQUEST BLOOD
+                            <img src="assets/request-icon.png" alt="Request"
+                                class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 icon-red">
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Medical Campaigns Section -->
+    <section id="about" class="py-24 bg-transparent relative overflow-hidden">
+        <div class="container mx-auto px-6 relative z-10">
+            <!-- New Mission Statement Section -->
+            <div
+                class="max-w-5xl mx-auto text-center mb-20 animate-fade-in p-8 md:p-16 glass-red-card relative overflow-hidden shadow-[0_40px_120px_-20px_rgba(220,38,38,0.25)]">
+                <div
+                    class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-transparent via-red-600 to-transparent opacity-20">
+                </div>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-6 mb-6">
+                    <img src="assets/mission.png" alt="Mission Logo" class="h-16 md:h-24 w-auto drop-shadow-md">
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 uppercase tracking-tight">
+                        Our Mission & Vision
+                    </h2>
+                </div>
+                <div class="h-2 w-24 bg-red-600 mx-auto rounded-full mb-10"></div>
+                <p class="text-xl md:text-2xl text-gray-600 leading-relaxed font-medium italic">
+                    "Welcome to a <span class="text-red-600 font-semibold">free blood donation platform</span> where generosity meets urgency. Find donors, request
+                    blood, and save lives—all at no cost. Be a Donor and Join our mission to make blood available to
+                    everyone, anytime, anywhere."
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
+                <!-- Medical Campaigns Column -->
+                <div class="p-8 glass-3d-card transition-all duration-300">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="assets/medcv.png" alt="Medical Icon" class="h-12 w-auto">
+                        <h2 class="text-4xl font-bold">Medical Campaigns</h2>
+                    </div>
+                    <div class="h-1.5 w-20 bg-red-600 rounded-full mb-6"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed">Our organization organizes blood donation drives on
+                        a periodic basis to support
+                        emergency healthcare needs across various regions.</p>
+                </div>
+
+                <!-- WE DONATE Column -->
+                <div class="p-8 glass-red-card transition-all duration-300">
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="assets/donate%20hands.png" alt="Donate Hands" class="h-12 w-auto">
+                        <h2 class="text-4xl font-bold">WE DONATE</h2>
+                    </div>
+                    <div class="h-1.5 w-20 bg-red-600 rounded-full mb-6"></div>
+                    <p class="text-gray-600 text-lg leading-relaxed">
+                        Our organization is committed to supporting healthcare systems through blood donation
+                        initiatives and providing
+                        immediate donor assistance during medical emergencies.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex flex-col md:flex-row justify-center items-center md:items-stretch gap-8">
+                <!-- Campaign Card -->
+                <div
+                    class="p-8 glass-3d-card transition-all duration-500 group max-w-md w-full">
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-600 transition-colors">
+                        <svg class="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z">
+                            </path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Rural Outreach</h3>
+                    <p class="text-gray-600 leading-relaxed">Bringing blood collection units to rural Mandals to ensure
+                        no life is lost due to distance.</p>
+                </div>
+
+                <!-- Campaign Card -->
+                <div
+                    class="p-8 glass-3d-card transition-all duration-500 group max-w-md w-full">
+                    <div
+                        class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-red-600 transition-colors">
+                        <svg class="w-8 h-8 text-red-600 group-hover:text-white transition-colors" fill="none"
+                            stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">24/7 Response</h3>
+                    <p class="text-gray-600 leading-relaxed">Immediate coordination between donors and hospitals during
+                        emergency cases and trauma care.</p>
+                </div>
+            </div>
+
+
+        </div>
+    </section>
+
+    <!-- Impact Section -->
+    <section id="impact" class="py-24 bg-transparent overflow-hidden">
+        <div class="container mx-auto px-6 max-w-4xl text-center">
+            <div class="space-y-8">
+                <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight leading-tight">WE
+                    DONATE TODAY AND WE DONATE TOMORROW</h2>
+                <p class="text-xl text-gray-600 leading-relaxed">
+                    Through our recurring medical initiatives, we facilitate the systematic collection of blood
+                    donations to reinforce local healthcare infrastructure. Our outreach efforts are strategically
+                    designed to secure a consistent supply of blood products, ensuring that life-saving resources
+                    are readily accessible for emergency medical procedures. By cultivating a dedicated community of
+                    donors, we serve as a vital link in the healthcare chain, providing rapid-response assistance
+                    when urgent clinical needs arise."
+                </p>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Footer Area -->
+    <footer class="w-full flex flex-col">
+        <!-- Top Section with Button -->
+        <div class="container mx-auto px-6 flex flex-col items-center pt-20 pb-16">
+            <div class="flex flex-col md:flex-row items-center gap-12 mb-12">
+                <img src="assets/MB%20BLOODS%20LOGO%202.png" alt="MB Bloods Logo"
+                    class="h-32 md:h-48 w-auto drop-shadow-xl hover-scale transition-transform">
+
+                <!-- Square Total Container -->
+                <div
+                    class="flex flex-col items-center justify-center aspect-square w-40 md:w-56 glass-red-card rounded-full border border-white/50 shadow-[0_20px_60px_-15px_rgba(211,47,47,0.25)] hover:scale-105 transition-all duration-500 relative group overflow-hidden">
+                    <!-- Decorative background glow -->
+                    <div
+                        class="absolute inset-0 bg-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    </div>
+
+                    <span
+                        class="relative z-10 text-6xl md:text-8xl font-black tracking-tighter font-display bg-gradient-to-br from-red-600 to-orange-500 bg-clip-text text-transparent leading-none"
+                        x-text="displayCount">0</span>
+                    <span
+                        class="relative z-10 text-[10px] md:text-sm font-black text-red-600 uppercase tracking-[0.3em] mt-3">Donations</span>
+                </div>
+            </div>
+            
+            <!-- Foundation Support Email -->
+            <div class="text-center mb-8">
+                <p class="text-[10px] font-black text-red-600 uppercase tracking-[0.4em] mb-2">Foundation Support Email</p>
+                <a href="mailto:MaheshBabuBloods@gmail.com"
+                    class="text-lg sm:text-2xl font-black text-gray-900 font-display hover:text-red-600 transition-colors break-all md:break-normal">
+                    MaheshBabuBloods@gmail.com
+                </a>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 mt-4 w-full px-6">
+                <button @click.prevent="galleryOpen = true"
+                    class="chrome-3d hover-scale px-8 py-5 md:px-12 md:py-6 rounded-full font-poppins text-xs md:text-lg uppercase tracking-widest whitespace-nowrap flex items-center justify-center gap-3 active:scale-95 transition-all duration-300 h-16 md:h-20 drop-shadow-2xl">
+                    VIEW OUR WORK
+                    <svg class="w-5 h-5 md:w-6 md:h-6 icon-red" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                    </svg>
+                </button>
+                <button @click.prevent="reviewOpen = true"
+                    class="chrome-3d hover-scale px-8 py-5 md:px-12 md:py-6 rounded-full font-poppins text-xs md:text-lg uppercase tracking-widest whitespace-nowrap flex items-center justify-center gap-3 active:scale-95 transition-all duration-300 h-16 md:h-20 drop-shadow-2xl">
+                    WRITE A REVIEW
+                    <svg class="w-5 h-5 md:w-6 md:h-6 icon-red" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 .587l3.668 7.431 8.2 1.191-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.209l8.2-1.191L12 .587z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Copyright and Logos Section in Black -->
+        <div class="w-full bg-black pt-8 pb-10 border-t border-gray-800">
+            <div
+                class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+                <!-- Left Side: Social Media Logos -->
+                <div class="flex items-center gap-4">
+                    <!-- Instagram -->
+                    <a href="https://www.instagram.com/mb_bloods?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                        target="_blank" rel="noopener noreferrer"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-red-600 hover:text-white hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-red-600">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                        </svg>
+                    </a>
+                    <!-- Twitter (X) -->
+                    <a href="https://x.com/MB_BLOODS" target="_blank" rel="noopener noreferrer"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-white">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                    </a>
+                    <!-- Mail -->
+                    <a href="mailto:MaheshBabuBloods@gmail.com"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-red-600 hover:text-white hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-red-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                    </a>
+                    <!-- WhatsApp -->
+                    <a href="https://wa.me/918758754005" target="_blank"
+                        class="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center text-white hover:bg-green-500 hover:text-white hover:scale-110 transition-all duration-300 shadow-sm border border-gray-800 hover:border-green-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.588-5.946 0-6.556 5.332-11.888 11.888-11.888 3.176 0 6.161 1.237 8.404 3.48s3.481 5.229 3.481 8.406c0 6.556-5.332 11.888-11.888 11.888-2.01 0-3.988-.511-5.741-1.482l-6.143 1.705zm6.349-4.435l.353.21c1.47.873 3.158 1.335 4.887 1.335 5.507 0 9.991-4.484 9.991-9.99s-4.484-9.99-9.991-9.99c-5.507 0-9.99 4.484-9.99 9.99 0 2.225.734 4.394 2.121 6.166l.231.293-.958 3.498 3.582-.933zm9.363-7.513c-.237-.118-1.399-.691-1.617-.771-.217-.079-.376-.118-.535.118s-.614.771-.752.928-.276.178-.514.059-.991-.365-1.887-1.164c-.698-.622-1.168-1.391-1.305-1.628s-.015-.365.105-.483c.107-.107.237-.276.356-.415s.158-.237.237-.395.04-.296-.02-.415-.535-1.284-.732-1.758c-.192-.464-.385-.4-.535-.407-.138-.007-.297-.008-.455-.008s-.415.059-.633.296c-.217.237-.831.811-.831 1.978s.85 2.293.969 2.451c.119.158 1.673 2.555 4.053 3.582.566.244 1.008.389 1.353.499.569.181 1.088.155 1.498.094.457-.068 1.399-.573 1.597-1.126.197-.553.197-1.028.138-1.126s-.217-.118-.454-.237z" />
+                        </svg>
+                    </a>
+                </div>
+                <!-- Right Side: Copyright -->
+                <div class="text-white opacity-80 text-xs uppercase tracking-widest font-bold">
+                    © 2026 MB BLOODS FOUNDATION. ALL RIGHTS RESERVED.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Donate Modal -->
+    <div x-show="donateOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        (@click.away="donateOpen = false" x-cloak)>
+
+        <div
+            class="glass-3d-card border border-white/50 backdrop-blur-2xl w-full max-w-6xl max-h-[90vh] md:aspect-[9/6] overflow-hidden shadow-2xl flex flex-col md:flex-row relative">
+
+            <!-- Left Side: Image -->
+            <div
+                class="absolute inset-0 z-0 md:relative md:inset-auto w-full md:w-1/2 h-full md:h-auto bg-transparent border-none md:border-r md:border-solid border-white/20 md:p-6 shrink-0 pointer-events-none md:pointer-events-auto flex items-center justify-center">
+                <img src="assets/mbbb.png" alt="Mahesh Babu"
+                    class="w-full h-full object-contain p-6 md:p-0 opacity-40 md:opacity-100">
+            </div>
+
+            <!-- Form Content -->
+            <div class="flex-1 p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-10">
+                <!-- Close Button -->
+                <button @click="donateOpen = false"
+                    class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+
+                <div class="mb-10">
+                    <h2 class="text-4xl font-black mb-2 font-display uppercase tracking-tight">Be a Donor</h2>
+                    <p class="text-black font-medium">Fill in the details to register yourself as a life-saver.</p>
+                </div>
+
+                <form class="space-y-6" id="donateForm" @submit.prevent="submitDonation($event)">
+                    <!-- Personal Details Frame -->
+                    <div class="glass-3d-card p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Full Name</label>
+                            <input type="text" name="fullName" placeholder="Mahesh Babu" required
+                                class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Date of Birth</label>
+                            <input type="date" name="dateOfBirth" required
+                                class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
+                        </div>
+                    </div>
+
+                    <!-- Contact & Blood Group Frame -->
+                    <div class="glass-3d-card p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="md:col-span-2 space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Phone Number</label>
+                            <div
+                                class="flex items-center bg-white/50 border border-white/20 rounded-2xl focus-within:ring-2 focus-within:ring-red-500 transition-all overflow-hidden">
+                                <span
+                                    class="px-3 md:px-5 py-4 font-bold text-gray-500 bg-gray-100/30 border-r border-white/20 text-xs md:text-base">+91</span>
+                                <input type="tel" name="phoneNumber" placeholder="00000 00000" maxlength="10"
+                                    pattern="[0-9]{10}" required
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                    class="w-full px-3 md:px-5 py-4 bg-transparent focus:outline-none font-bold placeholder:font-normal text-sm md:text-base">
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Blood Group</label>
+                            <select name="bloodGroup" required
+                                class="w-full px-2 md:px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-xs md:text-base">
+                                <option>A+</option>
+                                <option>A-</option>
+                                <option>B+</option>
+                                <option>B-</option>
+                                <option>O+</option>
+                                <option>O-</option>
+                                <option>AB+</option>
+                                <option>AB-</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Gender & Weight Frame -->
+                    <div class="glass-3d-card p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="space-y-2 md:col-span-1">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Gender</label>
+                            <select name="gender" required
+                                class="w-full px-2 md:px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-xs md:text-base">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Weight (kg)</label>
+                            <input type="number" name="weight" placeholder="Minimum weight is 50kgs" required
+                                class="w-full px-3 md:px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
+                        </div>
+                    </div>
+
+                    <!-- Address Section Frame -->
+                    <div class="glass-3d-card p-4 md:p-6 space-y-4 md:space-y-6">
+                        <p class="text-[10px] md:text-xs font-bold text-red-800 uppercase tracking-widest pl-1">Address
+                            Details</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">State</label>
+                                <input type="text" name="state" placeholder="e.g. Andhra Pradesh" required
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">District</label>
+                                <input type="text" name="district" placeholder="e.g. Konaseema" required
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Mandal</label>
+                                <input type="text" name="mandal" placeholder="e.g. Amalapuram" required
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Village / Street</label>
+                                <input type="text" name="village" placeholder="Village name" required
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-4 md:gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Pincode</label>
+                                <input type="text" name="pincode" placeholder="e.g. 500033" required maxlength="6"
+                                    pattern="[0-9]{6}" oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 py-2">
+                        <input type="checkbox" name="declaration" id="declaration" value="true"
+                            class="w-5 h-5 accent-red-600 rounded cursor-pointer" required>
+                        <label for="declaration" class="text-sm text-black cursor-pointer select-none">I declare that
+                            I am fit for blood
+                            donation as per the medical guidelines.</label>
+                    </div>
+
+                    <button type="submit"
+                        class="w-full chrome-3d font-black py-5 rounded-2xl hover:brightness-110 transition-all uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                        :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Submit Registration</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                                viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                    stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor"
+                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                </path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Modal -->
+    <div x-show="galleryOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8 bg-black/60 backdrop-blur-sm"
+        style="display: none;">
+
+        <!-- Backdrop click handler -->
+        <div class="absolute inset-0 z-0" @click="galleryOpen = false"></div>
+
+        <div
+            class="relative w-full max-w-7xl h-[85vh] md:h-[90vh] glass-3d-card border border-white/50 backdrop-blur-2xl flex flex-col z-10 overflow-hidden">
+
+            <button @click="galleryOpen = false"
+                class="absolute top-3 right-3 md:top-6 md:right-6 p-3 md:p-4 bg-gray-100/50 backdrop-blur-sm text-gray-500 rounded-full hover:bg-red-600 hover:text-white transition-all z-20 shadow-sm active:scale-95">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                    <path d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Gallery Header -->
+            <div class="w-full text-center pt-14 pb-6 md:py-8 border-b border-gray-100 shrink-0 bg-white z-10">
+                <h2 class="text-2xl md:text-5xl font-black text-gray-900 uppercase tracking-widest font-display px-4">
+                    Contributions by <span class="whitespace-nowrap">MB Bloods</span></h2>
+                <div class="w-16 h-1.5 mt-4 mx-auto rounded-full bg-red-600"></div>
+            </div>
+
+            <!-- Scrollable Grid -->
+            <style>
+                .gallery-scrollbar::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                .gallery-scrollbar::-webkit-scrollbar-track {
+                    background: #F9FAFB;
+                }
+
+                .gallery-scrollbar::-webkit-scrollbar-thumb {
+                    background: #ef4444;
+                    border-radius: 10px;
+                }
+            </style>
+
+            <div class="w-full flex-grow overflow-y-auto p-4 md:p-10 gallery-scrollbar overscroll-contain"
+                x-data="{ peekImage: null }">
+                <!-- Gallery Grid (Row-wise Grid) -->
+                <div class="grid grid-cols-4 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6">
+                    <template x-for="(img, index) in galleryImages" :key="index">
+                        <div class="relative w-full h-full flex items-center justify-center">
+                            <img :src="img" @touchstart="peekImage = img" @touchend="peekImage = null"
+                                @touchcancel="peekImage = null" @mousedown="peekImage = img" @mouseup="peekImage = null"
+                                @mouseleave="peekImage = null"
+                                class="w-full h-auto rounded-xl sm:rounded-2xl shadow-md hover:scale-[1.02] hover:shadow-2xl transition-all cursor-pointer border border-gray-100 hover:border-red-600 select-none"
+                                style="-webkit-touch-callout: none;" loading="lazy">
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Peek Modal -->
+                <div x-show="peekImage !== null" x-transition.opacity.duration.200ms
+                    class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md pointer-events-none px-4"
+                    x-cloak>
+                    <img :src="peekImage"
+                        class="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl scale-100" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div x-show="successOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl relative border border-gray-100">
+            <!-- Checkmark -->
+            <div class="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" stroke-width="3"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black mb-3 font-display uppercase tracking-tight text-gray-900">Registration
+                Successful!</h3>
+            <p class="text-gray-500 font-medium mb-8 leading-relaxed">Thank you for your contribution!</p>
+            <button @click="successOpen = false"
+                class="chrome-3d text-white w-full py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-sm">Continue</button>
+        </div>
+    </div>
+
+    <!-- Sorry Modal (Low Weight) -->
+    <div x-show="sorryOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl relative border border-gray-100">
+            <!-- Warning/Heart Icon -->
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" stroke-width="2.5"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2 uppercase">Sorry!</h3>
+            <p class="text-gray-600 mb-8 font-medium leading-relaxed">To ensure your health and safety, you must weigh
+                at least <span class="text-red-600 font-bold">50kg</span> to donate blood.</p>
+            <button @click="sorryOpen = false"
+                class="w-full chrome-3d text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest text-sm">
+                Understood
+            </button>
+        </div>
+    </div>
+
+    <!-- Declaration Modal -->
+    <div x-show="declareOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl relative border border-gray-100">
+            <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-orange-500" fill="none" stroke="currentColor" stroke-width="2.5"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2 uppercase">Action Required!</h3>
+            <p class="text-gray-600 mb-8 font-medium leading-relaxed">Please declare by <span
+                    class="text-red-600 font-bold">ticking the declaration note</span> and submit again.</p>
+            <button @click="declareOpen = false"
+                class="w-full chrome-3d text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest text-sm">
+                Okay, I'll tick it
+            </button>
+        </div>
+    </div>
+
+    <!-- Review Modal -->
+    <div x-show="reviewOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        @click.away="reviewOpen = false" x-cloak>
+
+        <div
+            class="glass-3d-card border border-white/50 backdrop-blur-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col relative p-6 md:p-12">
+            
+            <!-- Close Button -->
+            <button @click="reviewOpen = false"
+                class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <div class="mb-8">
+                <h2 class="text-4xl font-black mb-2 font-display uppercase tracking-tight">Review & Feedback</h2>
+                <p class="text-black font-medium">Read the experiences of our donor community or submit your own feedback below.</p>
+            </div>
+
+            <!-- Two-Column Grid (Scrollable Area) -->
+            <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Column: Reviews List (Col 7) -->
+                <div class="lg:col-span-7 space-y-6">
+                    <h3
+                        class="text-2xl font-black text-gray-900 uppercase tracking-wide border-b border-gray-100 pb-3 mb-6 flex items-center justify-between">
+                        <span>Recent Reviews</span>
+                        <span
+                            class="text-xs font-bold bg-red-50 text-red-600 px-3 py-1 rounded-full border border-red-100"
+                            x-text="`${feedbacks.length} Approved`"></span>
+                    </h3>
+
+                    <!-- Dynamic reviews listing -->
+                    <div class="space-y-4 max-h-[450px] overflow-y-auto pr-2 custom-scrollbar">
+                        <template x-for="review in feedbacks" :key="review.id">
+                            <div
+                                class="glass-3d-card p-6 border border-gray-100/50 hover:border-red-100 hover:shadow-md transition-all duration-300 rounded-2xl flex flex-col gap-3 relative overflow-hidden group">
+                                <div
+                                    class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-red-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-gray-900 text-lg" x-text="review.name"></span>
+                                    <span class="text-xs text-gray-400 font-semibold"
+                                        x-text="new Date(review.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })"></span>
+                                </div>
+
+                                <!-- Rating Stars -->
+                                <div class="flex items-center gap-1">
+                                    <template x-for="star in 5">
+                                        <svg class="w-5 h-5 transition-transform"
+                                            :class="star <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'"
+                                            viewBox="0 0 20 20">
+                                            <path
+                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                    </template>
+                                </div>
+
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed italic"
+                                    x-text="`“ ${review.comment} ”`"></p>
+                            </div>
+                        </template>
+
+                        <!-- Empty State -->
+                        <template x-if="feedbacks.length === 0">
+                            <div class="p-8 bg-gray-50/50 border border-gray-100 rounded-2xl text-center">
+                                <p class="text-gray-400 font-bold uppercase tracking-wider text-sm mb-2">No reviews yet
+                                </p>
+                                <p class="text-gray-500 text-xs md:text-sm">Be the first to share your blood donation
+                                    experience!</p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Right Column: Submission Form (Col 5) -->
+                <div class="lg:col-span-5 relative">
+                    <!-- Success Banner Overlay inside the form container -->
+                    <div x-show="feedbackSubmitted" x-transition.opacity
+                        class="absolute inset-0 bg-white/70 backdrop-blur-md z-20 flex flex-col items-center justify-center p-8 text-center rounded-3xl"
+                        x-cloak>
+                        <div class="w-16 h-16 bg-green-50/50 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 border border-green-200">
+                            <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" stroke-width="3"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <h4 class="text-2xl font-black text-gray-900 mb-2 uppercase">Thank You!</h4>
+                        <p class="text-gray-600 font-medium leading-relaxed">Your feedback has been successfully
+                            submitted and is awaiting administrator approval.</p>
+                    </div>
+
+                    <div
+                        class="glass-3d-card p-6 border border-gray-100 shadow-lg rounded-3xl">
+                        <h3
+                            class="text-2xl font-black text-gray-900 uppercase tracking-wide border-b border-gray-50 pb-3 mb-6">
+                            Write a Review
+                        </h3>
+
+                        <form @submit.prevent="submitFeedback()" class="space-y-6">
+                            <!-- Name Field -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 ml-1">Your Name</label>
+                                <input type="text" x-model="feedbackName" required placeholder="enter your name"
+                                    class="w-full px-5 py-3 bg-white/40 border border-white/50 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base shadow-inner">
+                            </div>
+
+                            <!-- Rating Field (Stars Selection) -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 ml-1 block">Rating</label>
+                                <div class="flex items-center gap-2 py-1">
+                                    <template x-for="i in 5">
+                                        <button type="button" @click="feedbackRating = i"
+                                            class="focus:outline-none transition-transform active:scale-90">
+                                            <svg class="w-8 h-8 cursor-pointer transition-colors duration-200"
+                                                :class="i <= feedbackRating ? 'text-amber-400 fill-amber-400' : 'text-gray-200 fill-gray-200'"
+                                                viewBox="0 0 20 20">
+                                                <path
+                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Comment Field -->
+                            <div class="space-y-2">
+                                <label class="text-sm font-bold text-gray-700 ml-1">Your Review</label>
+                                <textarea x-model="feedbackComment" required rows="3"
+                                    placeholder="Share your experience donating blood or requesting support..."
+                                    class="w-full px-5 py-3 bg-white/40 border border-white/50 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base resize-none shadow-inner"></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" :disabled="feedbackSubmitting"
+                                class="w-full chrome-3d font-black py-4 rounded-2xl hover:brightness-110 transition-all uppercase tracking-widest flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span x-show="!feedbackSubmitting">Submit Review</span>
+                                <span x-show="feedbackSubmitting" class="flex items-center gap-2">
+                                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    Submitting...
+                                </span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Success Sound -->
+    <audio id="successSound" src="assets/denoise_video_20260406_145944_edit.mp3.mpeg" preload="auto"></audio>
+
+</body>
+
+</html>

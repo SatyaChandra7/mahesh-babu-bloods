@@ -1,0 +1,35 @@
+{
+    "Telangana": {
+        "Hyderabad": ["Ameerpet", "Khairatabad", "Secunderabad", "Mehdipatnam", "Asif Nagar", "Gachibowli", "Jubilee Hills", "Banjara Hills", "Kukatpally", "Miyapur"],
+        "Rangareddy": ["Manikonda", "Sherlingampally", "Rajendranagar", "Ibrahimpatnam", "Maheshwaram", "Saroornagar", "Hayathnagar"],
+        "Medchal": ["Malkajgiri", "Quthbullapur", "Uppal", "Kutbullapur", "Keesara", "Alwal", "Medchal"],
+        "Warangal": ["Warangal Urban", "Warangal Rural", "Kazipet", "Hanamkonda", "Jangaon", "Mahabubabad"],
+        "Nizamabad": ["Nizamabad Urban", "Nizamabad Rural", "Armoor", "Bodh", "Kamareddy"],
+        "Karimnagar": ["Karimnagar", "Choppadandi", "Gangadhara", "Manakondur"],
+        "Khammam": ["Khammam", "Wyra", "Sathupally", "Madhira"],
+        "Nalgonda": ["Nalgonda", "Miryalaguda", "Suryapet", "Kodad"],
+        "Mahabubnagar": ["Mahabubnagar", "Jadcherla", "Nagarkurnool", "Wanaparthy"]
+    },
+    "Andhra Pradesh": {
+        "Visakhapatnam": ["Gajuwaka", "Maharani Peta", "Pendurthi", "Seethammadhara", "Bheemunipatnam", "Anakapalle"],
+        "Krishna": ["Vijayawada Urban", "Vijayawada Rural", "Jaggaiahpeta", "Machilipatnam", "Gudivada", "Nuzvid"],
+        "Guntur": ["Guntur City", "Tenali", "Narasaraopet", "Bapatla", "Mangalagiri", "Ponnur"],
+        "Nellore": ["Nellore City", "Kavali", "Gudur", "Sullurpeta", "Venkatagiri"],
+        "Kurnool": ["Kurnool City", "Adoni", "Nandyal", "Yemmiganur", "Dhone"],
+        "Chittoor": ["Chittoor", "Tirupati", "Madanapalle", "Palamaner", "Punganoor"],
+        "East Godavari": ["Kakinada", "Rajahmundry", "Amalapuram", "Mandapeta", "Samalkota"],
+        "West Godavari": ["Eluru", "Bhimavaram", "Tadepalligudem", "Tanuku", "Palakollu"],
+        "Anantapur": ["Anantapur", "Dharmavaram", "Hindupur", "Guntakal", "Tadipatri"]
+    },
+    "Karnataka": {
+        "Bangalore Urban": ["Bangalore North", "Bangalore South", "Bangalore East", "Anekal"],
+        "Bangalore Rural": ["Devanahalli", "Doddaballapur", "Hoskote", "Nelamangala"],
+        "Mysore": ["Mysore", "Nanjangud", "T.Narsipur", "Hunsur"],
+        "Mangalore": ["Mangalore", "Bantwal", "Belthangady", "Puttur"]
+    },
+    "Tamil Nadu": {
+        "Chennai": ["Adyar", "Ambattur", "Guindy", "Mylapore", "T.Nagar", "Velachery"],
+        "Coimbatore": ["Coimbatore North", "Coimbatore South", "Pollachi", "Mettupalayam"],
+        "Madurai": ["Madurai North", "Madurai South", "Melur", "Thirumangalam"]
+    }
+}

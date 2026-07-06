@@ -1,0 +1,8 @@
+{
+  "watch": [
+    "backend",
+    "frontend"
+  ],
+  "ext": "js,json,html,css",
+  "exec": "node backend/index.js"
+}
