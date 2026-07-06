@@ -423,8 +423,8 @@ app.get('/api/v1/public/feedbacks', async (req, res) => {
 app.get('/api/v1/public/alert', (req, res) => res.json({ success: true, alert: sharedState.currentAlert?.isActive ? sharedState.currentAlert : null }));
 
 
-// For local development
-if (process.env.NODE_ENV !== 'production') {
+// Start server if not running in a serverless environment (like Vercel)
+if (process.env.NODE_ENV !== 'production' || process.env.RENDER || !process.env.VERCEL) {
     initializeApp().then(() => {
         app.listen(PORT, () => console.log(`Server on ${PORT}`));
     });
