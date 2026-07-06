@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: mahesh-babu-bloods
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_WHATSAPP_1
+        sync: true
+      - key: ADMIN_WHATSAPP_2
+        sync: true
+      - key: GOOGLE_SPREADSHEET_ID
+        sync: true
+      - key: GOOGLE_API_KEY
+        sync: true
+      - key: GOOGLE_SHEET_NAME
+        value: Sheet1
+      - key: GALLERY_FOLDER
+        value: "our work"
+      - key: SUPPORT_EMAIL
+        value: "MaheshBabuBloods@gmail.com"
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
+        sync: true
+      - key: DATABASE_URL
+        sync: true
