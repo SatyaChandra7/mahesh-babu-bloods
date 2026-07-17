@@ -131,7 +131,8 @@ async function initializeApp() {
     try {
         // Auth with DB
         await sequelize.authenticate();
-        await sequelize.sync({ alter: true });
+        await sequelize.sync({ alter: process.env.DATABASE_URL ? true : false });
+
         
         // Auth with Google
         let auth;
@@ -241,8 +242,14 @@ async function processBatch() {
     }
 }
 
-function appendDonorToGoogleSheet(donor) {
+async function appendDonorToGoogleSheet(donor) {
     donorBatch.push(donor);
+    
+    // On Vercel or serverless production, process immediately because background timeouts are unreliable
+    if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        await processBatch();
+        return;
+    }
     
     // Auto-process batch every 5 minutes
     if (!batchTimeout) {
@@ -335,7 +342,7 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             village: address?.village || '',
             pincode: address?.pincode || ''
         });
-        appendDonorToGoogleSheet(newDonor);
+        await appendDonorToGoogleSheet(newDonor);
         res.status(201).json({ success: true, donor: newDonor });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

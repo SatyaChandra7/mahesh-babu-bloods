@@ -16,8 +16,16 @@
       "dest": "/admin-frontend/admin.html"
     },
     {
+      "src": "/",
+      "dest": "/frontend/index.html"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/frontend/index.html"
+    },
+    {
       "src": "/(.*)",
-      "dest": "api/index.js"
+      "dest": "/api/index.js"
     }
   ]
 }
