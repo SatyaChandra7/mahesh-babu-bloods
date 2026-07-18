@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Canvas Test</title>
+</head>
+<body style="background: #222; color: #fff; font-family: sans-serif; margin: 0; padding: 20px;">
+    <h1>Testing Canvas Coordinate Alignment</h1>
+    <p>Loading card template...</p>
+    <div id="status">Loading image...</div>
+    <canvas id="myCanvas" style="max-width: 100%; border: 1px solid #555; display: block; margin-top: 20px;"></canvas>
+
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        img.src = 'assets/donar card NEW (1) (1).jpg';
+        
+        img.onload = () => {
+            document.getElementById('status').innerText = `Loaded image: ${img.naturalWidth} x ${img.naturalHeight}`;
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            
+            // Draw background
+            ctx.drawImage(img, 0, 0);
+            
+            // Set text style for name
+            ctx.fillStyle = '#1e293b'; // Slate dark gray
+            ctx.font = 'bold 140px "Inter", sans-serif';
+            
+            // Draw name
+            ctx.fillText("JOHN DOE", 2250, 3450);
+            
+            // Draw DOB (keep original font size 110px)
+            ctx.font = 'bold 110px "Inter", sans-serif';
+            ctx.fillText("15-08-1995", 2250, 3770);
+            
+            // Draw Blood Group
+            ctx.fillStyle = '#dc2626'; // Red for blood group
+            ctx.font = 'bold 125px "Inter", sans-serif';
+            ctx.fillText("O Positive (O+)", 2250, 4120);
+            
+            // Draw Address
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 95px "Inter", sans-serif';
+            ctx.fillText("Flat 402, Lotus Apartments, Hyderabad, Telangana - 500081", 2250, 4470);
+        };
+        
+        img.onerror = () => {
+            document.getElementById('status').innerText = 'Failed to load image';
+        };
+    </script>
+</body>
+</html>
