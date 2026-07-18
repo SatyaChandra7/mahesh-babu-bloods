@@ -155,6 +155,16 @@ async function initializeApp() {
             });
             sheets = google.sheets({ version: 'v4', auth });
             console.log('Google Sheets: Service Account file initialized.');
+        } else {
+            try {
+                auth = new google.auth.GoogleAuth({
+                    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+                });
+                sheets = google.sheets({ version: 'v4', auth });
+                console.log('Google Sheets: Using Application Default Credentials (ADC).');
+            } catch (e) {
+                console.error('Failed to initialize Google Sheets using Application Default Credentials:', e.message);
+            }
         }
 
         if (sheets && SPREADSHEET_ID) {
