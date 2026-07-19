@@ -6,3 +6,5 @@ node_modules/
 .DS_Store
 
 .vercel
+service-account.json
+mahesh-babu-bloods-*.json

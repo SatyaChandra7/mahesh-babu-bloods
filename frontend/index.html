@@ -34,7 +34,7 @@
                 certificateDonorName: '',
 
                 get apiBase() {
-                    return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') ? 'http://localhost:5000' : '';
+                    return '';
                 },
 
                 init() {
@@ -244,7 +244,7 @@
                             alert('Registration failed: ' + result.message);
                         }
                     } catch (error) {
-                        alert('Connection Error: Please ensure the backend is running at http://localhost:5000');
+                        alert('Connection Error: Please ensure the backend is running.');
                     } finally {
                         this.isSubmitting = false;
                     }
