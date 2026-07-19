@@ -128,17 +128,25 @@ let isInitialized = false;
 
 async function initializeApp() {
     if (isInitialized) return;
+    
+    // Auth with DB
     try {
-        // Auth with DB
         await sequelize.authenticate();
         await sequelize.sync({ alter: process.env.DATABASE_URL ? true : false });
+        console.log('SQL Database initialized successfully.');
+    } catch (err) {
+        console.error('SQL Database Initialization error:', err.message);
+    }
 
-        
-        // Auth with Google
+    // Auth with Google Sheets
+    try {
         let auth;
         if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
             try {
                 const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+                if (credentials.private_key && typeof credentials.private_key === 'string') {
+                    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+                }
                 auth = new google.auth.GoogleAuth({
                     credentials,
                     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -155,26 +163,18 @@ async function initializeApp() {
             });
             sheets = google.sheets({ version: 'v4', auth });
             console.log('Google Sheets: Service Account file initialized.');
-        } else {
-            try {
-                auth = new google.auth.GoogleAuth({
-                    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-                });
-                sheets = google.sheets({ version: 'v4', auth });
-                console.log('Google Sheets: Using Application Default Credentials (ADC).');
-            } catch (e) {
-                console.error('Failed to initialize Google Sheets using Application Default Credentials:', e.message);
-            }
         }
 
         if (sheets && SPREADSHEET_ID) {
             await syncSheetsToSQL();
         }
-        isInitialized = true;
     } catch (err) {
-        console.error('Initialization error:', err);
+        console.error('Google Sheets Initialization error:', err.message);
     }
+
+    isInitialized = true;
 }
+
 
 async function syncSheetsToSQL() {
     try {
@@ -279,7 +279,7 @@ async function appendDonorToGoogleSheet(donor) {
 
 // Ensure initialization happens for every request if not ready
 app.use(async (req, res, next) => {
-    if (!isInitialized && req.path.startsWith('/api')) {
+    if (!isInitialized) {
         await initializeApp();
     }
     next();
@@ -333,7 +333,12 @@ const verifyAdmin = (req, res, next) => {
 const sharedState = { currentAlert: null };
 
 // API Endpoints
-app.get('/health', (req, res) => res.json({ status: 'ok', initialized: isInitialized }));
+app.get('/health', (req, res) => res.json({
+    status: 'ok',
+    initialized: isInitialized,
+    database: process.env.DATABASE_URL ? 'postgresql' : 'sqlite',
+    hasSheets: !!sheets
+}));
 
 const donorLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes

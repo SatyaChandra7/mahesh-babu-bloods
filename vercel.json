@@ -1,39 +1,28 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.js",
-      "use": "@vercel/node"
+      "source": "/health",
+      "destination": "/api/index.js"
     },
     {
-      "src": "frontend/**",
-      "use": "@vercel/static"
+      "source": "/api/(.*)",
+      "destination": "/api/index.js"
     },
     {
-      "src": "admin-frontend/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/frontend/assets/$1"
+      "source": "/admin",
+      "destination": "/admin-frontend/admin.html"
     },
     {
-      "src": "/admin.html",
-      "dest": "/admin-frontend/admin.html"
+      "source": "/admin.html",
+      "destination": "/admin-frontend/admin.html"
     },
     {
-      "src": "/",
-      "dest": "/frontend/index.html"
+      "source": "/assets/(.*)",
+      "destination": "/frontend/assets/$1"
     },
     {
-      "src": "/index.html",
-      "dest": "/frontend/index.html"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
+      "source": "/(.*)",
+      "destination": "/frontend/$1"
     }
   ]
 }
