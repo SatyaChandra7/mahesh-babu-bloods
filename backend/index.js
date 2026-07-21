@@ -45,6 +45,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serverless (Vercel) Auto-Initialization Middleware
+app.use(async (req, res, next) => {
+    if (!isInitialized) {
+        try {
+            await initializeApp();
+        } catch (err) {
+            console.error('Serverless auto-initialization error:', err);
+        }
+    }
+    next();
+});
+
 // SQL Database Initialization (Sequelize + SQLite or Postgres)
 let sequelize;
 
@@ -143,7 +155,11 @@ async function initializeApp() {
         let auth;
         if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
             try {
-                const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+                let jsonStr = process.env.GOOGLE_SERVICE_ACCOUNT_JSON.trim();
+                if (!jsonStr.startsWith('{')) {
+                    jsonStr = Buffer.from(jsonStr, 'base64').toString('utf8');
+                }
+                const credentials = JSON.parse(jsonStr);
                 if (credentials.private_key && typeof credentials.private_key === 'string') {
                     credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
                 }
