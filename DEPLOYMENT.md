@@ -40,6 +40,9 @@ Run the production deployment:
 npx vercel --prod
 ```
 
+### Serverless Execution Note
+The backend includes a serverless auto-initialization middleware in `backend/index.js` that automatically initializes the PostgreSQL database connection and Google Sheets API on incoming API requests when deployed to Vercel.
+
 ## 3. Google Sheets Access
 
 1. Ensure your Google Sheet is shared with the **Client Email** in your `service-account.json`.
