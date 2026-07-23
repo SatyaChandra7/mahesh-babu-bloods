@@ -23,3 +23,11 @@ try {
 } catch (err) {
   console.error("Admin Frontend Push Error:", err.stdout ? err.stdout : err.message, err.stderr ? err.stderr : '');
 }
+
+console.log("Starting push for admin backend...");
+try {
+  const out4 = execSync('git push --force admin-backend-repo temp-admin-backend:main', { cwd: 'd:\\mb bloods', encoding: 'utf-8', stdio: 'pipe' });
+  console.log("Admin Backend Push Result:", out4);
+} catch (err) {
+  console.error("Admin Backend Push Error:", err.stdout ? err.stdout : err.message, err.stderr ? err.stderr : '');
+}
