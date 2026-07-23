@@ -411,7 +411,7 @@ app.get('/api/v1/public/gallery', (req, res) => {
 });
 
 // Load Admin Backend Routes
-require('../admin-backend/adminRoutes')(app, {
+require('./adminRoutes')(app, {
     JWT_SECRET,
     WHITELISTED_NUMBERS,
     adminOtps,
