@@ -109,19 +109,36 @@ app.use(async (req, res, next) => {
 // SQL Database Initialization (Sequelize + SQLite or Postgres)
 let sequelize;
 
+const fallbackDonorsStore = [];
 function createFallbackSequelize() {
     return {
         authenticate: async () => console.warn('Database connection unavailable (using fallback mode)'),
         sync: async () => console.warn('Database sync unavailable (using fallback mode)'),
         define: (modelName) => ({
             name: modelName,
-            findOrCreate: async () => [{ toJSON: () => ({}) }, true],
-            create: async (data) => ({ ...data, id: Date.now(), toJSON: () => ({ ...data, id: Date.now() }) }),
-            findAll: async () => [],
-            findOne: async () => null,
-            findByPk: async () => null,
-            count: async () => 0,
-            destroy: async () => 0,
+            findOrCreate: async (options) => {
+                const existing = fallbackDonorsStore.find(d => d.phoneNumber === options?.where?.phoneNumber);
+                if (existing) return [existing, false];
+                const newObj = { ...options?.defaults, id: Date.now() };
+                fallbackDonorsStore.unshift(newObj);
+                return [newObj, true];
+            },
+            create: async (data) => {
+                const newObj = { ...data, id: Date.now(), registeredAt: new Date() };
+                fallbackDonorsStore.unshift(newObj);
+                return newObj;
+            },
+            findAll: async () => fallbackDonorsStore,
+            findOne: async () => fallbackDonorsStore[0] || null,
+            findByPk: async (id) => fallbackDonorsStore.find(d => String(d.id) === String(id)) || null,
+            count: async () => fallbackDonorsStore.length,
+            destroy: async (options) => {
+                if (options?.where?.id) {
+                    const idx = fallbackDonorsStore.findIndex(d => String(d.id) === String(options.where.id));
+                    if (idx !== -1) fallbackDonorsStore.splice(idx, 1);
+                }
+                return 1;
+            },
             save: async () => {}
         })
     };
@@ -308,22 +325,27 @@ async function syncSheetsToSQL() {
         const rows = response.data.values;
         if (rows && rows.length > 0) {
             for (const row of rows) {
+                if (!row || !row[0] || !row[3]) continue;
+                const phone = String(row[3]).trim();
+                const name = String(row[0]).trim();
+                if (!phone || !name) continue;
+
                 await Donor.findOrCreate({
-                    where: { phoneNumber: row[3], fullName: row[0] },
+                    where: { phoneNumber: phone, fullName: name },
                     defaults: {
-                        dateOfBirth: row[1],
+                        dateOfBirth: row[1] || null,
                         gender: row[2] || 'Not specified',
-                        weight: row[10] || '', // Assuming weight is in the 11th column (K)
-                        bloodGroup: row[4],
-                        state: row[5],
-                        district: row[6],
-                        mandal: row[7],
-                        village: row[8],
-                        pincode: row[11] || '', // Assuming pincode is in the 12th column (L)
+                        weight: row[10] || '',
+                        bloodGroup: row[4] || 'O+',
+                        state: row[5] || '',
+                        district: row[6] || '',
+                        mandal: row[7] || '',
+                        village: row[8] || '',
+                        pincode: row[11] || '',
                         registeredAt: row[9] ? new Date(row[9]) : new Date(),
                         isVerified: false
                     }
-                });
+                }).catch(e => console.error('findOrCreate row error:', e.message));
             }
             console.log(`✅ Synced ${rows.length} records.`);
         }
