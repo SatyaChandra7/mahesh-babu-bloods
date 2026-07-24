@@ -1,0 +1,9 @@
+node_modules
+.git
+.vscode
+.agents
+*.sqlite*
+backend/*.sqlite*
+backend/database.sqlite*
+*.log
+scratch*

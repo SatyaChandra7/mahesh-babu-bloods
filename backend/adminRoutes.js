@@ -86,36 +86,44 @@ module.exports = function(app, deps) {
     });
 
     app.get('/api/v1/admin/donors', verifyAdmin, async (req, res) => {
-        const { bloodGroup, address, pincode, idNumber } = req.query;
-        let where = {};
-        if (idNumber) {
-            let parsedId = parseInt(idNumber, 10);
-            if (idNumber.startsWith('9') && idNumber.length > 1) {
-                parsedId = parseInt(idNumber.substring(1), 10);
+        try {
+            const { bloodGroup, address, pincode, idNumber } = req.query;
+            let where = {};
+            if (idNumber) {
+                let parsedId = parseInt(idNumber, 10);
+                if (idNumber.startsWith('9') && idNumber.length > 1) {
+                    parsedId = parseInt(idNumber.substring(1), 10);
+                }
+                if (!isNaN(parsedId)) {
+                    where.id = parsedId;
+                }
             }
-            if (!isNaN(parsedId)) {
-                where.id = parsedId;
+            if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup;
+            if (address) {
+                where[Op.or] = [
+                    { state: { [Op.like]: `%${address}%` } },
+                    { district: { [Op.like]: `%${address}%` } },
+                    { mandal: { [Op.like]: `%${address}%` } },
+                    { village: { [Op.like]: `%${address}%` } }
+                ];
             }
+            if (pincode) {
+                where.pincode = { [Op.like]: `%${pincode}%` };
+            }
+            const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
+            res.json({ success: true, donors: results });
+        } catch (err) {
+            res.status(500).json({ success: false, message: err.message });
         }
-        if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup;
-        if (address) {
-            where[Op.or] = [
-                { state: { [Op.like]: `%${address}%` } },
-                { district: { [Op.like]: `%${address}%` } },
-                { mandal: { [Op.like]: `%${address}%` } },
-                { village: { [Op.like]: `%${address}%` } }
-            ];
-        }
-        if (pincode) {
-            where.pincode = { [Op.like]: `%${pincode}%` };
-        }
-        const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
-        res.json({ success: true, donors: results });
     });
 
     app.get('/api/v1/admin/donors/delete/:id', verifyAdmin, async (req, res) => {
-        await Donor.destroy({ where: { id: req.params.id } });
-        res.json({ success: true });
+        try {
+            await Donor.destroy({ where: { id: req.params.id } });
+            res.json({ success: true });
+        } catch (err) {
+            res.status(500).json({ success: false, message: err.message });
+        }
     });
 
     app.get('/api/v1/admin/export', verifyAdmin, async (req, res) => {
@@ -134,12 +142,16 @@ module.exports = function(app, deps) {
     });
 
     app.get('/api/v1/admin/donors/verify/:id', verifyAdmin, async (req, res) => {
-        const donor = await Donor.findByPk(req.params.id);
-        if (donor) {
-            donor.isVerified = !donor.isVerified;
-            await donor.save();
-            res.json({ success: true, isVerified: donor.isVerified });
-        } else res.status(404).json();
+        try {
+            const donor = await Donor.findByPk(req.params.id);
+            if (donor) {
+                donor.isVerified = !donor.isVerified;
+                await donor.save();
+                res.json({ success: true, isVerified: donor.isVerified });
+            } else res.status(404).json({ success: false, message: 'Donor not found' });
+        } catch (err) {
+            res.status(500).json({ success: false, message: err.message });
+        }
     });
 
     app.post('/api/v1/admin/alerts', verifyAdmin, (req, res) => {

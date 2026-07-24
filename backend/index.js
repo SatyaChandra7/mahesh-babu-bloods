@@ -32,8 +32,20 @@ const GALLERY_PATH = process.env.GALLERY_FOLDER || 'our work';
 
 // Normalize Vercel Serverless Function rewrites (e.g. /api/index.js/v1/... -> /api/v1/...)
 app.use((req, res, next) => {
-    if (req.url && req.url.startsWith('/api/index.js')) {
-        req.url = req.url.replace('/api/index.js', '/api') || '/';
+    const rawUrl = req.url || '/';
+    if (rawUrl.startsWith('/api/index.js')) {
+        const remainder = rawUrl.substring('/api/index.js'.length);
+        const invokePath = req.headers['x-matched-path'] || req.headers['x-invoke-path'] || req.headers['x-original-uri'];
+        
+        if (remainder && remainder.startsWith('/')) {
+            req.url = '/api' + remainder;
+        } else if (invokePath && invokePath !== '/api/index.js' && invokePath !== '/api') {
+            req.url = invokePath + (remainder || '');
+        } else if (!remainder || remainder.startsWith('?')) {
+            req.url = '/health' + (remainder || '');
+        } else {
+            req.url = remainder || '/';
+        }
     }
     next();
 });
@@ -97,6 +109,24 @@ app.use(async (req, res, next) => {
 // SQL Database Initialization (Sequelize + SQLite or Postgres)
 let sequelize;
 
+function createFallbackSequelize() {
+    return {
+        authenticate: async () => console.warn('Database connection unavailable (using fallback mode)'),
+        sync: async () => console.warn('Database sync unavailable (using fallback mode)'),
+        define: (modelName) => ({
+            name: modelName,
+            findOrCreate: async () => [{ toJSON: () => ({}) }, true],
+            create: async (data) => ({ ...data, id: Date.now(), toJSON: () => ({ ...data, id: Date.now() }) }),
+            findAll: async () => [],
+            findOne: async () => null,
+            findByPk: async () => null,
+            count: async () => 0,
+            destroy: async () => 0,
+            save: async () => {}
+        })
+    };
+}
+
 function initSequelize() {
     if (process.env.DATABASE_URL) {
         console.log('Using PostgreSQL database connection');
@@ -136,12 +166,12 @@ function initSequelize() {
             return new Sequelize({ dialect: 'sqlite', storage: ':memory:', logging: false });
         } catch (e2) {
             console.error('Fallback Sequelize Initialization Error:', e2.message);
-            return null;
+            return createFallbackSequelize();
         }
     }
 }
 
-sequelize = initSequelize();
+sequelize = initSequelize() || createFallbackSequelize();
 
 // Donor Model
 const Donor = sequelize.define('Donor', {
@@ -189,7 +219,20 @@ app.use(express.static(path.join(__dirname, '..', 'admin-frontend')));
 
 // Root route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
+    if (req.headers.accept && req.headers.accept.includes('text/html')) {
+        const frontendPath = path.join(__dirname, '..', 'frontend', 'index.html');
+        if (fs.existsSync(frontendPath)) {
+            return res.sendFile(frontendPath);
+        }
+    }
+    res.json({
+        status: 'ok',
+        service: 'Mahesh Babu Bloods Backend API Service',
+        health: '/health',
+        initialized: isInitialized,
+        database: process.env.DATABASE_URL ? 'postgresql' : 'sqlite',
+        hasSheets: !!sheets
+    });
 });
 
 // Google Sheets Config
@@ -204,9 +247,11 @@ async function initializeApp() {
     
     // Auth with DB
     try {
-        await sequelize.authenticate();
-        await sequelize.sync({ alter: process.env.DATABASE_URL ? true : false });
-        console.log('SQL Database initialized successfully.');
+        if (sequelize && typeof sequelize.authenticate === 'function') {
+            await sequelize.authenticate();
+            await sequelize.sync({ alter: false });
+            console.log('SQL Database initialized successfully.');
+        }
     } catch (err) {
         console.error('SQL Database Initialization error:', err.message);
     }
@@ -357,7 +402,8 @@ async function appendDonorToGoogleSheet(donor) {
 
 
 // Storage for "Our Work" Gallery
-const UPLOAD_DIR = path.join(process.env.NODE_ENV === 'production' ? '/tmp' : path.join(__dirname, '..', 'frontend'), 'assets', GALLERY_PATH);
+const isProdOrVercel = !!(process.env.VERCEL || process.env.NODE_ENV === 'production');
+const UPLOAD_DIR = path.join(isProdOrVercel ? '/tmp' : path.join(__dirname, '..', 'frontend'), 'assets', GALLERY_PATH);
 if (!fs.existsSync(UPLOAD_DIR)) {
     try {
         fs.mkdirSync(UPLOAD_DIR, { recursive: true });
@@ -530,7 +576,8 @@ app.get('/api/v1/public/alert', (req, res) => res.json({ success: true, alert: s
 
 
 // Start server if not running in a serverless environment (like Vercel)
-if (process.env.NODE_ENV !== 'production' || process.env.RENDER || !process.env.VERCEL) {
+const isServerlessEnv = !!(process.env.VERCEL || process.env.VERCEL_ENV || process.env.NOW_REGION || process.env.AWS_LAMBDA_FUNCTION_NAME);
+if (!isServerlessEnv && (process.env.NODE_ENV !== 'production' || process.env.RENDER)) {
     initializeApp().then(() => {
         app.listen(PORT, () => console.log(`Server on ${PORT}`));
     });
