@@ -7,9 +7,7 @@ node_modules/
 backend/*.sqlite*
 *.log
 scratch*
-frontend/assets/donar*
-frontend/assets/mahesh*
-frontend/assets/mbbb*
 frontend/assets/WhatsApp*
 frontend/assets/Screenshot*
 frontend/assets/*.mp4
+
