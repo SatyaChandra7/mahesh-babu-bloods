@@ -511,6 +511,7 @@
                         this.fetchDonationCountAdmin();
                         this.fetchAlertAdmin();
                         this.fetchFeedbacks();
+                        this.fetchDonors();
                     }
                 },
 
@@ -657,6 +658,7 @@
                             this.fetchDonationCountAdmin();
                             this.fetchAlertAdmin();
                             this.fetchFeedbacks();
+                            this.fetchDonors();
                         } else {
                             this.loginError = data.message || 'Login failed';
                         }

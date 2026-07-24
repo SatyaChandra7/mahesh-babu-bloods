@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
 
 module.exports = function(app, deps) {
-    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState } = deps;
+    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState, syncSheetsToSQL } = deps;
 
     // Verification Middleware
     const verifyAdmin = (req, res, next) => {
@@ -77,6 +77,9 @@ module.exports = function(app, deps) {
 
     app.get('/api/v1/admin/stats', verifyAdmin, async (req, res) => {
         try {
+            if (typeof syncSheetsToSQL === 'function') {
+                await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
+            }
             const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
             const stats = await Promise.all(groups.map(async (g) => ({ group: g, count: await Donor.count({ where: { bloodGroup: g } }) })));
             res.json({ success: true, stats, total: await Donor.count() });
@@ -87,6 +90,9 @@ module.exports = function(app, deps) {
 
     app.get('/api/v1/admin/donors', verifyAdmin, async (req, res) => {
         try {
+            if (typeof syncSheetsToSQL === 'function') {
+                await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
+            }
             const { bloodGroup, address, pincode, idNumber } = req.query;
             let where = {};
             if (idNumber) {

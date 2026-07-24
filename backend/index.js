@@ -303,7 +303,7 @@ async function syncSheetsToSQL() {
         if (!sheets || !SPREADSHEET_ID) return;
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
-            range: `${SHEET_NAME}!A2:J`, 
+            range: `${SHEET_NAME}!A2:L`, 
         });
         const rows = response.data.values;
         if (rows && rows.length > 0) {
@@ -474,7 +474,7 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             village: address?.village || '',
             pincode: address?.pincode || ''
         });
-        appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
+        await appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
         res.status(201).json({ success: true, donor: newDonor });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -533,7 +533,8 @@ require('./adminRoutes')(app, {
     GALLERY_PATH,
     Donor,
     Feedback,
-    sharedState
+    sharedState,
+    syncSheetsToSQL
 });
 
 const feedbackLimiter = rateLimit({
