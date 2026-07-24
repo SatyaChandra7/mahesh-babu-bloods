@@ -20,11 +20,9 @@ const rateLimit = require('express-rate-limit');
 
 
 let pgDriver = null;
-let sqlite3Driver = null;
 
 try { pgDriver = require('pg'); } catch (e) {}
 try { require('pg-hstore'); } catch (e) {}
-try { sqlite3Driver = require('sqlite3'); } catch (e) {}
 
 const app = express();
 app.set('trust proxy', 1);
@@ -118,23 +116,24 @@ function initSequelize() {
     }
 
     console.log('Using SQLite database connection');
-    const dbPath = process.env.NODE_ENV === 'production' 
-        ? path.join('/tmp', 'database.sqlite') 
+    const dbPath = process.env.VERCEL || process.env.NODE_ENV === 'production' 
+        ? ':memory:' 
         : path.join(__dirname, 'database.sqlite');
 
-    const sqliteOptions = {
-        dialect: 'sqlite',
-        storage: dbPath,
-        logging: false
-    };
-    if (sqlite3Driver) sqliteOptions.dialectModule = sqlite3Driver;
-
     try {
+        let sqliteOptions = {
+            dialect: 'sqlite',
+            storage: dbPath,
+            logging: false
+        };
+        try {
+            sqliteOptions.dialectModule = require('sqlite3');
+        } catch (e) {}
         return new Sequelize(sqliteOptions);
     } catch (err) {
         console.error('SQLite Sequelize Initialization Error:', err.message);
         try {
-            return new Sequelize('sqlite::memory:', { logging: false });
+            return new Sequelize({ dialect: 'sqlite', storage: ':memory:', logging: false });
         } catch (e2) {
             console.error('Fallback Sequelize Initialization Error:', e2.message);
             return null;
