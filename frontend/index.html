@@ -54,6 +54,10 @@
                         this.serverWaking = false;
                     });
                     
+                    if (window.location.hash === '#admin' || window.location.pathname.includes('/admin')) {
+                        this.openAdminPanel();
+                    }
+
                     setTimeout(() => { this.showIntro = false; }, 3200);
                 },
 
@@ -252,6 +256,10 @@
                             this.donateOpen = false;
                             event.target.reset();
                             this.fetchDonationCount();
+                            if (this.adminToken) {
+                                this.fetchAdminDonors();
+                                this.fetchAdminStats();
+                            }
                         } else {
                             alert('Registration failed: ' + result.message);
                         }
@@ -307,6 +315,252 @@
                     } finally {
                         this.feedbackSubmitting = false;
                     }
+                },
+
+                // Admin Panel Combined State & Methods
+                adminOpen: false,
+                adminToken: localStorage.getItem('adminToken') || null,
+                adminAuthenticated: false,
+                adminPhone: '',
+                adminLoading: false,
+                adminError: '',
+                adminStats: [],
+                adminTotalDonors: 0,
+                adminDonors: [],
+                adminHasSearched: false,
+                adminSelectedFile: null,
+                adminPreviewUrl: '',
+                adminUploading: false,
+                adminTempAlert: '',
+                adminFeedbacks: [],
+                adminFilters: { bloodGroup: 'All', address: '', pincode: '', idNumber: '' },
+
+                openAdminPanel() {
+                    this.adminOpen = true;
+                    if (this.adminToken) {
+                        this.adminAuthenticated = true;
+                        this.fetchAdminStats();
+                        this.fetchAdminDonors();
+                        this.fetchAdminFeedbacks();
+                        this.fetchAdminAlert();
+                    }
+                },
+
+                async adminLogin() {
+                    if (!this.adminPhone) return;
+                    this.adminLoading = true;
+                    this.adminError = '';
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phoneNumber: this.adminPhone })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.adminToken = data.token;
+                            localStorage.setItem('adminToken', data.token);
+                            this.adminAuthenticated = true;
+                            this.adminPhone = '';
+                            this.fetchAdminStats();
+                            this.fetchAdminDonors();
+                            this.fetchAdminFeedbacks();
+                            this.fetchAdminAlert();
+                        } else {
+                            this.adminError = data.message || 'Login failed';
+                        }
+                    } catch (err) {
+                        this.adminError = 'Server connection error.';
+                    } finally {
+                        this.adminLoading = false;
+                    }
+                },
+
+                adminLogout() {
+                    this.adminToken = null;
+                    localStorage.removeItem('adminToken');
+                    this.adminAuthenticated = false;
+                    this.adminDonors = [];
+                    this.adminFeedbacks = [];
+                    this.adminHasSearched = false;
+                },
+
+                async fetchAdminStats() {
+                    if (!this.adminToken) return;
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/stats`, {
+                            headers: { 'Authorization': `Bearer ${this.adminToken}` }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.adminStats = data.stats;
+                            this.adminTotalDonors = data.total;
+                        }
+                    } catch (e) {}
+                },
+
+                async fetchAdminDonors() {
+                    if (!this.adminToken) return;
+                    this.adminLoading = true;
+                    try {
+                        const params = new URLSearchParams();
+                        if (this.adminFilters.bloodGroup !== 'All') params.append('bloodGroup', this.adminFilters.bloodGroup);
+                        if (this.adminFilters.address.trim()) params.append('address', this.adminFilters.address);
+                        if (this.adminFilters.pincode.trim()) params.append('pincode', this.adminFilters.pincode);
+                        if (this.adminFilters.idNumber.trim()) params.append('idNumber', this.adminFilters.idNumber);
+
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/donors?${params.toString()}`, {
+                            headers: { 'Authorization': `Bearer ${this.adminToken}` }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.adminDonors = data.donors;
+                            this.adminHasSearched = true;
+                        }
+                    } catch (e) {
+                    } finally {
+                        this.adminLoading = false;
+                    }
+                },
+
+                async verifyDonorAdmin(id) {
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/donors/verify/${id}?token=${this.adminToken}`);
+                        const data = await res.json();
+                        if (data.success) {
+                            this.fetchAdminDonors();
+                        }
+                    } catch (e) {}
+                },
+
+                async deleteDonorAdmin(id) {
+                    if (!confirm('Are you sure you want to delete this donor?')) return;
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/donors/delete/${id}?token=${this.adminToken}`);
+                        const data = await res.json();
+                        if (data.success) {
+                            this.fetchAdminDonors();
+                            this.fetchAdminStats();
+                        }
+                    } catch (e) {}
+                },
+
+                downloadAdminCSV() {
+                    if (!this.adminToken) return;
+                    window.location.href = `${this.apiBase}/api/v1/admin/export?token=${this.adminToken}`;
+                },
+
+                onAdminFileSelected(event) {
+                    const file = event.target.files[0];
+                    if (!file) return;
+                    this.adminSelectedFile = file;
+                    this.adminPreviewUrl = URL.createObjectURL(file);
+                },
+
+                async uploadAdminGalleryImage() {
+                    if (!this.adminSelectedFile) return;
+                    this.adminUploading = true;
+                    try {
+                        const formData = new FormData();
+                        formData.append('image', this.adminSelectedFile);
+
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/upload`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${this.adminToken}` },
+                            body: formData
+                        });
+
+                        const data = await res.json();
+                        if (data.success) {
+                            alert('Image uploaded successfully! Gallery and count updated.');
+                            this.adminSelectedFile = null;
+                            this.adminPreviewUrl = '';
+                            this.fetchGallery();
+                        } else {
+                            alert(data.message || 'Upload failed');
+                        }
+                    } catch (err) {
+                        alert('Error uploading image');
+                    } finally {
+                        this.adminUploading = false;
+                    }
+                },
+
+                async fetchAdminFeedbacks() {
+                    if (!this.adminToken) return;
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/feedbacks`, {
+                            headers: { 'Authorization': `Bearer ${this.adminToken}` }
+                        });
+                        const data = await res.json();
+                        if (data.success) this.adminFeedbacks = data.feedbacks;
+                    } catch (e) {}
+                },
+
+                async toggleApproveFeedbackAdmin(id) {
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/feedbacks/approve/${id}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${this.adminToken}` }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.fetchAdminFeedbacks();
+                            this.fetchFeedbacks();
+                        }
+                    } catch (e) {}
+                },
+
+                async deleteFeedbackAdmin(id) {
+                    if (!confirm('Are you sure you want to delete this review?')) return;
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/feedbacks/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${this.adminToken}` }
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            this.fetchAdminFeedbacks();
+                            this.fetchFeedbacks();
+                        }
+                    } catch (e) {}
+                },
+
+                async saveAdminAlert() {
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/alerts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.adminToken}` },
+                            body: JSON.stringify({ message: this.adminTempAlert, isActive: true })
+                        });
+                        if (res.ok) {
+                            alert('Alert Broadcasted!');
+                            this.fetchAlert();
+                        }
+                    } catch (e) {}
+                },
+
+                async clearAdminAlert() {
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/alerts`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.adminToken}` },
+                            body: JSON.stringify({ message: '', isActive: false })
+                        });
+                        if (res.ok) {
+                            this.adminTempAlert = '';
+                            alert('Alert Turned Off');
+                            this.fetchAlert();
+                        }
+                    } catch (e) {}
+                },
+
+                async fetchAdminAlert() {
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/public/alert`);
+                        const data = await res.json();
+                        if (data.alert) this.adminTempAlert = data.alert.message;
+                    } catch (e) {}
                 }
             }));
         });
@@ -949,6 +1203,10 @@
                 <a href="#" @click.prevent="galleryOpen = true" class="hover:text-red-600 transition-colors">Our
                     Work</a>
                 <a href="#" @click.prevent="reviewOpen = true" class="hover:text-red-600 transition-colors">Review</a>
+                <a href="#" @click.prevent="openAdminPanel()" class="hover:text-red-600 transition-colors flex items-center gap-1 text-red-600 font-black">
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    Admin
+                </a>
             </div>
 
             <!-- Mobile Menu Button: Pushed to the right -->
@@ -1812,6 +2070,260 @@
         </div>
     </div>
 
+
+    <!-- Combined Admin Panel Modal -->
+    <div x-show="adminOpen" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto"
+        x-cloak>
+
+        <div class="glass-3d-card rounded-[2rem] w-full max-w-6xl max-h-[92vh] overflow-y-auto custom-scrollbar relative p-6 md:p-10 my-auto shadow-2xl border border-white/60">
+
+            <!-- Close Button -->
+            <button @click="adminOpen = false"
+                class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <!-- Admin Login Screen (When Not Authenticated) -->
+            <div x-show="!adminAuthenticated" class="max-w-md mx-auto py-12">
+                <div class="text-center mb-8">
+                    <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="h-16 mx-auto mb-4 object-contain">
+                    <h2 class="text-3xl font-black text-gray-900 uppercase tracking-wide">Admin Portal</h2>
+                    <p class="text-gray-500 font-medium text-sm mt-1">Enter registered WhatsApp phone number to access control panel.</p>
+                </div>
+
+                <div x-show="adminError" class="mb-6 p-4 glass-red-card text-red-600 rounded-xl text-sm font-semibold text-center" x-text="adminError"></div>
+
+                <form @submit.prevent="adminLogin()" class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">WhatsApp Phone Number</label>
+                        <input type="text" x-model="adminPhone" required placeholder="e.g. 919948550301"
+                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
+                    </div>
+
+                    <button type="submit" class="w-full py-4 chrome-3d rounded-xl font-black uppercase tracking-widest disabled:opacity-50 mt-4 active:scale-95 text-white" :disabled="adminLoading">
+                        <span x-show="!adminLoading">Login to Dashboard</span>
+                        <span x-show="adminLoading" class="flex items-center justify-center gap-2">
+                            <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                            Authenticating...
+                        </span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Admin Authenticated Dashboard -->
+            <div x-show="adminAuthenticated" class="space-y-8">
+                
+                <!-- Dashboard Top Bar -->
+                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-gray-200/50 pb-4">
+                    <div class="flex items-center gap-4">
+                        <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="h-12 w-auto object-contain">
+                        <div>
+                            <h2 class="text-2xl font-black text-gray-900 uppercase tracking-tight">Admin Dashboard</h2>
+                            <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Live Control Center</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button @click="fetchAdminDonors(); fetchAdminStats();" class="px-4 py-2 bg-white/60 hover:bg-white border border-gray-200 rounded-xl font-bold text-xs text-gray-700 flex items-center gap-2 active:scale-95 transition-all shadow-sm">
+                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Refresh Data
+                        </button>
+                        <button @click="adminLogout()" class="px-5 py-2 chrome-3d rounded-xl font-black uppercase tracking-widest text-xs active:scale-95 text-white">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Gallery Upload Section (Displays Live Image Upload Count) -->
+                <div class="glass-3d-card p-6 md:p-8">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                        <div>
+                            <h3 class="text-xl font-black text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                Image Upload & Gallery Manager
+                            </h3>
+                            <p class="text-xs text-gray-500 font-medium">Upload photos of blood donation camps / work to update home page gallery & donation counter.</p>
+                        </div>
+                        <div class="px-4 py-2 glass-red-card text-red-600 rounded-xl font-black text-sm border border-red-200 shadow-sm flex items-center gap-2">
+                            <span>Image Uploads Count:</span>
+                            <span class="text-lg text-red-700" x-text="galleryImages.length">0</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                        <div>
+                            <input type="file" @change="onAdminFileSelected($event)" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
+                            <p class="text-xs text-gray-400 mt-2">Allowed formats: JPG, PNG, GIF, WEBP (Max 5MB)</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <template x-if="adminPreviewUrl">
+                                <img :src="adminPreviewUrl" class="h-20 w-20 object-cover rounded-xl border border-red-300 shadow-md">
+                            </template>
+                            <button @click="uploadAdminGalleryImage()" :disabled="!adminSelectedFile || adminUploading" class="flex-1 py-3 px-6 chrome-3d rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 disabled:opacity-30 text-white flex items-center justify-center gap-2">
+                                <span x-show="!adminUploading">Upload Photo</span>
+                                <span x-show="adminUploading">Uploading...</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Grid -->
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-10 gap-3 flex-1">
+                        <div class="glass-red-card p-3 text-center border border-white/20 shadow-sm">
+                            <span class="block text-2xl font-black text-red-600" x-text="adminTotalDonors || adminDonors.length">0</span>
+                            <span class="text-[10px] uppercase font-black text-red-600/80">Total Donors</span>
+                        </div>
+                        <div class="glass-3d-card p-3 text-center border border-amber-300/40">
+                            <span class="block text-xl font-black text-amber-600" x-text="galleryImages.length">0</span>
+                            <span class="text-[10px] uppercase font-bold text-gray-500">Image Uploads</span>
+                        </div>
+                        <template x-for="stat in adminStats" :key="stat.group">
+                            <div class="glass-3d-card p-3 text-center">
+                                <span class="block text-lg font-bold text-gray-800" x-text="stat.count">0</span>
+                                <span class="text-[10px] uppercase font-bold text-gray-400" x-text="stat.group"></span>
+                            </div>
+                        </template>
+                    </div>
+                    <button @click="downloadAdminCSV()" class="px-6 py-4 chrome-3d rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 active:scale-95 text-white shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export CSV
+                    </button>
+                </div>
+
+                <!-- Search & Filters -->
+                <div class="glass-3d-card p-6 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Search by ID</label>
+                        <input type="text" x-model="adminFilters.idNumber" placeholder="e.g. 900000001" @keydown.enter="fetchAdminDonors()"
+                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Blood Group</label>
+                        <select x-model="adminFilters.bloodGroup" class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                            <option value="All">All Blood Groups</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Location / Address</label>
+                        <input type="text" x-model="adminFilters.address" placeholder="State, District..." @keydown.enter="fetchAdminDonors()"
+                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Pincode</label>
+                        <input type="text" x-model="adminFilters.pincode" placeholder="e.g. 500001" @keydown.enter="fetchAdminDonors()"
+                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <button @click="fetchAdminDonors()" class="w-full px-6 py-3 chrome-3d font-black text-xs uppercase tracking-widest rounded-xl text-white flex items-center justify-center gap-2 active:scale-95" :disabled="adminLoading">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Search Donors
+                        </button>
+                    </div>
+                </div>
+
+                <!-- All Registered Donors Data Table -->
+                <div class="glass-3d-card overflow-hidden shadow-lg border border-white/60">
+                    <div class="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center bg-white/40">
+                        <div class="flex items-center gap-3">
+                            <h3 class="font-black text-gray-900 uppercase tracking-wider text-sm">All Registered Donors List</h3>
+                            <span class="text-xs font-bold bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-200" x-text="`${adminDonors.length} Registered`"></span>
+                        </div>
+                        <span class="text-xs font-semibold text-gray-500">Live Auto-Sync</span>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[450px] custom-scrollbar">
+                        <table class="w-full text-left whitespace-nowrap">
+                            <thead class="bg-white/40 border-b border-gray-200 text-xs uppercase text-gray-600 font-black tracking-wider sticky top-0 backdrop-blur-md">
+                                <tr>
+                                    <th class="px-6 py-4">Donor ID</th>
+                                    <th class="px-6 py-4">Name</th>
+                                    <th class="px-6 py-4">Gender / Weight</th>
+                                    <th class="px-6 py-4">Blood Group</th>
+                                    <th class="px-6 py-4">Phone</th>
+                                    <th class="px-6 py-4">Address</th>
+                                    <th class="px-6 py-4">Registration Date</th>
+                                    <th class="px-6 py-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200/50 text-sm bg-white/20">
+                                <template x-for="donor in adminDonors" :key="donor.id">
+                                    <tr class="hover:bg-red-50/50 transition-colors">
+                                        <td class="px-6 py-4 font-mono font-bold text-gray-600" x-text="'9' + String(donor.id).padStart(9, '0')"></td>
+                                        <td class="px-6 py-4 font-bold text-gray-900" x-text="donor.fullName"></td>
+                                        <td class="px-6 py-4 text-gray-700 font-medium">
+                                            <span x-text="donor.gender"></span>
+                                            <span x-show="donor.weight" class="ml-1 text-xs font-bold text-red-600" x-text="`(${donor.weight}kg)`"></span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="px-3 py-1 rounded-full text-xs font-black" 
+                                                  :class="donor.bloodGroup.includes('-') ? 'bg-gray-200 text-gray-800' : 'bg-red-100 text-red-700'"
+                                                  x-text="donor.bloodGroup">
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-800 font-bold" x-text="donor.phoneNumber"></td>
+                                        <td class="px-6 py-4 text-gray-700 text-xs">
+                                            <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span>
+                                        </td>
+                                        <td class="px-6 py-4 text-xs font-semibold text-gray-500" x-text="new Date(donor.registeredAt || donor.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })"></td>
+                                        <td class="px-6 py-4 text-right space-x-2">
+                                            <button @click="verifyDonorAdmin(donor.id)" 
+                                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border"
+                                                    :class="donor.isVerified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-600 hover:bg-green-50 border-gray-300'">
+                                                <span x-text="donor.isVerified ? '✓ Verified' : 'Verify'"></span>
+                                            </button>
+                                            <button @click="deleteDonorAdmin(donor.id)" class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </template>
+
+                                <template x-if="adminDonors.length === 0 && !adminLoading">
+                                    <tr>
+                                        <td colspan="8" class="text-center py-12 text-gray-400 font-bold uppercase tracking-wider text-xs">
+                                            No registered donors found in database
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Emergency Alert Broadcast Section -->
+                <div class="glass-3d-card p-6">
+                    <h3 class="text-lg font-black text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                        Broadcast Emergency Marquee Alert
+                    </h3>
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <input type="text" x-model="adminTempAlert" placeholder="e.g. URGENT: O- negative blood needed at City Hospital..."
+                            class="flex-1 px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        <button @click="saveAdminAlert()" class="px-6 py-3 chrome-3d font-black text-xs uppercase tracking-widest text-white rounded-xl active:scale-95">
+                            Broadcast
+                        </button>
+                        <button @click="clearAdminAlert()" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 font-bold text-xs uppercase tracking-widest text-gray-700 rounded-xl active:scale-95">
+                            Turn Off
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Success Sound -->
     <audio id="successSound" src="assets/denoise_video_20260406_145944_edit.mp3.mpeg" preload="auto"></audio>
