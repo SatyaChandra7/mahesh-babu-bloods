@@ -500,7 +500,8 @@
                 isUploading: false,
                 feedbacks: [],
                 get apiBase() {
-                    return '';
+                    const url = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL') || '';
+                    return url.replace(/\/+$/, '');
                 },
 
                 init() {

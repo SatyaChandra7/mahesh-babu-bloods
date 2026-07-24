@@ -19,11 +19,26 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
 
+let pgDriver = null;
+let sqlite3Driver = null;
+
+try { pgDriver = require('pg'); } catch (e) {}
+try { require('pg-hstore'); } catch (e) {}
+try { sqlite3Driver = require('sqlite3'); } catch (e) {}
+
 const app = express();
 app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5000;
 const SHEET_NAME = process.env.GOOGLE_SHEET_NAME || 'Sheet1';
 const GALLERY_PATH = process.env.GALLERY_FOLDER || 'our work';
+
+// Normalize Vercel Serverless Function rewrites (e.g. /api/index.js/v1/... -> /api/v1/...)
+app.use((req, res, next) => {
+    if (req.url && req.url.startsWith('/api/index.js')) {
+        req.url = req.url.replace('/api/index.js', '/api') || '/';
+    }
+    next();
+});
 
 // Middleware
 app.use(helmet({ 
@@ -38,9 +53,33 @@ const generalLimiter = rateLimit({
 });
 app.use(generalLimiter);
 
+// Dynamic CORS Configuration
+const allowedOrigins = process.env.CORS_ORIGIN 
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()).filter(Boolean)
+    : [];
+
 app.use(cors({ 
-    origin: process.env.CORS_ORIGIN || '*',
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+        if (!origin) return callback(null, true);
+        
+        // If CORS_ORIGIN is '*' or empty/unspecified, allow all requesting origins dynamically
+        if (allowedOrigins.length === 0 || allowedOrigins.includes('*')) {
+            return callback(null, origin);
+        }
+        
+        // Check allowed origins, vercel domains, or localhost
+        const isAllowed = allowedOrigins.includes(origin) || 
+                          /^https:\/\/.*\.vercel\.app$/.test(origin) || 
+                          /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+
+        if (isAllowed) {
+            return callback(null, origin);
+        }
+        return callback(null, origin);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true
 }));
 app.use(express.json());
@@ -60,27 +99,50 @@ app.use(async (req, res, next) => {
 // SQL Database Initialization (Sequelize + SQLite or Postgres)
 let sequelize;
 
-if (process.env.DATABASE_URL) {
-    console.log('Using PostgreSQL database connection');
-    sequelize = new Sequelize(process.env.DATABASE_URL, {
-        dialect: 'postgres',
-        dialectOptions: {
-            ssl: { require: true, rejectUnauthorized: false }
-        },
-        logging: false
-    });
-} else {
-    console.log('Using local SQLite database connection');
+function initSequelize() {
+    if (process.env.DATABASE_URL) {
+        console.log('Using PostgreSQL database connection');
+        try {
+            const options = {
+                dialect: 'postgres',
+                dialectOptions: {
+                    ssl: { require: true, rejectUnauthorized: false }
+                },
+                logging: false
+            };
+            if (pgDriver) options.dialectModule = pgDriver;
+            return new Sequelize(process.env.DATABASE_URL, options);
+        } catch (err) {
+            console.error('Postgres Sequelize Initialization Error:', err.message);
+        }
+    }
+
+    console.log('Using SQLite database connection');
     const dbPath = process.env.NODE_ENV === 'production' 
         ? path.join('/tmp', 'database.sqlite') 
         : path.join(__dirname, 'database.sqlite');
 
-    sequelize = new Sequelize({
+    const sqliteOptions = {
         dialect: 'sqlite',
         storage: dbPath,
         logging: false
-    });
+    };
+    if (sqlite3Driver) sqliteOptions.dialectModule = sqlite3Driver;
+
+    try {
+        return new Sequelize(sqliteOptions);
+    } catch (err) {
+        console.error('SQLite Sequelize Initialization Error:', err.message);
+        try {
+            return new Sequelize('sqlite::memory:', { logging: false });
+        } catch (e2) {
+            console.error('Fallback Sequelize Initialization Error:', e2.message);
+            return null;
+        }
+    }
 }
+
+sequelize = initSequelize();
 
 // Donor Model
 const Donor = sequelize.define('Donor', {
@@ -293,13 +355,7 @@ async function appendDonorToGoogleSheet(donor) {
     }
 }
 
-// Ensure initialization happens for every request if not ready
-app.use(async (req, res, next) => {
-    if (!isInitialized) {
-        await initializeApp();
-    }
-    next();
-});
+
 
 // Storage for "Our Work" Gallery
 const UPLOAD_DIR = path.join(process.env.NODE_ENV === 'production' ? '/tmp' : path.join(__dirname, '..', 'frontend'), 'assets', GALLERY_PATH);
@@ -349,7 +405,7 @@ const verifyAdmin = (req, res, next) => {
 const sharedState = { currentAlert: null };
 
 // API Endpoints
-app.get('/health', (req, res) => res.json({
+app.get(['/health', '/api/health'], (req, res) => res.json({
     status: 'ok',
     initialized: isInitialized,
     database: process.env.DATABASE_URL ? 'postgresql' : 'sqlite',
@@ -373,7 +429,7 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             village: address?.village || '',
             pincode: address?.pincode || ''
         });
-        await appendDonorToGoogleSheet(newDonor);
+        appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
         res.status(201).json({ success: true, donor: newDonor });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -391,7 +447,20 @@ app.get('/api/v1/donations/count', async (req, res) => {
 
 app.get('/api/v1/public/gallery', (req, res) => {
     try {
-        let files = fs.readdirSync(UPLOAD_DIR).filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
+        let repoDir = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH);
+        let tmpDir = UPLOAD_DIR;
+        let filesSet = new Set();
+        if (fs.existsSync(repoDir)) {
+            try {
+                fs.readdirSync(repoDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
+            } catch (e) {}
+        }
+        if (fs.existsSync(tmpDir) && tmpDir !== repoDir) {
+            try {
+                fs.readdirSync(tmpDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
+            } catch (e) {}
+        }
+        let files = Array.from(filesSet);
         
         // Separate admin uploads (timestamp prefix) from manual files
         const isAdminUpload = (f) => /^\d{13,}-/.test(f);

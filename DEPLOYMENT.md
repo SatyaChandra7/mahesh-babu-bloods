@@ -43,13 +43,76 @@ npx vercel --prod
 ### Serverless Execution Note
 The backend includes a serverless auto-initialization middleware in `backend/index.js` that automatically initializes the PostgreSQL database connection and Google Sheets API on incoming API requests when deployed to Vercel.
 
-## 3. Google Sheets Access
+## 3. Render & Vercel Cross-Domain Setup
+
+### Step 1: Set Up CORS on Your Backend (Render)
+Because your frontend (Vercel) and backend (Render) are hosted on different domains, CORS is enabled in `backend/index.js` using the `cors` package:
+
+```javascript
+const express = require('express');
+const cors = require('cors');
+const app = express();
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : '*',
+  credentials: true
+}));
+```
+
+On your **Render Dashboard**:
+1. Go to your Web Service $\rightarrow$ **Environment Variables**.
+2. Add/Edit `CORS_ORIGIN`: `https://your-frontend-app.vercel.app,http://localhost:5173` *(replace with your exact Vercel frontend URL)*.
+3. Save and redeploy.
+
+---
+
+### Step 2: Set Your Backend URL in the Frontend (Vercel)
+To point your frontend to your backend running on Render:
+1. Copy your Render backend URL (e.g. `https://your-backend-service.onrender.com`).
+2. Go to **Vercel Dashboard** $\rightarrow$ Select Frontend Project $\rightarrow$ **Settings** $\rightarrow$ **Environment Variables**.
+3. Add a new variable:
+   * **Key**: `VITE_API_BASE_URL` (or `API_BASE_URL`)
+   * **Value**: `https://your-backend-service.onrender.com`
+4. Click **Save** and **Redeploy** on Vercel.
+
+---
+
+### Step 3: API Calls in Frontend Code
+Frontend components automatically read the configured URL via dynamic resolution:
+```javascript
+get apiBase() {
+    const url = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL') || '';
+    return url.replace(/\/+$/, '');
+}
+```
+
+---
+
+### Step 4: Handle Render Free-Tier Cold Starts
+Render's free tier puts web services to sleep after 15 minutes of inactivity. Initial requests after a sleep period take 30–50 seconds.
+
+* **Frontend UI Indicator**: A top notification banner automatically displays `⚡ Connecting to backend server...` if initial responses take more than 2.5 seconds.
+* **Keep-Alive Ping (UptimeRobot)**:
+  1. Sign up for a free account at [UptimeRobot](https://uptimerobot.com/).
+  2. Add a new monitor:
+     * **Monitor Type**: HTTP(s)
+     * **Friendly Name**: `MB Bloods Render Backend`
+     * **URL/IP**: `https://your-backend-service.onrender.com/health`
+     * **Monitoring Interval**: Every 10–14 minutes.
+  3. Save. This pings `/health` regularly to keep your Render instance awake during active hours.
+
+---
+
+## 4. Google Sheets Access
 
 1. Ensure your Google Sheet is shared with the **Client Email** in your `service-account.json`.
 2. Give the email **Editor** permissions.
 
-## 4. Local Development
+---
+
+## 5. Local Development
 
 * The application will automatically create a `database.sqlite` file in the root directory.
 * Run `npm install` and `npm run dev` to begin.
 * The backend will attempt to sync your current Google Sheet data into the database on the first run.
+
