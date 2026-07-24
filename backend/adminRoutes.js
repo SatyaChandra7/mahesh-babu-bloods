@@ -3,7 +3,33 @@ const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
 
 module.exports = function(app, deps) {
-    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState, syncSheetsToSQL } = deps;
+    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState, syncSheetsToSQL, loadDonorsFromJSON } = deps;
+
+    async function getAllMergedDonors() {
+        let sqlResults = [];
+        try {
+            sqlResults = await Donor.findAll({ order: [['registeredAt', 'DESC']] });
+        } catch (e) {
+            console.error('SQL query error:', e.message);
+        }
+        let jsonDonors = [];
+        if (typeof loadDonorsFromJSON === 'function') {
+            jsonDonors = loadDonorsFromJSON();
+        }
+        const donorMap = new Map();
+        sqlResults.forEach(d => {
+            const item = d.toJSON ? d.toJSON() : d;
+            const key = `${item.phoneNumber}_${item.fullName}`;
+            donorMap.set(key, item);
+        });
+        jsonDonors.forEach(item => {
+            const key = `${item.phoneNumber}_${item.fullName}`;
+            if (!donorMap.has(key)) {
+                donorMap.set(key, item);
+            }
+        });
+        return Array.from(donorMap.values());
+    }
 
     // Verification Middleware
     const verifyAdmin = (req, res, next) => {
@@ -25,8 +51,8 @@ module.exports = function(app, deps) {
 
     const loginLimiter = rateLimit({
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 10, // Limit each IP to 10 login requests per windowMs
-        message: { success: false, message: 'Too many login attempts from this IP, please try again after 15 minutes' }
+        max: 30, // Limit each IP to 30 login requests per windowMs
+        message: { success: false, message: 'Too many login attempts. Please try again later.' }
     });
 
     app.post('/api/v1/admin/send-otp', loginLimiter, (req, res) => {
@@ -80,10 +106,13 @@ module.exports = function(app, deps) {
             if (typeof syncSheetsToSQL === 'function') {
                 await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
             }
+            const allDonors = await getAllMergedDonors();
             const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-            const stats = await Promise.all(groups.map(async (g) => ({ group: g, count: await Donor.count({ where: { bloodGroup: g } }).catch(() => 0) })));
-            const total = await Donor.count().catch(() => 0);
-            res.json({ success: true, stats, total });
+            const stats = groups.map(g => ({
+                group: g,
+                count: allDonors.filter(d => String(d.bloodGroup).trim().toUpperCase() === g).length
+            }));
+            res.json({ success: true, stats, total: allDonors.length });
         } catch (err) {
             res.json({ success: true, stats: [], total: 0 });
         }
@@ -95,32 +124,34 @@ module.exports = function(app, deps) {
                 await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
             }
             const { bloodGroup, address, pincode, idNumber } = req.query;
-            let where = {};
+            let allDonors = await getAllMergedDonors();
+
             if (idNumber) {
                 let parsedId = parseInt(idNumber, 10);
                 if (idNumber.startsWith('9') && idNumber.length > 1) {
                     parsedId = parseInt(idNumber.substring(1), 10);
                 }
-                if (!isNaN(parsedId)) {
-                    where.id = parsedId;
-                }
+                allDonors = allDonors.filter(d => String(d.id) === String(parsedId) || String(d.id) === idNumber);
             }
-            if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup;
-            if (address) {
-                where[Op.or] = [
-                    { state: { [Op.like]: `%${address}%` } },
-                    { district: { [Op.like]: `%${address}%` } },
-                    { mandal: { [Op.like]: `%${address}%` } },
-                    { village: { [Op.like]: `%${address}%` } }
-                ];
+            if (bloodGroup && bloodGroup !== 'All') {
+                allDonors = allDonors.filter(d => String(d.bloodGroup).trim().toUpperCase() === bloodGroup.trim().toUpperCase());
             }
-            if (pincode) {
-                where.pincode = { [Op.like]: `%${pincode}%` };
+            if (address && address.trim()) {
+                const addrLower = address.trim().toLowerCase();
+                allDonors = allDonors.filter(d => 
+                    (d.state && d.state.toLowerCase().includes(addrLower)) ||
+                    (d.district && d.district.toLowerCase().includes(addrLower)) ||
+                    (d.mandal && d.mandal.toLowerCase().includes(addrLower)) ||
+                    (d.village && d.village.toLowerCase().includes(addrLower))
+                );
             }
-            const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
-            res.json({ success: true, donors: results });
+            if (pincode && pincode.trim()) {
+                allDonors = allDonors.filter(d => d.pincode && String(d.pincode).includes(pincode.trim()));
+            }
+
+            res.json({ success: true, donors: allDonors });
         } catch (err) {
-            console.error('Fetch donors SQL error, falling back:', err.message);
+            console.error('Fetch donors error:', err.message);
             res.json({ success: true, donors: [] });
         }
     });

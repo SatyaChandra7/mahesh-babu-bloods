@@ -109,7 +109,56 @@ app.use(async (req, res, next) => {
 // SQL Database Initialization (Sequelize + SQLite or Postgres)
 let sequelize;
 
-const fallbackDonorsStore = [];
+const JSON_DB_FILE = process.env.VERCEL || process.env.NODE_ENV === 'production'
+    ? path.join('/tmp', 'donors_persistent.json')
+    : path.join(__dirname, 'donors.json');
+
+function loadDonorsFromJSON() {
+    try {
+        if (fs.existsSync(JSON_DB_FILE)) {
+            const raw = fs.readFileSync(JSON_DB_FILE, 'utf-8');
+            const data = JSON.parse(raw);
+            if (Array.isArray(data)) return data;
+        }
+    } catch (e) {
+        console.error('Error loading JSON DB:', e.message);
+    }
+    return [];
+}
+
+function saveDonorToJSON(donor) {
+    try {
+        const existing = loadDonorsFromJSON();
+        const foundIndex = existing.findIndex(d => String(d.phoneNumber) === String(donor.phoneNumber) && String(d.fullName) === String(donor.fullName));
+        const donorData = {
+            id: donor.id || Date.now(),
+            fullName: donor.fullName,
+            dateOfBirth: donor.dateOfBirth,
+            gender: donor.gender,
+            weight: donor.weight,
+            phoneNumber: donor.phoneNumber,
+            bloodGroup: donor.bloodGroup,
+            state: donor.state || '',
+            district: donor.district || '',
+            mandal: donor.mandal || '',
+            village: donor.village || '',
+            pincode: donor.pincode || '',
+            registeredAt: donor.registeredAt || new Date(),
+            isVerified: donor.isVerified || false
+        };
+        if (foundIndex !== -1) {
+            existing[foundIndex] = { ...existing[foundIndex], ...donorData };
+        } else {
+            existing.unshift(donorData);
+        }
+        fs.writeFileSync(JSON_DB_FILE, JSON.stringify(existing, null, 2));
+    } catch (e) {
+        console.error('Error saving to JSON DB:', e.message);
+    }
+}
+
+const fallbackDonorsStore = loadDonorsFromJSON();
+
 function createFallbackSequelize() {
     return {
         authenticate: async () => console.warn('Database connection unavailable (using fallback mode)'),
@@ -121,21 +170,24 @@ function createFallbackSequelize() {
                 if (existing) return [existing, false];
                 const newObj = { ...options?.defaults, id: Date.now() };
                 fallbackDonorsStore.unshift(newObj);
+                saveDonorToJSON(newObj);
                 return [newObj, true];
             },
             create: async (data) => {
                 const newObj = { ...data, id: Date.now(), registeredAt: new Date() };
                 fallbackDonorsStore.unshift(newObj);
+                saveDonorToJSON(newObj);
                 return newObj;
             },
-            findAll: async () => fallbackDonorsStore,
-            findOne: async () => fallbackDonorsStore[0] || null,
-            findByPk: async (id) => fallbackDonorsStore.find(d => String(d.id) === String(id)) || null,
-            count: async () => fallbackDonorsStore.length,
+            findAll: async () => loadDonorsFromJSON(),
+            findOne: async () => loadDonorsFromJSON()[0] || null,
+            findByPk: async (id) => loadDonorsFromJSON().find(d => String(d.id) === String(id)) || null,
+            count: async () => loadDonorsFromJSON().length,
             destroy: async (options) => {
                 if (options?.where?.id) {
                     const idx = fallbackDonorsStore.findIndex(d => String(d.id) === String(options.where.id));
                     if (idx !== -1) fallbackDonorsStore.splice(idx, 1);
+                    try { fs.writeFileSync(JSON_DB_FILE, JSON.stringify(fallbackDonorsStore, null, 2)); } catch (e) {}
                 }
                 return 1;
             },
@@ -330,21 +382,27 @@ async function syncSheetsToSQL() {
                 const name = String(row[0]).trim();
                 if (!phone || !name) continue;
 
+                const donorObj = {
+                    fullName: name,
+                    dateOfBirth: row[1] || null,
+                    gender: row[2] || 'Not specified',
+                    weight: row[10] || '',
+                    phoneNumber: phone,
+                    bloodGroup: row[4] || 'O+',
+                    state: row[5] || '',
+                    district: row[6] || '',
+                    mandal: row[7] || '',
+                    village: row[8] || '',
+                    pincode: row[11] || '',
+                    registeredAt: row[9] ? new Date(row[9]) : new Date(),
+                    isVerified: false
+                };
+
+                saveDonorToJSON(donorObj);
+
                 await Donor.findOrCreate({
                     where: { phoneNumber: phone, fullName: name },
-                    defaults: {
-                        dateOfBirth: row[1] || null,
-                        gender: row[2] || 'Not specified',
-                        weight: row[10] || '',
-                        bloodGroup: row[4] || 'O+',
-                        state: row[5] || '',
-                        district: row[6] || '',
-                        mandal: row[7] || '',
-                        village: row[8] || '',
-                        pincode: row[11] || '',
-                        registeredAt: row[9] ? new Date(row[9]) : new Date(),
-                        isVerified: false
-                    }
+                    defaults: donorObj
                 }).catch(e => console.error('findOrCreate row error:', e.message));
             }
             console.log(`✅ Synced ${rows.length} records.`);
@@ -512,6 +570,7 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             };
             fallbackDonorsStore.unshift(newDonor);
         }
+        saveDonorToJSON(newDonor);
         await appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
         res.status(201).json({ success: true, donor: newDonor });
     } catch (err) {
@@ -573,7 +632,8 @@ require('./adminRoutes')(app, {
     Donor,
     Feedback,
     sharedState,
-    syncSheetsToSQL
+    syncSheetsToSQL,
+    loadDonorsFromJSON
 });
 
 const feedbackLimiter = rateLimit({
