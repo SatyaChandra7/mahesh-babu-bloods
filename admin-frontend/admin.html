@@ -564,7 +564,10 @@
             Alpine.data('adminApp', () => ({
                 isAuthenticated: false,
                 token: null,
-                apiBase: '',
+                get apiBase() {
+                    const url = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL') || '';
+                    return url.replace(/\/+$/, '');
+                },
                 isLoading: false,
                 loginError: '',
                 credentials: { phoneNumber: '' },
@@ -651,7 +654,7 @@
                         }
                     } catch (err) {
                         this.loginError = 'Server connection error.';
-                    } font-bold {
+                    } finally {
                         this.isLoading = false;
                     }
                 },
@@ -758,7 +761,7 @@
 
                 downloadCSV() {
                     if (!this.isAuthenticated) return;
-                    window.location.href = `/api/v1/admin/export?token=${this.token}`;
+                    window.location.href = `${this.apiBase}/api/v1/admin/export?token=${this.token}`;
                 },
 
                 async fetchFeedbacks() {
