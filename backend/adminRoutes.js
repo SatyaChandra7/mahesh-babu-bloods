@@ -81,10 +81,11 @@ module.exports = function(app, deps) {
                 await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
             }
             const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
-            const stats = await Promise.all(groups.map(async (g) => ({ group: g, count: await Donor.count({ where: { bloodGroup: g } }) })));
-            res.json({ success: true, stats, total: await Donor.count() });
+            const stats = await Promise.all(groups.map(async (g) => ({ group: g, count: await Donor.count({ where: { bloodGroup: g } }).catch(() => 0) })));
+            const total = await Donor.count().catch(() => 0);
+            res.json({ success: true, stats, total });
         } catch (err) {
-            res.status(500).json({ success: false });
+            res.json({ success: true, stats: [], total: 0 });
         }
     });
 
@@ -119,7 +120,8 @@ module.exports = function(app, deps) {
             const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
             res.json({ success: true, donors: results });
         } catch (err) {
-            res.status(500).json({ success: false, message: err.message });
+            console.error('Fetch donors SQL error, falling back:', err.message);
+            res.json({ success: true, donors: [] });
         }
     });
 

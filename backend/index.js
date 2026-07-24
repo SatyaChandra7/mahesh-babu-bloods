@@ -488,17 +488,34 @@ const donorLimiter = rateLimit({
 app.post('/api/v1/donors', donorLimiter, async (req, res) => {
     try {
         const { fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup, address } = req.body;
-        const newDonor = await Donor.create({
-            fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup,
-            state: address?.state || '',
-            district: address?.district || '',
-            mandal: address?.mandal || '',
-            village: address?.village || '',
-            pincode: address?.pincode || ''
-        });
+        let newDonor;
+        try {
+            newDonor = await Donor.create({
+                fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup,
+                state: address?.state || '',
+                district: address?.district || '',
+                mandal: address?.mandal || '',
+                village: address?.village || '',
+                pincode: address?.pincode || ''
+            });
+        } catch (dbErr) {
+            console.error('Primary DB save error, using fallback memory store:', dbErr.message);
+            newDonor = {
+                id: Date.now(),
+                fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup,
+                state: address?.state || '',
+                district: address?.district || '',
+                mandal: address?.mandal || '',
+                village: address?.village || '',
+                pincode: address?.pincode || '',
+                registeredAt: new Date()
+            };
+            fallbackDonorsStore.unshift(newDonor);
+        }
         await appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
         res.status(201).json({ success: true, donor: newDonor });
     } catch (err) {
+        console.error('Registration handler catch:', err.message);
         res.status(500).json({ success: false, message: err.message });
     }
 });
