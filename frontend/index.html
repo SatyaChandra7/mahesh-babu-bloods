@@ -7,7 +7,7 @@
     <title>Mahesh Babu Bloods | Donate Blood, Save Life</title>
     <meta name="description"
         content="A premium blood donation platform for Mahesh Babu Bloods foundation. Donate blood, save lives, and impact humanity.">
-    <link rel="icon" href="assets/mbbbb.png" type="image/png">
+    <link rel="icon" href="assets/new%20logo%20upscaled.png" type="image/png">
     <!-- Tailwind CSS v4 Browser Script -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <!-- Alpine.js -->
@@ -1185,32 +1185,32 @@
     </style>
 
     <!-- Floating Glass Navbar -->
-    <div class="sticky top-0 z-50 px-4 py-3 md:px-8">
+    <div class="sticky top-0 z-50 px-4 py-3 md:px-10 w-full">
         <nav
-            class="glass-3d-card px-6 md:px-8 py-3 flex items-center justify-between shadow-lg border border-white/50 backdrop-blur-xl">
-            <!-- Logo Container: Centered on mobile, left-aligned on desktop -->
-            <div class="flex items-center md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0">
+            class="glass-3d-card px-6 md:px-10 py-3 flex items-center justify-between shadow-lg border border-white/50 backdrop-blur-xl rounded-full w-full relative">
+            <!-- Logo Container: Centered on small screens, Left-aligned on laptop/desktop -->
+            <div class="flex items-center absolute left-1/2 -translate-x-1/2 md:static md:left-auto md:translate-x-0">
                 <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
-                    class="h-20 sm:h-28 md:h-36 lg:h-44 w-auto object-contain transition-all duration-300 drop-shadow-md -my-2 md:-my-4">
+                    class="h-8 sm:h-10 md:h-12 lg:h-14 w-auto object-contain transition-all duration-300 drop-shadow-md">
             </div>
 
-            <div class="hidden md:flex items-center gap-8 text-sm font-bold text-black uppercase tracking-wide">
+            <!-- Navigation Buttons: Right-aligned on laptop/desktop -->
+            <div class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-bold text-black uppercase tracking-wide ml-auto">
                 <a href="index.html" class="hover:text-red-600 transition-colors">Home</a>
                 <a href="#about" class="hover:text-red-600 transition-colors">About</a>
                 <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
                 <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation."
                     target="_blank" class="hover:text-red-600 transition-colors">Request</a>
-                <a href="#" @click.prevent="galleryOpen = true" class="hover:text-red-600 transition-colors">Our
-                    Work</a>
+                <a href="#" @click.prevent="galleryOpen = true" class="hover:text-red-600 transition-colors">Our Work</a>
                 <a href="#" @click.prevent="reviewOpen = true" class="hover:text-red-600 transition-colors">Review</a>
-                <a href="#" @click.prevent="openAdminPanel()" class="hover:text-red-600 transition-colors flex items-center gap-1 text-red-600 font-black">
+                <a href="#" @click.prevent="openAdminPanel()" class="hover:text-red-600 transition-colors flex items-center gap-1.5 text-red-600 font-black">
                     <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                     Admin
                 </a>
             </div>
 
             <!-- Mobile Menu Button: Pushed to the right -->
-            <div class="md:hidden ml-auto">
+            <div class="md:hidden ml-auto z-10">
                 <button @click="mobileMenuOpen = !mobileMenuOpen"
                     class="p-2 text-black hover:text-red-600 transition-colors">
                     <svg x-show="!mobileMenuOpen" class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1226,26 +1226,25 @@
                 </button>
             </div>
 
-            <!-- Mobile Menu Overlay -->
             <div x-show="mobileMenuOpen" x-transition:enter="transition ease-out duration-200"
                 x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
                 x-transition:leave="transition ease-in duration-150"
                 x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4"
-                class="absolute top-full left-0 right-0 glass-3d-card border border-white/30 shadow-2xl overflow-hidden z-40 md:hidden mt-2"
-                style="backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; background: rgba(255, 255, 255, 0.75) !important;"
+                class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden z-40 md:hidden mt-2"
+                style="background: #ffffff !important;"
                 @click.away="mobileMenuOpen = false" x-cloak>
-                <div class="flex flex-col p-6 gap-4 text-center font-bold text-black uppercase tracking-widest text-sm">
+                <div class="flex flex-col p-6 gap-2 text-center font-bold text-black uppercase tracking-widest text-sm">
                     <a href="index.html" @click="mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Home</a>
+                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Home</a>
                     <a href="#about" @click="mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">About</a>
+                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">About</a>
                     <a href="#" @click.prevent="donateOpen = true; mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Donate</a>
+                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Donate</a>
                     <a href="https://wa.me/918758754005?text=I_need_blood_request" target="_blank"
                         @click="mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Request</a>
+                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Request</a>
                     <a href="#" @click.prevent="galleryOpen = true; mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-white/10 transition-colors">Our Work</a>
+                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Our Work</a>
                     <a href="#" @click.prevent="reviewOpen = true; mobileMenuOpen = false"
                         class="py-3 hover:text-red-600 transition-colors">Review</a>
                 </div>
@@ -1457,7 +1456,7 @@
         <div class="container mx-auto px-6 flex flex-col items-center pt-20 pb-16">
             <div class="flex flex-col md:flex-row items-center gap-12 mb-12">
                 <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
-                    class="h-48 md:h-64 lg:h-72 w-auto drop-shadow-xl hover-scale transition-transform">
+                    class="h-20 sm:h-28 md:h-36 lg:h-40 w-auto drop-shadow-xl hover-scale transition-transform">
 
                 <!-- Square Total Container -->
                 <div
