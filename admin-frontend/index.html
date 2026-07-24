@@ -168,7 +168,7 @@
     <div class="px-4 py-3 md:px-8 relative z-50">
         <header class="glass-3d-card px-6 py-4 flex justify-between items-center shadow-lg border border-white/50 backdrop-blur-xl">
             <div class="flex items-center gap-4">
-                <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="h-10 md:h-16 w-auto object-contain">
+                <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-10 md:h-16 w-auto object-contain">
                 <h1 class="text-xl md:text-2xl font-black text-red-600 tracking-wider uppercase hidden sm:inline">Admin</h1>
             </div>
             <button x-show="isAuthenticated" @click="logout()" class="px-6 py-2 chrome-3d rounded-lg font-black uppercase tracking-widest text-xs active:scale-95">
@@ -202,25 +202,6 @@
         <!-- Dashboard Screen -->
         <div x-show="isAuthenticated" class="space-y-6" x-cloak>
             
-            <!-- Emergency Alert Management -->
-            <div class="glass-red-card p-6 flex flex-col md:flex-row gap-4 items-center animate-pulse-subtle">
-                <div class="flex-1 w-full">
-                    <label class="text-[10px] font-black uppercase text-red-400 tracking-widest mb-1 block">Emergency Broadcast Message</label>
-                    <input type="text" x-model="tempAlert" placeholder="e.g. URGENT: O- Blood needed at Apollo Hospital, Hyderabad! Call 9876543210" 
-                           class="w-full bg-white/40 border border-white/50 px-6 py-3 rounded-xl font-bold text-red-600 focus:ring-2 focus:ring-red-500 outline-none shadow-inner">
-                </div>
-                <div class="flex gap-2">
-                    <button @click="saveAlert()" 
-                            class="px-8 py-4 chrome-3d rounded-xl font-black text-xs uppercase tracking-widest active:scale-95">
-                        Update Alert
-                    </button>
-                    <button @click="clearAlert()" 
-                            class="px-6 py-4 chrome-3d rounded-xl font-black text-xs uppercase tracking-widest active:scale-95">
-                        Turn Off
-                    </button>
-                </div>
-            </div>
-
             <!-- Image Upload for Gallery -->
             <div class="glass-3d-card p-6 space-y-4">
                 <div class="flex items-center justify-between border-b border-white/10 pb-4">

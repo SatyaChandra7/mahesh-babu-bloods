@@ -1125,7 +1125,7 @@
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="intro-overlay" x-cloak>
         <div class="intro-logo-container">
             <div class="intro-logo-glow"></div>
-            <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="intro-logo">
+            <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="intro-logo">
             <div class="intro-shine"></div>
         </div>
     </div>
@@ -1190,7 +1190,7 @@
             class="glass-3d-card px-6 md:px-8 py-3 flex items-center justify-between shadow-lg border border-white/50 backdrop-blur-xl">
             <!-- Logo Container: Centered on mobile, left-aligned on desktop -->
             <div class="flex items-center md:static absolute left-1/2 -translate-x-1/2 md:translate-x-0">
-                <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo"
+                <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
                     class="h-10 md:h-16 w-auto object-contain">
             </div>
 
@@ -1300,7 +1300,7 @@
             <div class="w-full md:w-fit flex flex-col items-center gap-12">
                 <!-- Organization Note Highlighted -->
                 <div
-                    class="relative z-10 w-full max-w-none md:max-w-fit glass-red-card border-l-[6px] border-l-red-600 border border-white/20 px-8 py-4 md:py-8 rounded-r-[2.5rem] shadow-[0_15px_30px_-5px_rgba(211,47,47,0.1)] transition-transform hover:scale-[1.03] duration-500">
+                    class="relative z-10 w-full max-w-none md:max-w-fit bg-white border-l-[6px] border-l-red-600 border border-gray-100 px-8 py-4 md:py-8 rounded-r-[2.5rem] shadow-[0_15px_30px_-5px_rgba(0,0,0,0.08)] transition-transform hover:scale-[1.03] duration-500">
                     <p
                         class="text-[10px] sm:text-xs md:text-2xl font-black text-red-950 uppercase tracking-[0.1em] sm:tracking-[0.25em] whitespace-normal md:whitespace-nowrap text-center">
                         A non profit organization founded by proud fan.
@@ -1456,7 +1456,7 @@
         <!-- Top Section with Button -->
         <div class="container mx-auto px-6 flex flex-col items-center pt-20 pb-16">
             <div class="flex flex-col md:flex-row items-center gap-12 mb-12">
-                <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo"
+                <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
                     class="h-32 md:h-48 w-auto drop-shadow-xl hover-scale transition-transform">
 
                 <!-- Square Total Container -->
@@ -2092,7 +2092,7 @@
             <!-- Admin Login Screen (When Not Authenticated) -->
             <div x-show="!adminAuthenticated" class="max-w-md mx-auto py-12">
                 <div class="text-center mb-8">
-                    <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="h-16 mx-auto mb-4 object-contain">
+                    <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-16 mx-auto mb-4 object-contain">
                     <h2 class="text-3xl font-black text-gray-900 uppercase tracking-wide">Admin Portal</h2>
                     <p class="text-gray-500 font-medium text-sm mt-1">Enter registered WhatsApp phone number to access control panel.</p>
                 </div>
@@ -2122,7 +2122,7 @@
                 <!-- Dashboard Top Bar -->
                 <div class="flex flex-wrap justify-between items-center gap-4 border-b border-gray-200/50 pb-4">
                     <div class="flex items-center gap-4">
-                        <img src="assets/mb%20bloods%20logo.png" alt="MB Bloods Logo" class="h-12 w-auto object-contain">
+                        <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-12 w-auto object-contain">
                         <div>
                             <h2 class="text-2xl font-black text-gray-900 uppercase tracking-tight">Admin Dashboard</h2>
                             <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Live Control Center</p>
@@ -2304,23 +2304,6 @@
                     </div>
                 </div>
 
-                <!-- Emergency Alert Broadcast Section -->
-                <div class="glass-3d-card p-6">
-                    <h3 class="text-lg font-black text-gray-900 uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
-                        Broadcast Emergency Marquee Alert
-                    </h3>
-                    <div class="flex flex-col sm:flex-row gap-3">
-                        <input type="text" x-model="adminTempAlert" placeholder="e.g. URGENT: O- negative blood needed at City Hospital..."
-                            class="flex-1 px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
-                        <button @click="saveAdminAlert()" class="px-6 py-3 chrome-3d font-black text-xs uppercase tracking-widest text-white rounded-xl active:scale-95">
-                            Broadcast
-                        </button>
-                        <button @click="clearAdminAlert()" class="px-6 py-3 bg-gray-200 hover:bg-gray-300 font-bold text-xs uppercase tracking-widest text-gray-700 rounded-xl active:scale-95">
-                            Turn Off
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
