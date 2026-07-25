@@ -8,7 +8,7 @@
   "main": "backend/index.js",
   "scripts": {
     "start": "node backend/index.js",
-    "dev": "nodemon backend/index.js"
+    "dev": "nodemon"
   },
   "dependencies": {
     "@supabase/server": "^1.4.0",

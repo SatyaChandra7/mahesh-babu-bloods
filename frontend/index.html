@@ -1125,7 +1125,7 @@
         x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="intro-overlay" x-cloak>
         <div class="intro-logo-container">
             <div class="intro-logo-glow"></div>
-            <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="intro-logo">
+            <img src="assets/111.png" alt="MB Bloods Logo" class="intro-logo">
             <div class="intro-shine"></div>
         </div>
     </div>
@@ -1261,12 +1261,14 @@
             <div
                 class="glass-3d-card shadow-[0_30px_60px_-15px_rgba(0,0,0,0.1)] border border-black/40 relative overflow-hidden aspect-[1.8/1] md:aspect-[16/7] w-full flex items-center group">
 
-                <!-- Full-Size Background Image -->
-                <img src="assets/hands%20drop.jpeg" alt="Blood Donation"
-                    class="absolute inset-0 w-full h-full object-cover opacity-25 group-hover:scale-105 transition-transform duration-[3s] ease-out">
+                <!-- Full-Size Background Video -->
+                <video autoplay loop muted playsinline
+                    class="absolute inset-0 w-full h-full object-cover opacity-100 group-hover:scale-105 transition-transform duration-[3s] ease-out">
+                    <source src="assets/WhatsApp%20Video%202026-06-23%20at%202.21.44%20PM.mp4" type="video/mp4">
+                </video>
 
-                <!-- Contrast Overlay -->
-                <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent z-0"></div>
+                <!-- Black Fade Behind Left Side Text Image -->
+                <div class="absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-black/85 via-black/40 to-transparent z-0 pointer-events-none"></div>
 
                 <!-- Decorative elements slightly visible -->
                 <div class="absolute -top-32 -left-32 w-96 h-96 bg-red-200/30 rounded-full blur-3xl z-0"></div>
@@ -1275,18 +1277,18 @@
 
                 <div
                     class="grid grid-cols-2 md:grid-cols-[1.2fr_1fr] gap-2 md:gap-16 items-center relative z-10 w-full px-4 md:px-24 py-2 md:py-16">
-                    <!-- Left Side: Bold Typography -->
-                    <div class="text-left space-y-4 md:space-y-8 flex justify-center md:justify-start">
+                    <!-- Left Side: Bold Typography (Positioned Downward) -->
+                    <div class="text-left space-y-4 md:space-y-8 flex justify-center md:justify-start translate-y-4 md:translate-y-8">
                         <img src="assets/donate%20blood%20save%20life.png" alt="Donate Blood, Save Life"
                             class="w-full max-w-[85px] sm:max-w-md h-auto drop-shadow-2xl transform hover:scale-[1.02] transition-transform duration-500 brightness-150">
                     </div>
 
-                    <!-- Right Side: Ambassador Portrait (Balanced Size) -->
-                    <div class="flex justify-center md:justify-end group">
+                    <!-- Right Side: Ambassador Portrait (Placed cleanly inside rectangle) -->
+                    <div class="flex justify-center md:justify-end items-center h-full group">
                         <div
-                            class="relative w-full max-w-[130px] md:max-w-2xl transition-all duration-700 hover:scale-[1.02]">
-                            <img src="assets/mahesh%20babu.png" alt="Mahesh Babu"
-                                class="w-full h-auto object-contain drop-shadow-[0_20px_50px_rgba(211,47,47,0.3)]">
+                            class="relative w-full max-w-[160px] sm:max-w-sm md:max-w-xl transition-all duration-500 hover:scale-[1.03]">
+                            <img src="assets/222.png" alt="Mahesh Babu"
+                                class="w-full h-auto object-contain max-h-[80%] md:max-h-[90%] drop-shadow-[0_20px_50px_rgba(211,47,47,0.35)]">
                         </div>
                     </div>
                 </div>
@@ -1566,7 +1568,7 @@
             <!-- Left Side: Image -->
             <div
                 class="absolute inset-0 z-0 md:relative md:inset-auto w-full md:w-1/2 h-full md:h-auto bg-transparent border-none md:border-r md:border-solid border-white/20 md:p-6 shrink-0 pointer-events-none md:pointer-events-auto flex items-center justify-center">
-                <img src="assets/mbbb.png" alt="Mahesh Babu"
+                <img src="assets/111.png" alt="Mahesh Babu"
                     class="w-full h-full object-contain p-6 md:p-0 opacity-40 md:opacity-100">
             </div>
 

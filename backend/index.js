@@ -677,8 +677,9 @@ app.get('/api/v1/public/alert', (req, res) => res.json({ success: true, alert: s
 
 // Start server if not running in a serverless environment (like Vercel)
 const isServerlessEnv = !!(process.env.VERCEL || process.env.VERCEL_ENV || process.env.NOW_REGION || process.env.AWS_LAMBDA_FUNCTION_NAME);
-if (!isServerlessEnv && (process.env.NODE_ENV !== 'production' || process.env.RENDER)) {
+if (!isServerlessEnv) {
     initializeApp().then(() => {
+        console.log(`Server running on http://localhost:${PORT}`);
         app.listen(PORT, () => console.log(`Server on ${PORT}`));
     });
 }
