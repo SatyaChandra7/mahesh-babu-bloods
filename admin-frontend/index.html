@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MB Bloods | Premium Admin Portal</title>
     <link rel="icon" href="assets/mahesh%20babu%20bloods.jpg" type="image/jpeg">
+    <!-- Tailwind CSS v4 Browser Script -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -14,6 +16,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #090d16;
             color: #f8fafc;
+            overflow-x: hidden;
         }
 
         h1, h2, h3, h4, .font-display {
@@ -32,12 +35,22 @@
 
         /* Crimson Glow Card */
         .glass-red-card {
-            background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%);
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.18) 0%, rgba(15, 23, 42, 0.85) 100%);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(220, 38, 38, 0.3);
-            border-top: 1px solid rgba(248, 113, 113, 0.4);
-            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.15);
+            border: 1px solid rgba(220, 38, 38, 0.35);
+            border-top: 1px solid rgba(248, 113, 113, 0.45);
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2);
+        }
+
+        /* Gold Accent Glow Card */
+        .glass-gold-card {
+            background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(15, 23, 42, 0.85) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+            border-top: 1px solid rgba(253, 224, 71, 0.4);
+            box-shadow: 0 10px 30px rgba(234, 179, 8, 0.15);
         }
 
         /* 3D Chrome Button */
@@ -58,6 +71,23 @@
 
         .chrome-3d:active {
             transform: translateY(1px) scale(0.98);
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+        }
+
+        /* Dark Slate Chrome Button */
+        .chrome-dark {
+            background: linear-gradient(135deg, #334155 0%, #1e293b 50%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.2);
+            color: #f8fafc;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .chrome-dark:hover {
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, #475569 0%, #334155 50%, #1e293b 100%);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
         }
 
         /* Custom Scrollbar */
@@ -66,63 +96,112 @@
             height: 8px;
         }
         ::-webkit-scrollbar-track {
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.8);
         }
         ::-webkit-scrollbar-thumb {
-            background: rgba(220, 38, 38, 0.4);
+            background: rgba(220, 38, 38, 0.5);
             border-radius: 4px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: rgba(220, 38, 38, 0.7);
+            background: rgba(220, 38, 38, 0.8);
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        .animate-marquee {
+            display: inline-block;
+            white-space: nowrap;
+            animation: marquee 25s linear infinite;
         }
 
         [x-cloak] { display: none !important; }
     </style>
 </head>
 
-<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-red-600 selection:text-white"
+<body class="min-h-screen bg-[#090d16] text-slate-100 flex flex-col justify-between selection:bg-red-600 selection:text-white"
     x-data="adminApp()" x-init="initApp()">
 
-    <!-- Ambient Glowing Background Orbs -->
-    <div class="fixed top-0 left-1/4 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
-    <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-red-900/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    <!-- Ambient Radial Background Glows matching main page -->
+    <div class="fixed inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(180,20,20,0.25),rgba(255,255,255,0))] pointer-events-none -z-10"></div>
+    <div class="fixed top-0 left-1/4 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse"></div>
+    <div class="fixed bottom-0 right-1/4 w-[500px] h-[500px] bg-rose-900/15 rounded-full blur-[120px] pointer-events-none -z-10"></div>
 
     <div class="w-full">
+        <!-- Emergency Ticker Banner across top (matches main page) -->
+        <div x-show="tempAlert" class="bg-gradient-to-r from-red-700 via-rose-600 to-red-700 text-white text-xs font-bold py-2 px-4 border-b border-red-500/30 overflow-hidden shadow-lg" x-cloak>
+            <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="flex h-2.5 w-2.5 relative">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-white"></span>
+                    </span>
+                    <span class="uppercase tracking-widest text-[10px] font-black bg-white/20 px-2 py-0.5 rounded">Emergency Broadcast</span>
+                </div>
+                <div class="overflow-hidden w-full">
+                    <div class="animate-marquee font-bold" x-text="tempAlert"></div>
+                </div>
+                <button @click="clearAlert()" class="text-white/80 hover:text-white text-xs underline shrink-0 font-semibold cursor-pointer">Dismiss</button>
+            </div>
+        </div>
+
         <!-- Top Navigation Header -->
-        <header class="sticky top-0 z-50 px-4 py-3 md:px-8 bg-slate-950/80 backdrop-blur-xl border-b border-white/10 shadow-2xl">
+        <header class="sticky top-0 z-50 px-4 py-3.5 md:px-8 bg-[#090d16]/90 backdrop-blur-xl border-b border-white/10 shadow-2xl">
             <div class="max-w-7xl mx-auto flex justify-between items-center">
                 <!-- Brand / Logo -->
-                <div class="flex items-center gap-3">
-                    <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-10 md:h-12 w-auto object-contain">
-                    <div class="hidden sm:flex flex-col">
-                        <span class="font-black text-lg tracking-wider uppercase text-white leading-none">MB Bloods</span>
-                        <span class="text-[10px] font-bold text-red-500 tracking-widest uppercase">Admin Command Center</span>
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="relative">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-red-600 to-amber-500 rounded-2xl blur opacity-30 group-hover:opacity-75 transition duration-300"></div>
+                        <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="relative h-11 md:h-12 w-auto object-contain drop-shadow-md">
                     </div>
-                </div>
+                    <div class="flex flex-col">
+                        <span class="font-display font-black text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-rose-400 to-amber-400 leading-none">
+                            MB BLOODS
+                        </span>
+                        <span class="text-[10px] font-extrabold text-red-400 tracking-widest uppercase mt-0.5 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                            Admin Command Center
+                        </span>
+                    </div>
+                </a>
 
                 <!-- Right Header Controls -->
                 <div class="flex items-center gap-3">
                     <template x-if="isAuthenticated">
-                        <div class="flex items-center gap-3">
-                            <span class="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold">
-                                <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                Live Session
+                        <div class="flex items-center gap-2.5">
+                            <!-- Live Session Indicator -->
+                            <span class="hidden md:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold">
+                                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                Live Admin Active
                             </span>
 
+                            <!-- Export CSV Button -->
                             <button @click="downloadCSV()"
-                                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all border border-white/10 flex items-center gap-2 active:scale-95 shadow-md">
+                                class="chrome-dark px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 active:scale-95 cursor-pointer">
                                 <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Export CSV
+                                <span class="hidden sm:inline">Export CSV</span>
                             </button>
 
+                            <!-- View Main Site Link -->
+                            <a href="/" target="_blank"
+                                class="px-3.5 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider border border-white/10 transition-all flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                                <span class="hidden lg:inline">Main Site</span>
+                            </a>
+
+                            <!-- Logout Button -->
                             <button @click="logout()"
-                                class="chrome-3d px-5 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95">
+                                class="chrome-3d px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 active:scale-95 cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                                 </svg>
-                                Logout
+                                <span>Logout</span>
                             </button>
                         </div>
                     </template>
@@ -131,421 +210,573 @@
         </header>
 
         <!-- Main Body Content -->
-        <main class="max-w-7xl mx-auto px-4 py-8 md:px-8">
-            
-            <!-- Login Screen -->
-            <div x-show="!isAuthenticated" class="min-h-[75vh] flex items-center justify-center py-12" x-cloak>
-                <div class="glass-card w-full max-w-md p-8 md:p-10 rounded-3xl relative overflow-hidden shadow-2xl">
-                    <div class="text-center space-y-3 mb-8">
-                        <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-20 w-auto mx-auto mb-2 object-contain">
-                        <h2 class="text-2xl font-black uppercase tracking-wider text-white">Admin Authentication</h2>
-                        <p class="text-xs text-slate-400 font-medium">Enter your registered admin mobile number to access management control.</p>
+        <main class="max-w-7xl mx-auto px-4 py-6 md:px-8">
+
+            <!-- ---------------------------------------------------- -->
+            <!-- 1. LOGIN SCREEN (Matches Main Page Glass Intro Visuals) -->
+            <!-- ---------------------------------------------------- -->
+            <div x-show="!isAuthenticated" class="min-h-[80vh] flex items-center justify-center py-12" x-cloak>
+                <div class="glass-card w-full max-w-lg p-8 md:p-12 rounded-3xl relative overflow-hidden shadow-2xl border border-red-500/20">
+                    
+                    <!-- Glow Behind Poster -->
+                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-red-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                    <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                    <!-- Header Content -->
+                    <div class="text-center space-y-4 mb-8 relative z-10">
+                        <div class="inline-block relative">
+                            <div class="absolute inset-0 bg-red-600/30 blur-2xl rounded-full"></div>
+                            <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="relative h-24 w-auto mx-auto mb-3 object-contain drop-shadow-xl">
+                        </div>
+                        
+                        <div>
+                            <span class="inline-block px-3 py-1 bg-red-500/10 border border-red-500/30 rounded-full text-red-400 text-xs font-black uppercase tracking-widest mb-2">
+                                🔐 SECURE PORTAL ACCESS
+                            </span>
+                            <h2 class="text-3xl font-display font-black uppercase tracking-tight text-white">Admin Authentication</h2>
+                            <p class="text-xs text-slate-400 font-medium mt-2 max-w-xs mx-auto">Enter your registered admin WhatsApp mobile number to gain access to control panel.</p>
+                        </div>
                     </div>
 
-                    <form @submit.prevent="login()" class="space-y-5">
+                    <!-- Login Form -->
+                    <form @submit.prevent="login()" class="space-y-6 relative z-10">
                         <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-2">WhatsApp / Phone Number</label>
+                            <label class="block text-xs font-bold text-rose-300 uppercase tracking-widest mb-2">Mobile Phone Number</label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 font-bold text-sm">+91</span>
-                                <input type="tel" x-model="credentials.phoneNumber" placeholder="9948550301" required
-                                    class="w-full pl-14 pr-4 py-3.5 bg-slate-900/80 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 text-sm font-medium transition-all">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-red-400 font-black text-sm">+91</span>
+                                <input type="tel" x-model="credentials.phoneNumber" placeholder="9948550301" required autofocus
+                                    class="w-full pl-14 pr-4 py-4 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/30 text-base font-semibold transition-all">
                             </div>
                         </div>
 
-                        <div x-show="loginError" class="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs font-bold text-center" x-text="loginError" x-cloak></div>
+                        <div x-show="loginError" class="p-4 bg-red-500/15 border border-red-500/40 rounded-2xl text-red-300 text-xs font-bold text-center flex items-center justify-center gap-2" x-text="loginError" x-cloak></div>
 
                         <button type="submit" :disabled="isLoading"
-                            class="w-full py-4 chrome-3d rounded-2xl text-sm font-black uppercase tracking-widest active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                            class="w-full py-4 chrome-3d rounded-2xl text-sm font-black uppercase tracking-widest active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer">
                             <svg x-show="isLoading" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
-                            <span x-text="isLoading ? 'Verifying Credentials...' : 'Access Dashboard'"></span>
+                            <span x-text="isLoading ? 'Verifying Admin Phone...' : 'Unlock Admin Portal'"></span>
                         </button>
                     </form>
+
+                    <div class="mt-8 pt-6 border-t border-white/10 text-center">
+                        <p class="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">
+                            Authorized personnel only • MB Bloods Foundation
+                        </p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Authenticated Dashboard -->
+            <!-- ---------------------------------------------------- -->
+            <!-- 2. AUTHENTICATED DASHBOARD (Matches Main Page UI Layout) -->
+            <!-- ---------------------------------------------------- -->
             <div x-show="isAuthenticated" class="space-y-8" x-cloak>
 
-                <!-- SECTION 1: TOP KPI STAT CARDS -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                    <!-- Card 1: Total Donors -->
-                    <div class="glass-red-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-xs font-bold text-red-400 uppercase tracking-widest block mb-1">Total Registered</span>
-                                <h3 class="text-4xl font-black text-white" x-text="totalDonors">0</h3>
-                                <span class="text-[10px] text-slate-300 font-semibold mt-1 block">Active donors in database</span>
-                            </div>
-                            <div class="w-14 h-14 rounded-2xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-400">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
+                <!-- HERO SHOWCASE BANNER CARD (Main Page Aesthetic Header) -->
+                <div class="glass-red-card p-6 md:p-8 rounded-3xl relative overflow-hidden shadow-2xl border border-red-500/30">
+                    <!-- Background ambient poster glow -->
+                    <div class="absolute -right-12 -top-12 w-96 h-96 bg-gradient-to-br from-red-600/30 to-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-                    <!-- Card 2: Total Drives / Uploads -->
-                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-xs font-bold text-amber-400 uppercase tracking-widest block mb-1">Completed Drives</span>
-                                <h3 class="text-4xl font-black text-amber-400" x-text="donationCount">0</h3>
-                                <span class="text-[10px] text-slate-400 font-semibold mt-1 block">Donation photos uploaded</span>
+                    <div class="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+                        <div class="space-y-3 text-center lg:text-left max-w-2xl">
+                            <div class="inline-flex items-center gap-2 px-3 py-1 bg-red-500/20 border border-red-500/40 rounded-full text-red-300 text-xs font-black uppercase tracking-widest">
+                                <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                                Control Center Operational
                             </div>
-                            <div class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
+                            <h1 class="text-3xl sm:text-4xl md:text-5xl font-display font-black text-white tracking-tight leading-none">
+                                Admin Dashboard
+                            </h1>
+                            <p class="text-sm md:text-base text-slate-300 font-medium">
+                                Manage blood donors, moderate public reviews, broadcast emergency alerts, and update donation drive media in real time.
+                            </p>
                         </div>
-                    </div>
 
-                    <!-- Card 3: Pending Moderation Reviews -->
-                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-xs font-bold text-sky-400 uppercase tracking-widest block mb-1">Reviews Pending</span>
-                                <h3 class="text-4xl font-black text-sky-400" x-text="feedbacks.filter(f => !f.isApproved).length">0</h3>
-                                <span class="text-[10px] text-slate-400 font-semibold mt-1 block">Feedback awaiting approval</span>
+                        <!-- Hero Quick Stats Pill Badges -->
+                        <div class="grid grid-cols-2 gap-3 w-full lg:w-auto shrink-0">
+                            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/10 text-center">
+                                <span class="text-xs text-rose-300 font-bold uppercase tracking-wider block">Total Donors</span>
+                                <span class="text-3xl font-display font-black text-white mt-1 block" x-text="totalDonors">0</span>
                             </div>
-                            <div class="w-14 h-14 rounded-2xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Card 4: Broadcast Alert Status -->
-                    <div class="glass-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02]">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <span class="text-xs font-bold text-emerald-400 uppercase tracking-widest block mb-1">Broadcast Alert</span>
-                                <h3 class="text-2xl font-black" :class="tempAlert ? 'text-emerald-400' : 'text-slate-500'" x-text="tempAlert ? 'Active' : 'Off'">Off</h3>
-                                <span class="text-[10px] text-slate-400 font-semibold mt-1 block truncate max-w-[150px]" x-text="tempAlert || 'No emergency broadcast'">No emergency broadcast</span>
-                            </div>
-                            <div class="w-14 h-14 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
-                                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
-                                </svg>
+                            <div class="p-4 rounded-2xl bg-slate-950/70 border border-white/10 text-center">
+                                <span class="text-xs text-amber-400 font-bold uppercase tracking-wider block">Drives & Photos</span>
+                                <span class="text-3xl font-display font-black text-amber-400 mt-1 block" x-text="donationCount">0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECTION 2: BLOOD GROUP DONORS COUNT BREAKDOWN (REQUESTED FEATURE) -->
-                <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6 border border-white/10">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
-                                <h3 class="text-xl font-black uppercase tracking-wider text-white">Blood Group Donors Breakdown</h3>
-                            </div>
-                            <p class="text-xs text-slate-400 font-medium mt-1">Live donor counts categorized by blood group. Click any blood group card to instantly filter the donor list below.</p>
-                        </div>
-                        <button @click="resetFilters()" class="self-start md:self-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-slate-300 rounded-xl border border-white/10 transition-all active:scale-95">
-                            Show All Donors (<span x-text="totalDonors"></span>)
-                        </button>
-                    </div>
+                <!-- MAIN PAGE TABBED MODULE SWITCHER NAVIGATION -->
+                <div class="flex items-center gap-2 border-b border-white/10 pb-4 overflow-x-auto no-scrollbar">
+                    <button @click="activeTab = 'overview'"
+                        class="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="activeTab === 'overview' ? 'chrome-3d shadow-lg' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-white/10'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>Donors Directory</span>
+                    </button>
 
-                    <!-- Grid of 8 Blood Group Stat Cards -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
-                        <template x-for="bg in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']" :key="bg">
-                            <div @click="selectBloodGroupFilter(bg)"
-                                 class="p-4 rounded-2xl cursor-pointer transition-all duration-300 border flex flex-col justify-between relative group overflow-hidden"
-                                 :class="filters.bloodGroup === bg 
-                                    ? 'bg-red-600 text-white border-red-400 shadow-lg shadow-red-600/40 scale-105' 
-                                    : 'bg-slate-900/60 hover:bg-slate-800/80 text-slate-200 border-white/10 hover:border-red-500/50 hover:scale-[1.03]'">
-                                
-                                <div class="flex items-center justify-between mb-3">
-                                    <span class="px-2.5 py-1 rounded-lg font-black text-sm uppercase tracking-wider"
-                                          :class="filters.bloodGroup === bg ? 'bg-white text-red-600' : 'bg-red-500/20 text-red-400 border border-red-500/30'"
-                                          x-text="bg"></span>
-                                    <span class="text-[10px] font-bold opacity-75" x-text="`${getGroupPercentage(bg)}%`"></span>
-                                </div>
+                    <button @click="activeTab = 'gallery'"
+                        class="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="activeTab === 'gallery' ? 'chrome-3d shadow-lg' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-white/10'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Drive Gallery</span>
+                        <span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 rounded-full text-[10px]" x-text="donationCount"></span>
+                    </button>
 
-                                <div class="mt-2">
-                                    <span class="text-3xl font-black block" x-text="getGroupCount(bg)">0</span>
-                                    <span class="text-[10px] font-bold uppercase tracking-widest opacity-80 block mt-0.5">Donors</span>
-                                </div>
+                    <button @click="activeTab = 'moderation'"
+                        class="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="activeTab === 'moderation' ? 'chrome-3d shadow-lg' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-white/10'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                        </svg>
+                        <span>Reviews Moderation</span>
+                        <span x-show="feedbacks.filter(f => !f.isApproved).length > 0"
+                              class="px-2 py-0.5 bg-sky-500 text-white rounded-full text-[10px] animate-pulse"
+                              x-text="feedbacks.filter(f => !f.isApproved).length"></span>
+                    </button>
 
-                                <!-- Progress Bar -->
-                                <div class="w-full bg-slate-950/40 rounded-full h-1.5 mt-3 overflow-hidden">
-                                    <div class="bg-red-500 h-full rounded-full transition-all duration-500"
-                                         :class="filters.bloodGroup === bg ? 'bg-white' : 'bg-red-500'"
-                                         :style="`width: ${getGroupPercentage(bg)}%`"></div>
-                                </div>
-                            </div>
-                        </template>
-                    </div>
+                    <button @click="activeTab = 'emergency'"
+                        class="px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="activeTab === 'emergency' ? 'chrome-3d shadow-lg' : 'bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-white border border-white/10'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                        </svg>
+                        <span>Emergency Ticker</span>
+                        <span class="w-2 h-2 rounded-full" :class="tempAlert ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'"></span>
+                    </button>
                 </div>
 
-                <!-- SECTION 3: BROADCAST ALERT & DRIVE UPLOADER ROW -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Broadcast Emergency Alert Card -->
-                    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-4">
-                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                            <div>
-                                <h3 class="font-black text-white uppercase tracking-wider text-base">Emergency Alert Broadcast</h3>
-                                <p class="text-xs text-slate-400 font-medium">Post urgent blood requests to the homepage ticker in real time.</p>
-                            </div>
-                            <span class="w-3 h-3 rounded-full" :class="tempAlert ? 'bg-emerald-500 shadow-[0_0_12px_#10b981]' : 'bg-slate-600'"></span>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-2">Alert Announcement Text</label>
-                                <input type="text" x-model="tempAlert" placeholder="e.g. Urgent! O+ Blood needed at Guntur Government Hospital."
-                                    class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:border-red-500 text-sm">
-                            </div>
-
-                            <div class="flex items-center gap-3">
-                                <button @click="saveAlert()"
-                                    class="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg active:scale-95">
-                                    Broadcast Alert
-                                </button>
-                                <button @click="clearAlert()"
-                                    class="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold uppercase tracking-wider border border-white/10 transition-all active:scale-95">
-                                    Turn Off
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Drive Photo Uploader Card -->
-                    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-4">
-                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                            <div>
-                                <h3 class="font-black text-white uppercase tracking-wider text-base">Update "Our Work" Gallery</h3>
-                                <p class="text-xs text-slate-400 font-medium">Upload photos from donation drives to increment landing count.</p>
-                            </div>
-                            <div class="px-3 py-1 bg-amber-500/20 border border-amber-500/40 rounded-xl text-amber-400 text-xs font-black">
-                                <span x-text="donationCount">0</span> Drives
+                <!-- TAB 1: OVERVIEW & DONOR DIRECTORY MODULE -->
+                <div x-show="activeTab === 'overview'" class="space-y-8">
+                    
+                    <!-- KPI STAT CARDS ROW -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                        <!-- Card 1: Total Donors -->
+                        <div class="glass-red-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02] shadow-xl">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-red-300 uppercase tracking-widest block mb-1">Total Registered</span>
+                                    <h3 class="text-4xl font-display font-black text-white" x-text="totalDonors">0</h3>
+                                    <span class="text-[11px] text-slate-300 font-semibold mt-1 block">Active donors in database</span>
+                                </div>
+                                <div class="w-14 h-14 rounded-2xl bg-red-600/25 border border-red-500/40 flex items-center justify-center text-red-400 shadow-inner">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="flex flex-col sm:flex-row items-center gap-4">
-                            <div class="w-full sm:w-1/2 h-32 bg-slate-900/80 border-2 border-dashed border-slate-700 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden group hover:border-red-500 transition-all cursor-pointer">
-                                <input type="file" @change="onFileSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*">
-                                <div class="text-center p-2" x-show="!previewUrl">
-                                    <svg class="w-8 h-8 text-slate-500 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- Card 2: Completed Drives -->
+                        <div class="glass-gold-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02] shadow-xl">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-amber-300 uppercase tracking-widest block mb-1">Completed Drives</span>
+                                    <h3 class="text-4xl font-display font-black text-amber-400" x-text="donationCount">0</h3>
+                                    <span class="text-[11px] text-slate-300 font-semibold mt-1 block">Donation photos uploaded</span>
+                                </div>
+                                <div class="w-14 h-14 rounded-2xl bg-amber-500/25 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Choose Photo</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Pending Moderation -->
+                        <div class="glass-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02] shadow-xl">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-sky-300 uppercase tracking-widest block mb-1">Reviews Pending</span>
+                                    <h3 class="text-4xl font-display font-black text-sky-400" x-text="feedbacks.filter(f => !f.isApproved).length">0</h3>
+                                    <span class="text-[11px] text-slate-400 font-semibold mt-1 block">Feedback awaiting approval</span>
+                                </div>
+                                <div class="w-14 h-14 rounded-2xl bg-sky-500/25 border border-sky-500/40 flex items-center justify-center text-sky-400">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: Emergency Alert -->
+                        <div class="glass-card p-6 rounded-3xl relative overflow-hidden transition-all hover:scale-[1.02] shadow-xl">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-xs font-bold text-emerald-300 uppercase tracking-widest block mb-1">Broadcast Alert</span>
+                                    <h3 class="text-2xl font-display font-black" :class="tempAlert ? 'text-emerald-400' : 'text-slate-500'" x-text="tempAlert ? 'Active' : 'Off'">Off</h3>
+                                    <span class="text-[11px] text-slate-400 font-semibold mt-1 block truncate max-w-[150px]" x-text="tempAlert || 'No emergency broadcast'">No emergency broadcast</span>
+                                </div>
+                                <div class="w-14 h-14 rounded-2xl bg-emerald-500/25 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- BLOOD GROUP BREAKDOWN GRID (MATCHES MAIN PAGE BLOOD SELECTION) -->
+                    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6 border border-white/10">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+                                    <h3 class="text-xl font-display font-black uppercase tracking-wider text-white">Blood Group Donors Breakdown</h3>
+                                </div>
+                                <p class="text-xs text-slate-400 font-medium mt-1">Real-time donor tally categorized by blood type. Click any card to filter the directory instantly.</p>
+                            </div>
+                            <button @click="resetFilters()" class="self-start md:self-auto px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold uppercase tracking-wider text-slate-300 rounded-xl border border-white/10 transition-all active:scale-95 cursor-pointer">
+                                Show All Donors (<span x-text="totalDonors"></span>)
+                            </button>
+                        </div>
+
+                        <!-- 8 Blood Group Cards -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+                            <template x-for="bg in ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']" :key="bg">
+                                <div @click="selectBloodGroupFilter(bg)"
+                                     class="p-4 rounded-2xl cursor-pointer transition-all duration-300 border flex flex-col justify-between relative group overflow-hidden"
+                                     :class="filters.bloodGroup === bg 
+                                        ? 'bg-gradient-to-br from-red-600 to-rose-700 text-white border-red-400 shadow-lg shadow-red-600/40 scale-105' 
+                                        : 'bg-slate-950/70 hover:bg-slate-900 text-slate-200 border-white/10 hover:border-red-500/50 hover:scale-[1.03]'">
+                                    
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="px-2.5 py-1 rounded-lg font-black text-xs uppercase tracking-wider"
+                                              :class="filters.bloodGroup === bg ? 'bg-white text-red-600' : 'bg-red-500/20 text-red-400 border border-red-500/30'"
+                                              x-text="bg"></span>
+                                        <span class="text-[10px] font-bold opacity-75" x-text="`${getGroupPercentage(bg)}%`"></span>
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <span class="text-3xl font-display font-black block" x-text="getGroupCount(bg)">0</span>
+                                        <span class="text-[10px] font-extrabold uppercase tracking-widest opacity-80 block mt-0.5">Donors</span>
+                                    </div>
+
+                                    <!-- Progress Bar -->
+                                    <div class="w-full bg-slate-950/50 rounded-full h-1.5 mt-3 overflow-hidden">
+                                        <div class="h-full rounded-full transition-all duration-500"
+                                             :class="filters.bloodGroup === bg ? 'bg-white' : 'bg-red-500'"
+                                             :style="`width: ${getGroupPercentage(bg)}%`"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH & FILTERS BAR -->
+                    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                            <div>
+                                <h3 class="font-display font-black text-white uppercase tracking-wider text-lg">Search & Filter Directory</h3>
+                                <p class="text-xs text-slate-400 font-medium">Filter registered donors by Donor ID, blood group, address, or pincode.</p>
+                            </div>
+                            <button @click="resetFilters()" class="text-xs font-bold text-red-400 hover:text-red-300 uppercase tracking-wider cursor-pointer">Reset Filters</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+                            <div>
+                                <label class="block text-xs font-bold text-rose-300 uppercase tracking-widest mb-1.5">Donor ID</label>
+                                <input type="text" x-model="filters.idNumber" placeholder="e.g. 900000001" @keydown.enter="fetchDonors()"
+                                    class="w-full px-4 py-3 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-rose-300 uppercase tracking-widest mb-1.5">Blood Group</label>
+                                <select x-model="filters.bloodGroup" class="w-full px-4 py-3 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
+                                    <option value="All">All Blood Groups</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-rose-300 uppercase tracking-widest mb-1.5">Address / State</label>
+                                <input type="text" x-model="filters.address" placeholder="State, District..." @keydown.enter="fetchDonors()"
+                                    class="w-full px-4 py-3 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-rose-300 uppercase tracking-widest mb-1.5">Pincode</label>
+                                <input type="text" x-model="filters.pincode" placeholder="e.g. 500001" @keydown.enter="fetchDonors()"
+                                    class="w-full px-4 py-3 bg-slate-950/80 border border-slate-700/80 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
+                            </div>
+
+                            <div>
+                                <button @click="fetchDonors()" :disabled="isLoading"
+                                    class="w-full py-3.5 chrome-3d rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 flex items-center justify-center gap-2 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <span>Fetch Donors</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DONOR DIRECTORY TABLE & MOBILE CARDS -->
+                    <div x-show="hasSearched && !isLoading" class="glass-card rounded-3xl overflow-hidden shadow-2xl border border-white/10" x-cloak>
+                        <div class="px-6 py-4 bg-slate-900/90 border-b border-white/10 flex justify-between items-center flex-wrap gap-3">
+                            <div class="flex items-center gap-3">
+                                <h3 class="font-display font-black text-white uppercase tracking-wider text-base">Donor Directory</h3>
+                                <span class="px-3 py-1 bg-red-500/20 text-red-300 border border-red-500/40 rounded-full text-xs font-black" x-text="`${donors.length} Donors Found`"></span>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium" x-show="filters.bloodGroup !== 'All'" x-text="`Filtered by ${filters.bloodGroup}`"></span>
+                        </div>
+
+                        <!-- Desktop View Table -->
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full text-left whitespace-nowrap">
+                                <thead class="bg-slate-950/80 border-b border-white/10 text-xs font-bold uppercase tracking-wider text-rose-300">
+                                    <tr>
+                                        <th class="px-6 py-4">Donor ID</th>
+                                        <th class="px-6 py-4">Full Name</th>
+                                        <th class="px-6 py-4">Gender & Weight</th>
+                                        <th class="px-6 py-4">Blood Group</th>
+                                        <th class="px-6 py-4">Phone Number</th>
+                                        <th class="px-6 py-4">Address</th>
+                                        <th class="px-6 py-4">Points</th>
+                                        <th class="px-6 py-4">Date</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5 text-sm">
+                                    <template x-for="donor in donors" :key="donor.id">
+                                        <tr class="hover:bg-red-950/20 transition-colors">
+                                            <td class="px-6 py-4 font-mono font-bold text-slate-400" x-text="'9' + String(donor.id).padStart(9, '0')"></td>
+                                            <td class="px-6 py-4 font-bold text-white" x-text="donor.fullName"></td>
+                                            <td class="px-6 py-4 text-slate-300">
+                                                <span x-text="donor.gender"></span>
+                                                <span x-show="donor.weight" class="ml-1.5 text-xs font-bold text-red-400" x-text="`(${donor.weight}kg)`"></span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
+                                                      :class="donor.bloodGroup.includes('-') ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-red-500/20 text-red-400 border-red-500/40'"
+                                                      x-text="donor.bloodGroup">
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-mono text-slate-200" x-text="donor.phoneNumber"></span>
+                                                    <button @click="copyToClipboard(donor.phoneNumber)" class="text-slate-500 hover:text-white transition-colors cursor-pointer" title="Copy Phone">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                                        </svg>
+                                                    </button>
+                                                    <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="text-emerald-400 hover:text-emerald-300 transition-colors" title="WhatsApp Message">
+                                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.15 4.201 4.288-1.124z"/>
+                                                        </svg>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-slate-300 text-xs max-w-xs truncate"
+                                                :title="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}${donor.pincode ? ' - ' + donor.pincode : ''}`"
+                                                x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}${donor.pincode ? ' - ' + donor.pincode : ''}`">
+                                            </td>
+                                            <td class="px-6 py-4 text-emerald-400 font-black">50 pts</td>
+                                            <td class="px-6 py-4 text-slate-400 text-xs" x-text="new Date(donor.registeredAt).toLocaleDateString()"></td>
+                                            <td class="px-6 py-4 text-right">
+                                                <button @click="deleteDonor(donor.id)"
+                                                    class="px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="donors.length === 0">
+                                        <td colspan="9" class="px-6 py-12 text-center text-slate-500 font-medium">No donors match your selected criteria.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Mobile View Responsive Cards -->
+                        <div class="block md:hidden p-4 space-y-4">
+                            <template x-for="donor in donors" :key="donor.id">
+                                <div class="p-5 bg-slate-950/80 border border-white/10 rounded-2xl space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="font-mono text-xs text-slate-500 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
+                                            <h4 class="font-bold text-white text-base" x-text="donor.fullName"></h4>
+                                        </div>
+                                        <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
+                                              :class="donor.bloodGroup.includes('-') ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-red-500/20 text-red-400 border-red-500/40'"
+                                              x-text="donor.bloodGroup"></span>
+                                    </div>
+                                    <div class="text-xs text-slate-300 space-y-1 border-t border-b border-white/5 py-2">
+                                        <p><strong>Phone:</strong> <span x-text="donor.phoneNumber"></span></p>
+                                        <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" x-text="`(${donor.weight}kg)`"></span></p>
+                                        <p class="truncate"><strong>Address:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.district}, ${donor.state}`"></span></p>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1">
+                                        <div class="flex items-center gap-2">
+                                            <a :href="`tel:${donor.phoneNumber}`" class="px-3 py-1.5 bg-slate-800 text-slate-200 rounded-lg text-xs font-bold">Call</a>
+                                            <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="px-3 py-1.5 bg-emerald-600/30 text-emerald-300 rounded-lg text-xs font-bold">WhatsApp</a>
+                                        </div>
+                                        <button @click="deleteDonor(donor.id)" class="px-3 py-1.5 bg-red-500/20 text-red-400 rounded-lg text-xs font-bold cursor-pointer">Delete</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: LIVE GALLERY MANAGEMENT MODULE -->
+                <div x-show="activeTab === 'gallery'" class="space-y-8" x-cloak>
+                    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                            <div>
+                                <h3 class="font-display font-black text-white uppercase tracking-wider text-xl">"Our Work" Gallery Uploader</h3>
+                                <p class="text-xs text-slate-400 font-medium">Upload photos from blood donation camps to display on the public landing gallery.</p>
+                            </div>
+                            <div class="px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-2xl text-amber-300 text-xs font-black">
+                                <span x-text="donationCount">0</span> Published Drives
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <!-- Dropzone File Selector -->
+                            <div class="w-full h-56 bg-slate-950/80 border-2 border-dashed border-slate-700 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden group hover:border-red-500 transition-all cursor-pointer shadow-inner">
+                                <input type="file" @change="onFileSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*">
+                                <div class="text-center p-4 space-y-2" x-show="!previewUrl">
+                                    <div class="w-14 h-14 bg-red-600/10 rounded-2xl flex items-center justify-center mx-auto text-red-400">
+                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                    </div>
+                                    <span class="text-xs font-bold text-white uppercase tracking-widest block">Choose Donation Photo</span>
+                                    <span class="text-[10px] text-slate-500 block">Supports JPG, PNG, WEBP files</span>
                                 </div>
                                 <img x-show="previewUrl" :src="previewUrl" class="absolute inset-0 w-full h-full object-cover">
                             </div>
 
-                            <div class="w-full sm:w-1/2 space-y-3">
+                            <!-- Upload Action Button -->
+                            <div class="space-y-4">
+                                <div class="p-4 bg-slate-900/60 border border-white/10 rounded-2xl text-xs text-slate-300 space-y-1">
+                                    <p class="font-bold text-white">📌 Gallery Sync Notice:</p>
+                                    <p>Uploading a photo immediately updates the "Our Work" section on the main page and increases the total donation drive counter.</p>
+                                </div>
+
                                 <button @click="uploadGalleryImage()" :disabled="!selectedFile || isUploading"
-                                    class="w-full py-3.5 chrome-3d rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2">
-                                    <svg x-show="isUploading" class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                                    class="w-full py-4 chrome-3d rounded-2xl text-sm font-black uppercase tracking-wider active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer shadow-xl">
+                                    <svg x-show="isUploading" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                                     </svg>
-                                    <span x-text="isUploading ? 'Uploading...' : 'Publish Drive Photo'"></span>
+                                    <span x-text="isUploading ? 'Uploading Image to Gallery...' : 'Publish Drive Photo'"></span>
                                 </button>
-                                <p class="text-[10px] text-slate-400 text-center uppercase font-semibold tracking-wider">Increments home page counter</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SECTION 4: INTERACTIVE SEARCH & FILTERS PANEL -->
-                <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6">
-                    <div class="flex items-center justify-between border-b border-white/10 pb-4">
-                        <div>
-                            <h3 class="font-black text-white uppercase tracking-wider text-lg">Search & Filter Donors</h3>
-                            <p class="text-xs text-slate-400 font-medium">Filter registered donors by ID, blood group, address, or pincode.</p>
-                        </div>
-                        <button @click="resetFilters()" class="text-xs font-bold text-red-400 hover:text-red-300 uppercase tracking-wider">Reset Filters</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1.5">Donor ID</label>
-                            <input type="text" x-model="filters.idNumber" placeholder="e.g. 900000001" @keydown.enter="fetchDonors()"
-                                class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
+                <!-- TAB 3: REVIEWS & TESTIMONIALS MODERATION MODULE -->
+                <div x-show="activeTab === 'moderation'" class="space-y-8" x-cloak>
+                    <div class="glass-card rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+                        <div class="px-6 py-5 bg-slate-900/90 border-b border-white/10 flex justify-between items-center flex-wrap gap-4">
+                            <div>
+                                <h3 class="font-display font-black text-white uppercase tracking-wider text-xl">Donor Testimonials & Reviews</h3>
+                                <p class="text-xs text-slate-400 font-medium mt-0.5">Approve user reviews to showcase them on the public landing page slider.</p>
+                            </div>
+                            <span class="px-3.5 py-1.5 bg-sky-500/20 text-sky-300 border border-sky-500/40 rounded-full text-xs font-black"
+                                  x-text="`${feedbacks.filter(f => !f.isApproved).length} Reviews Pending Approval`"></span>
                         </div>
 
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1.5">Blood Group</label>
-                            <select x-model="filters.bloodGroup" class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
-                                <option value="All">All Blood Groups</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1.5">Address / State</label>
-                            <input type="text" x-model="filters.address" placeholder="State, District..." @keydown.enter="fetchDonors()"
-                                class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-widest mb-1.5">Pincode</label>
-                            <input type="text" x-model="filters.pincode" placeholder="e.g. 500001" @keydown.enter="fetchDonors()"
-                                class="w-full px-4 py-3 bg-slate-900/80 border border-slate-700 rounded-xl text-white text-sm focus:outline-none focus:border-red-500">
-                        </div>
-
-                        <div>
-                            <button @click="fetchDonors()" :disabled="isLoading"
-                                class="w-full py-3.5 chrome-3d rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 flex items-center justify-center gap-2">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                </svg>
-                                <span>Fetch Donors</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 5: DONOR RESULTS TABLE -->
-                <div x-show="hasSearched && !isLoading" class="glass-card rounded-3xl overflow-hidden shadow-2xl border border-white/10" x-cloak>
-                    <div class="px-6 py-4 bg-slate-900/90 border-b border-white/10 flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <h3 class="font-black text-white uppercase tracking-wider text-base">Donor Directory</h3>
-                            <span class="px-3 py-1 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full text-xs font-bold" x-text="`${donors.length} Donors Found`"></span>
-                        </div>
-                        <span class="text-xs text-slate-400 font-medium" x-show="filters.bloodGroup !== 'All'" x-text="`Filtering by ${filters.bloodGroup}`"></span>
-                    </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left whitespace-nowrap">
-                            <thead class="bg-slate-900/50 border-b border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400">
-                                <tr>
-                                    <th class="px-6 py-4">Donor ID</th>
-                                    <th class="px-6 py-4">Full Name</th>
-                                    <th class="px-6 py-4">Gender & Weight</th>
-                                    <th class="px-6 py-4">Blood Group</th>
-                                    <th class="px-6 py-4">Phone Number</th>
-                                    <th class="px-6 py-4">Address</th>
-                                    <th class="px-6 py-4">Points</th>
-                                    <th class="px-6 py-4">Date</th>
-                                    <th class="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5 text-sm">
-                                <template x-for="donor in donors" :key="donor.id">
-                                    <tr class="hover:bg-red-500/5 transition-colors">
-                                        <td class="px-6 py-4 font-mono font-bold text-slate-400" x-text="'9' + String(donor.id).padStart(9, '0')"></td>
-                                        <td class="px-6 py-4 font-bold text-white" x-text="donor.fullName"></td>
-                                        <td class="px-6 py-4 text-slate-300">
-                                            <span x-text="donor.gender"></span>
-                                            <span x-show="donor.weight" class="ml-1.5 text-xs font-bold text-red-400" x-text="`(${donor.weight}kg)`"></span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
-                                                  :class="donor.bloodGroup.includes('-') ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-red-500/20 text-red-400 border-red-500/40'"
-                                                  x-text="donor.bloodGroup">
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-mono text-slate-200" x-text="donor.phoneNumber"></span>
-                                                <button @click="copyToClipboard(donor.phoneNumber)" class="text-slate-500 hover:text-white transition-colors" title="Copy Phone">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                                                    </svg>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left whitespace-nowrap">
+                                <thead class="bg-slate-950/80 border-b border-white/10 text-xs font-bold uppercase tracking-wider text-rose-300">
+                                    <tr>
+                                        <th class="px-6 py-4">Submitted By</th>
+                                        <th class="px-6 py-4">Rating</th>
+                                        <th class="px-6 py-4">Comment</th>
+                                        <th class="px-6 py-4">Date</th>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-white/5 text-sm">
+                                    <template x-for="review in feedbacks" :key="review.id">
+                                        <tr class="hover:bg-white/5 transition-colors">
+                                            <td class="px-6 py-4 font-bold text-white" x-text="review.name"></td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-0.5 text-amber-400">
+                                                    <template x-for="star in 5">
+                                                        <svg class="w-4 h-4" :class="star <= review.rating ? 'fill-amber-400 text-amber-400' : 'fill-slate-700 text-slate-700'" viewBox="0 0 20 20">
+                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                        </svg>
+                                                    </template>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-slate-300 max-w-xs truncate" :title="review.comment" x-text="review.comment"></td>
+                                            <td class="px-6 py-4 text-slate-400 text-xs" x-text="new Date(review.createdAt).toLocaleDateString()"></td>
+                                            <td class="px-6 py-4">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
+                                                      :class="review.isApproved ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40' : 'bg-amber-500/20 text-amber-400 border-amber-500/40'"
+                                                      x-text="review.isApproved ? 'Approved' : 'Pending'">
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                                <button @click="toggleApproveFeedback(review.id)"
+                                                        class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
+                                                        :class="review.isApproved ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400'"
+                                                        x-text="review.isApproved ? 'Unapprove' : 'Approve'">
                                                 </button>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-300 text-xs max-w-xs truncate"
-                                            :title="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}${donor.pincode ? ' - ' + donor.pincode : ''}`"
-                                            x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}${donor.pincode ? ' - ' + donor.pincode : ''}`">
-                                        </td>
-                                        <td class="px-6 py-4 text-emerald-400 font-black">50 pts</td>
-                                        <td class="px-6 py-4 text-slate-400 text-xs" x-text="new Date(donor.registeredAt).toLocaleDateString()"></td>
-                                        <td class="px-6 py-4 text-right">
-                                            <button @click="deleteDonor(donor.id)"
-                                                class="px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95">
-                                                Delete
-                                            </button>
-                                        </td>
+                                                <button @click="deleteFeedback(review.id)"
+                                                        class="px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="feedbacks.length === 0">
+                                        <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">No reviews submitted yet.</td>
                                     </tr>
-                                </template>
-                                <tr x-show="donors.length === 0">
-                                    <td colspan="9" class="px-6 py-12 text-center text-slate-500 font-medium">No donors match your selected criteria.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- SECTION 6: REVIEWS & FEEDBACK MODERATION CARD -->
-                <div class="glass-card rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                    <div class="px-6 py-4 bg-slate-900/90 border-b border-white/10 flex justify-between items-center">
-                        <div>
-                            <h3 class="font-black text-white uppercase tracking-wider text-base">Reviews & Moderation</h3>
-                            <p class="text-xs text-slate-400 font-medium mt-0.5">Approve user testimonials to feature them on the main landing page.</p>
+                <!-- TAB 4: EMERGENCY BROADCAST TICKER MODULE -->
+                <div x-show="activeTab === 'emergency'" class="space-y-8" x-cloak>
+                    <div class="glass-card p-6 md:p-8 rounded-3xl space-y-6 max-w-3xl mx-auto">
+                        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+                            <div>
+                                <h3 class="font-display font-black text-white uppercase tracking-wider text-xl">Emergency Alert Broadcast</h3>
+                                <p class="text-xs text-slate-400 font-medium mt-1">Post urgent blood requirement announcements directly to the public home page ticker.</p>
+                            </div>
+                            <span class="w-4 h-4 rounded-full" :class="tempAlert ? 'bg-emerald-500 shadow-[0_0_15px_#10b981] animate-ping' : 'bg-slate-700'"></span>
                         </div>
-                        <div class="flex items-center gap-2">
-                            <span class="px-3 py-1 bg-sky-500/20 text-sky-400 border border-sky-500/30 rounded-full text-xs font-bold"
-                                  x-text="`${feedbacks.filter(f => !f.isApproved).length} Pending Approval`"></span>
-                        </div>
-                    </div>
 
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left whitespace-nowrap">
-                            <thead class="bg-slate-900/50 border-b border-white/10 text-xs font-bold uppercase tracking-wider text-slate-400">
-                                <tr>
-                                    <th class="px-6 py-4">Submitted By</th>
-                                    <th class="px-6 py-4">Rating</th>
-                                    <th class="px-6 py-4">Comment</th>
-                                    <th class="px-6 py-4">Date</th>
-                                    <th class="px-6 py-4">Status</th>
-                                    <th class="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-white/5 text-sm">
-                                <template x-for="review in feedbacks" :key="review.id">
-                                    <tr class="hover:bg-white/5 transition-colors">
-                                        <td class="px-6 py-4 font-bold text-white" x-text="review.name"></td>
-                                        <td class="px-6 py-4">
-                                            <div class="flex items-center gap-0.5 text-amber-400">
-                                                <template x-for="star in 5">
-                                                    <svg class="w-4 h-4" :class="star <= review.rating ? 'fill-amber-400' : 'fill-slate-700 text-slate-700'" viewBox="0 0 20 20">
-                                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                                                    </svg>
-                                                </template>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-slate-300 max-w-xs truncate" :title="review.comment" x-text="review.comment"></td>
-                                        <td class="px-6 py-4 text-slate-400 text-xs" x-text="new Date(review.createdAt).toLocaleDateString()"></td>
-                                        <td class="px-6 py-4">
-                                            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border"
-                                                  :class="review.isApproved ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border-amber-500/30'"
-                                                  x-text="review.isApproved ? 'Approved' : 'Pending'">
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                            <button @click="toggleApproveFeedback(review.id)"
-                                                    class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border"
-                                                    :class="review.isApproved ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400'"
-                                                    x-text="review.isApproved ? 'Unapprove' : 'Approve'">
-                                            </button>
-                                            <button @click="deleteFeedback(review.id)"
-                                                    class="px-3.5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95">
-                                                Delete
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </template>
-                                <tr x-show="feedbacks.length === 0">
-                                    <td colspan="6" class="px-6 py-12 text-center text-slate-500 font-medium">No reviews submitted yet.</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <div class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-bold text-rose-300 uppercase tracking-widest mb-2">Announcement Message</label>
+                                <textarea x-model="tempAlert" rows="3" placeholder="e.g. URGENT! O+ Blood needed at Guntur Government Hospital. Contact: 9948550301"
+                                    class="w-full px-4 py-3 bg-slate-950/80 border border-slate-700/80 rounded-2xl text-white placeholder-slate-600 focus:outline-none focus:border-red-500 text-sm font-semibold"></textarea>
+                            </div>
+
+                            <div class="flex items-center gap-4">
+                                <button @click="saveAlert()"
+                                    class="flex-1 py-4 chrome-3d rounded-2xl text-xs font-black uppercase tracking-wider active:scale-95 cursor-pointer shadow-lg">
+                                    Broadcast Emergency Alert
+                                </button>
+                                <button @click="clearAlert()"
+                                    class="px-6 py-4 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-2xl text-xs font-bold uppercase tracking-wider border border-white/10 transition-all active:scale-95 cursor-pointer">
+                                    Turn Off Ticker
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -553,8 +784,8 @@
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="py-6 border-t border-white/10 text-center text-xs text-slate-500 font-semibold uppercase tracking-widest">
+    <!-- Footer matching main page -->
+    <footer class="py-6 border-t border-white/10 text-center text-xs text-slate-500 font-semibold uppercase tracking-widest mt-12 bg-[#090d16]/80">
         © 2026 MB BLOODS FOUNDATION. ALL RIGHTS RESERVED.
     </footer>
 
@@ -564,6 +795,7 @@
             Alpine.data('adminApp', () => ({
                 isAuthenticated: false,
                 token: null,
+                activeTab: 'overview',
                 get apiBase() {
                     const url = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL') || '';
                     return url.replace(/\/+$/, '');
