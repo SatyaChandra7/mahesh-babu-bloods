@@ -7,7 +7,4 @@ node_modules/
 backend/*.sqlite*
 *.log
 scratch*
-frontend/assets/WhatsApp*
-frontend/assets/Screenshot*
-frontend/assets/*.mp4
 
