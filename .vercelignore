@@ -5,6 +5,7 @@ node_modules/
 .agents/
 *.sqlite*
 backend/*.sqlite*
+.vercel/
 *.log
 scratch*
 

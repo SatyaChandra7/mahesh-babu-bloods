@@ -93,6 +93,10 @@ app.use(cors({
     credentials: true
 }));
 app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
+app.use('/admin-frontend', express.static(path.join(__dirname, '..', 'admin-frontend')));
+app.use('/admin.html', (req, res) => res.sendFile(path.join(__dirname, '..', 'admin-frontend', 'admin.html')));
+app.use('/admin', (req, res) => res.sendFile(path.join(__dirname, '..', 'admin-frontend', 'admin.html')));
 
 // Serverless (Vercel) Auto-Initialization Middleware
 app.use(async (req, res, next) => {
