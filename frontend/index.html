@@ -52,11 +52,11 @@
                 },
 
                 get apiBase() {
-                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                        return window.location.origin;
+                    const customUrl = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL');
+                    if (customUrl) {
+                        return customUrl.replace(/\/+$/, '');
                     }
-                    const url = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL') || 'https://mb-bloods.vercel.app';
-                    return url.replace(/\/+$/, '');
+                    return window.location.origin;
                 },
 
                 init() {
