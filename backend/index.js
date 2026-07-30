@@ -200,26 +200,32 @@ function createFallbackSequelize() {
     };
 }
 
+let isDbConnected = false;
+let dbDialect = 'sqlite';
+
 function initSequelize() {
-    const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:Maheshbabu0809@db.komrntxfmoubhyckbkze.supabase.co:5432/postgres';
+    const dbUrl = process.env.DATABASE_URL;
     if (dbUrl) {
-        console.log('Using PostgreSQL database connection');
+        console.log('Attempting PostgreSQL database connection via DATABASE_URL');
         try {
             const options = {
                 dialect: 'postgres',
                 dialectOptions: {
                     ssl: { require: true, rejectUnauthorized: false }
                 },
-                logging: false
+                logging: false,
+                pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
             };
             if (pgDriver) options.dialectModule = pgDriver;
+            dbDialect = 'postgresql';
             return new Sequelize(dbUrl, options);
         } catch (err) {
             console.error('Postgres Sequelize Initialization Error:', err.message);
         }
     }
 
-    console.log('Using SQLite database connection');
+    console.log('DATABASE_URL not set or invalid. Falling back to SQLite database connection');
+    dbDialect = 'sqlite';
     const dbPath = process.env.VERCEL || process.env.NODE_ENV === 'production' 
         ? ':memory:' 
         : path.join(__dirname, 'database.sqlite');
@@ -304,7 +310,8 @@ app.get('/', (req, res) => {
         service: 'Mahesh Babu Bloods Backend API Service',
         health: '/health',
         initialized: isInitialized,
-        database: process.env.DATABASE_URL ? 'postgresql' : 'sqlite',
+        database: isDbConnected ? dbDialect : (dbDialect === 'postgresql' ? 'postgresql (disconnected)' : 'sqlite'),
+        dbConnected: isDbConnected,
         hasSheets: !!sheets
     });
 });
@@ -323,10 +330,12 @@ async function initializeApp() {
     try {
         if (sequelize && typeof sequelize.authenticate === 'function') {
             await sequelize.authenticate();
+            isDbConnected = true;
             await sequelize.sync({ alter: false });
-            console.log('SQL Database initialized successfully.');
+            console.log(`SQL Database (${dbDialect}) initialized successfully.`);
         }
     } catch (err) {
+        isDbConnected = false;
         console.error('SQL Database Initialization error:', err.message);
     }
 
@@ -538,7 +547,8 @@ const sharedState = { currentAlert: null };
 app.get(['/health', '/api/health'], (req, res) => res.json({
     status: 'ok',
     initialized: isInitialized,
-    database: process.env.DATABASE_URL ? 'postgresql' : 'sqlite',
+    database: isDbConnected ? dbDialect : (dbDialect === 'postgresql' ? 'postgresql (disconnected)' : 'sqlite'),
+    dbConnected: isDbConnected,
     hasSheets: !!sheets
 }));
 

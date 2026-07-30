@@ -2,11 +2,14 @@
 
 Moving your application from local development to production (Vercel) requires a few configuration steps for your **SQL Database** and **Google Sheets** integration.
 
-## 1. Database Choice
+## 1. Supabase Database Setup
 
-This application uses **SQLite** for local development. For production deployment on Vercel:
-* **Option A:** Continue using SQLite. A `database.sqlite` file will be created in `/tmp`. Note: Vercel serverless functions have an ephemeral filesystem, so the database will reset after some inactivity.
-* **Option B (Recommended for Production):** Use **Postgres** (like Supabase or Vercel Postgres). The connection configuration in [backend/index.js](file:///d:/mb%20bloods/backend/index.js) automatically connects to Postgres if the `DATABASE_URL` environment variable is defined.
+1. Log in to your [Supabase Dashboard](https://supabase.com/dashboard).
+2. Open your project, go to **SQL Editor**, and run the SQL contents from [`supabase_schema.sql`](file:///d:/mb%20bloods/supabase_schema.sql).
+   This creates the `"Donors"` and `"Feedbacks"` tables, performance indexes, and enables Row Level Security (RLS) policies.
+3. Go to **Project Settings > Database > Connection String** and use your verified connection string:
+   - **Transaction Pooler (Recommended for Vercel Serverless)**:
+     `postgresql://postgres.jbuwmwcmuchxshuboofi:Mahesh%40094005@aws-0-us-east-1.pooler.supabase.com:6543/postgres`
 
 ## 2. Vercel Deployment Steps
 
@@ -24,7 +27,7 @@ This application uses **SQLite** for local development. For production deploymen
 
 ### Step 2: Configure Environment Variables on Vercel
 Go to your **Vercel Dashboard > Settings > Environment Variables** and add the following:
-* `DATABASE_URL`: `postgresql://postgres:Maheshbabu0809@db.komrntxfmoubhyckbkze.supabase.co:5432/postgres` (Your Supabase PostgreSQL connection string)
+* `DATABASE_URL`: `postgresql://postgres.jbuwmwcmuchxshuboofi:Mahesh%40094005@aws-0-us-east-1.pooler.supabase.com:6543/postgres`
 * `JWT_SECRET`: `fe7c86559f1a9c97e06425289364b3bfae49278692867adeb99c1b9a48d16dd78c5dbe18d66b5af387808b47b71c237d7285fb8a9142dffb1d28a73fd27ffcb2`
 * `ADMIN_WHATSAPP_1`: `919948550301`
 * `ADMIN_WHATSAPP_2`: `919491463888`

@@ -35,6 +35,21 @@
                 certificateLoading: false,
                 certificateDonorName: '',
 
+                goHome() {
+                    this.donateOpen = false;
+                    this.galleryOpen = false;
+                    this.reviewOpen = false;
+                    this.adminOpen = false;
+                    this.mobileMenuOpen = false;
+                    this.successOpen = false;
+                    this.sorryOpen = false;
+                    this.declareOpen = false;
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    if (window.location.hash) {
+                        history.pushState('', document.title, window.location.pathname + window.location.search);
+                    }
+                },
+
                 closeIntro() {
                     this.showIntro = false;
                     if (this.$refs.introVideo) {
@@ -1032,150 +1047,45 @@
         [x-cloak] {
             display: none !important;
         }
-
-        /* Netflix-style Intro Animation */
-        .intro-overlay {
-            background-color: #000000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            inset: 0;
-            z-index: 99999;
-        }
-
-        .intro-logo-container {
-            position: relative;
-            width: 360px;
-            height: 360px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
-        }
-
-        .intro-logo {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.2));
-            animation: netflix-reveal 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-        }
-
-        /* 3D and light sweep layers */
-        .intro-logo-glow {
-            position: absolute;
-            inset: -40px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(220, 38, 38, 0.15) 0%, rgba(255, 255, 255, 0) 70%);
-            transform: scale(0.8);
-            opacity: 0;
-            animation: glow-pulse 3.2s ease-out forwards;
-            pointer-events: none;
-        }
-
-        .intro-shine {
-            position: absolute;
-            top: 0;
-            left: -150%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg,
-                    rgba(255, 255, 255, 0) 0%,
-                    rgba(255, 255, 255, 0.25) 50%,
-                    rgba(255, 255, 255, 0) 100%);
-            transform: skewX(-20deg);
-            animation: intro-shining 2.2s ease-in-out infinite;
-            animation-delay: 0.6s;
-            pointer-events: none;
-        }
-
-        @keyframes netflix-reveal {
-            0% {
-                transform: scale(0.65) translateZ(-200px);
-                opacity: 0;
-                filter: brightness(0.2) drop-shadow(0 0 0px rgba(220, 38, 38, 0));
-            }
-
-            15% {
-                opacity: 1;
-                filter: brightness(1.2) drop-shadow(0 0 30px rgba(220, 38, 38, 0.8));
-            }
-
-            75% {
-                transform: scale(1.1) translateZ(0);
-                opacity: 1;
-                filter: brightness(1) drop-shadow(0 0 20px rgba(220, 38, 38, 0.5));
-            }
-
-            90% {
-                transform: scale(2.8) translateZ(100px);
-                opacity: 0.2;
-                filter: blur(10px) brightness(1.5) drop-shadow(0 0 45px rgba(220, 38, 38, 0.95));
-            }
-
-            100% {
-                transform: scale(3.5) translateZ(150px);
-                opacity: 0;
-                filter: blur(25px) brightness(2) drop-shadow(0 0 0px rgba(220, 38, 38, 0));
-            }
-        }
-
-        @keyframes glow-pulse {
-            0% {
-                opacity: 0;
-                transform: scale(0.5);
-            }
-
-            20% {
-                opacity: 1;
-                transform: scale(1.2);
-            }
-
-            75% {
-                opacity: 0.8;
-                transform: scale(1.3);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(2);
-            }
-        }
-
-        @keyframes intro-shining {
-            0% {
-                left: -150%;
-            }
-
-            100% {
-                left: 150%;
-            }
-        }
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-900" x-data="mainApp"
+<body class="bg-gray-50 text-gray-900 overflow-hidden" x-data="mainApp"
     x-bind:class="galleryOpen || donateOpen || reviewOpen || showIntro ? 'overflow-hidden' : ''">
 
-    <!-- Cinematic Video Intro Overlay -->
+    <!-- Video Intro Overlay (No x-cloak so it covers viewport immediately on page load, eliminating homepage flash glitch) -->
     <div x-show="showIntro" x-transition:leave="transition ease-in-out duration-700"
         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-105"
-        class="fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center overflow-hidden" x-cloak>
+        class="fixed inset-0 z-[99999] bg-black flex items-center justify-center overflow-hidden">
 
-        <!-- Red Ambient Radial Glow Backdrop -->
-        <div
-            class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_rgba(220,38,38,0.25)_0%,_transparent_75%)] opacity-80 animate-pulse">
+        <!-- Controls: Sound Toggle & Skip Button -->
+        <div class="absolute top-5 right-5 z-20 flex items-center gap-3">
+            <button @click.stop="toggleIntroMute()" type="button"
+                class="px-3.5 py-2 bg-white/10 hover:bg-white/25 backdrop-blur-md text-white rounded-full text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center gap-2 border border-white/20 shadow-lg cursor-pointer">
+                <svg x-show="introMuted" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"></path>
+                </svg>
+                <svg x-show="!introMuted" class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" x-cloak>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"></path>
+                </svg>
+                <span x-text="introMuted ? 'Muted' : 'Unmuted'"></span>
+            </button>
+            <button @click.stop="closeIntro()" type="button"
+                class="px-4 py-2 bg-red-600/80 hover:bg-red-600 backdrop-blur-md text-white rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-300 flex items-center gap-2 border border-red-500/50 shadow-lg cursor-pointer hover:scale-105">
+                <span>Skip Intro</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"></path>
+                </svg>
+            </button>
         </div>
 
-
-
         <!-- Intro Video Player Display -->
-        <div class="relative w-full h-full flex items-center justify-center p-2 sm:p-6 md:p-10">
+        <div class="relative w-full h-full flex items-center justify-center cursor-pointer" @click="closeIntro()">
             <video x-ref="introVideo"
                 :src="window.innerWidth < 768 ? 'assets/new%20mobile%20.mp4' : 'assets/new%20web%20.mp4'" autoplay muted
-                playsinline @ended="closeIntro()" @error="closeIntro()"
-                class="w-full h-full object-contain max-h-screen rounded-xl sm:rounded-2xl md:rounded-3xl border-none">
+                preload="auto" playsinline @ended="closeIntro()" @error="closeIntro()"
+                class="w-full h-full object-contain max-h-screen border-none outline-none">
                 <source src="assets/new%20mobile%20.mp4" type="video/mp4" media="(max-width: 767px)">
                 <source src="assets/new%20web%20.mp4" type="video/mp4" media="(min-width: 768px)">
             </video>
@@ -1244,7 +1154,7 @@
         <nav
             class="glass-3d-card px-6 md:px-10 py-3 flex items-center justify-between shadow-lg border border-white/50 backdrop-blur-xl rounded-full w-full relative">
             <!-- Logo Container: Centered on small screens, Left-aligned on laptop/desktop -->
-            <div class="flex items-center absolute left-1/2 -translate-x-1/2 md:static md:left-auto md:translate-x-0">
+            <div @click="goHome()" class="flex items-center absolute left-1/2 -translate-x-1/2 md:static md:left-auto md:translate-x-0 cursor-pointer">
                 <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
                     class="h-8 sm:h-10 md:h-12 lg:h-14 w-auto object-contain transition-all duration-300 drop-shadow-md">
             </div>
@@ -1252,7 +1162,7 @@
             <!-- Navigation Buttons: Right-aligned on laptop/desktop -->
             <div
                 class="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-bold text-black uppercase tracking-wide ml-auto">
-                <a href="index.html" class="hover:text-red-600 transition-colors">Home</a>
+                <a href="#" @click.prevent="goHome()" class="hover:text-red-600 transition-colors">Home</a>
                 <a href="#about" class="hover:text-red-600 transition-colors">About</a>
                 <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
                 <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation."
@@ -1295,7 +1205,7 @@
                 class="absolute top-full left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden z-40 md:hidden mt-2"
                 style="background: #ffffff !important;" @click.away="mobileMenuOpen = false" x-cloak>
                 <div class="flex flex-col p-6 gap-2 text-center font-bold text-black uppercase tracking-widest text-sm">
-                    <a href="index.html" @click="mobileMenuOpen = false"
+                    <a href="#" @click.prevent="goHome()"
                         class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Home</a>
                     <a href="#about" @click="mobileMenuOpen = false"
                         class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">About</a>
@@ -1521,8 +1431,8 @@
         <!-- Top Section with Button -->
         <div class="container mx-auto px-6 flex flex-col items-center pt-20 pb-16">
             <div class="flex flex-col md:flex-row items-center gap-12 mb-12">
-                <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
-                    class="h-20 sm:h-28 md:h-36 lg:h-40 w-auto drop-shadow-xl hover-scale transition-transform">
+                <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" @click="goHome()"
+                    class="h-20 sm:h-28 md:h-36 lg:h-40 w-auto drop-shadow-xl hover-scale transition-transform cursor-pointer">
 
                 <!-- Square Total Container -->
                 <div
