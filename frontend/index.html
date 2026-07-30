@@ -1042,8 +1042,8 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-900 overflow-hidden" x-data="mainApp"
-    x-bind:class="galleryOpen || donateOpen || reviewOpen || showIntro ? 'overflow-hidden' : ''">
+<body class="bg-gray-50 text-gray-900" x-data="mainApp"
+    x-bind:class="galleryOpen || donateOpen || reviewOpen || declareOpen || adminOpen || showIntro ? 'overflow-hidden' : ''">
 
     <!-- Video Intro Overlay (No x-cloak so it covers viewport immediately on page load, eliminating homepage flash glitch) -->
     <div x-show="showIntro" x-transition:leave="transition ease-in-out duration-700"
