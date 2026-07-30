@@ -21,20 +21,26 @@ module.exports = function(app, deps) {
         const donorMap = new Map();
         sqlResults.forEach(d => {
             const item = d.toJSON ? d.toJSON() : d;
-            const key = item.id ? `id_${item.id}` : `${item.phoneNumber}_${item.fullName}`;
-            donorMap.set(key, item);
+            if (item.phoneNumber && item.fullName) {
+                const key = `${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`;
+                donorMap.set(key, item);
+            }
         });
         jsonDonors.forEach(item => {
-            const itemKey = item.id ? `id_${item.id}` : `${item.phoneNumber}_${item.fullName}`;
-            if (!donorMap.has(itemKey)) {
-                donorMap.set(itemKey, item);
+            if (item.phoneNumber && item.fullName) {
+                const key = `${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`;
+                if (!donorMap.has(key)) {
+                    donorMap.set(key, item);
+                }
             }
         });
         if (Array.isArray(fallbackDonorsStore)) {
             fallbackDonorsStore.forEach(item => {
-                const itemKey = item.id ? `id_${item.id}` : `${item.phoneNumber}_${item.fullName}`;
-                if (!donorMap.has(itemKey)) {
-                    donorMap.set(itemKey, item);
+                if (item.phoneNumber && item.fullName) {
+                    const key = `${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`;
+                    if (!donorMap.has(key)) {
+                        donorMap.set(key, item);
+                    }
                 }
             });
         }
@@ -134,9 +140,6 @@ module.exports = function(app, deps) {
 
     app.get('/api/v1/admin/stats', verifyAdmin, async (req, res) => {
         try {
-            if (typeof syncSheetsToSQL === 'function') {
-                syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
-            }
             const allDonors = await getAllMergedDonors();
             const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
             const stats = groups.map(g => ({
@@ -151,9 +154,6 @@ module.exports = function(app, deps) {
 
     app.get('/api/v1/admin/donors', verifyAdmin, async (req, res) => {
         try {
-            if (typeof syncSheetsToSQL === 'function') {
-                syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
-            }
             const { bloodGroup, address, pincode, idNumber } = req.query;
             let allDonors = await getAllMergedDonors();
 
