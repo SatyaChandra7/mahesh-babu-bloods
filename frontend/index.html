@@ -1658,10 +1658,55 @@
                             <input type="text" name="fullName" placeholder="Mahesh Babu" required
                                 class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
                         </div>
-                        <div class="space-y-2">
-                            <label class="text-sm font-bold text-gray-700 ml-1">Date of Birth</label>
-                            <input type="date" name="dateOfBirth" required
-                                class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
+                        <div class="space-y-2" x-data="{
+                            rawDob: '',
+                            formatManualInput(e) {
+                                let val = e.target.value.replace(/\D/g, '');
+                                if (val.length > 8) val = val.substring(0, 8);
+                                if (val.length >= 4) {
+                                    val = val.substring(0, 2) + '/' + val.substring(2, 4) + '/' + val.substring(4);
+                                } else if (val.length >= 2) {
+                                    val = val.substring(0, 2) + '/' + val.substring(2);
+                                }
+                                this.rawDob = val;
+                            },
+                            get isoDate() {
+                                if (!this.rawDob || this.rawDob.length < 10) return '';
+                                const parts = this.rawDob.split('/');
+                                if (parts.length === 3 && parts[0].length === 2 && parts[1].length === 2 && parts[2].length === 4) {
+                                    return `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                }
+                                return this.rawDob;
+                            },
+                            onNativeDateChange(e) {
+                                const val = e.target.value;
+                                if (val && val.includes('-')) {
+                                    const parts = val.split('-');
+                                    if (parts.length === 3) {
+                                        this.rawDob = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                    }
+                                }
+                            }
+                        }">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Date of Birth (DD/MM/YYYY)</label>
+                            <div class="relative flex items-center">
+                                <input type="text" 
+                                       x-model="rawDob"
+                                       @input="formatManualInput($event)"
+                                       placeholder="DD/MM/YYYY (e.g. 09/08/1975)"
+                                       maxlength="10"
+                                       required
+                                       class="w-full px-5 py-4 pr-14 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base font-semibold">
+                                <label class="absolute right-3 p-2 text-red-600 hover:bg-red-50 rounded-xl cursor-pointer transition-all flex items-center justify-center" title="Pick from Calendar">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <input type="date" 
+                                           @change="onNativeDateChange($event)"
+                                           class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                                </label>
+                                <input type="hidden" name="dateOfBirth" :value="isoDate || rawDob">
+                            </div>
                         </div>
                     </div>
 
