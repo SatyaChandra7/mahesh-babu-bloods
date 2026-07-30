@@ -16,6 +16,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('mainApp', () => ({
                 showIntro: true,
+                introMuted: true,
                 donateOpen: false,
                 galleryOpen: false,
                 reviewOpen: false,
@@ -34,7 +35,26 @@
                 certificateLoading: false,
                 certificateDonorName: '',
 
+                closeIntro() {
+                    this.showIntro = false;
+                    if (this.$refs.introVideo) {
+                        try {
+                            this.$refs.introVideo.pause();
+                        } catch (e) {}
+                    }
+                },
+
+                toggleIntroMute() {
+                    if (this.$refs.introVideo) {
+                        this.introMuted = !this.introMuted;
+                        this.$refs.introVideo.muted = this.introMuted;
+                    }
+                },
+
                 get apiBase() {
+                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                        return window.location.origin;
+                    }
                     const url = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL') || 'https://mb-bloods.vercel.app';
                     return url.replace(/\/+$/, '');
                 },
@@ -58,7 +78,23 @@
                         this.openAdminPanel();
                     }
 
-                    setTimeout(() => { this.showIntro = false; }, 3200);
+                    this.$nextTick(() => {
+                        if (this.$refs.introVideo) {
+                            const playPromise = this.$refs.introVideo.play();
+                            if (playPromise !== undefined) {
+                                playPromise.catch(() => {
+                                    console.log('Video autoplay handled by browser policy');
+                                });
+                            }
+                        }
+                    });
+
+                    // Fallback timer if video takes longer or fails to emit ended event
+                    setTimeout(() => {
+                        if (this.showIntro) {
+                            this.closeIntro();
+                        }
+                    }, 20000);
                 },
 
                 async fetchAlert() {
@@ -322,6 +358,7 @@
                 adminToken: localStorage.getItem('adminToken') || null,
                 adminAuthenticated: false,
                 adminPhone: '',
+                adminPassword: '',
                 adminLoading: false,
                 adminError: '',
                 adminStats: [],
@@ -347,14 +384,14 @@
                 },
 
                 async adminLogin() {
-                    if (!this.adminPhone) return;
+                    if (!this.adminPhone || !this.adminPassword) return;
                     this.adminLoading = true;
                     this.adminError = '';
                     try {
                         const res = await fetch(`${this.apiBase}/api/v1/admin/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phoneNumber: this.adminPhone })
+                            body: JSON.stringify({ phoneNumber: this.adminPhone, password: this.adminPassword })
                         });
                         const data = await res.json();
                         if (data.success) {
@@ -362,6 +399,7 @@
                             localStorage.setItem('adminToken', data.token);
                             this.adminAuthenticated = true;
                             this.adminPhone = '';
+                            this.adminPassword = '';
                             this.fetchAdminStats();
                             this.fetchAdminDonors();
                             this.fetchAdminFeedbacks();
@@ -1120,13 +1158,32 @@
 <body class="bg-gray-50 text-gray-900" x-data="mainApp"
     x-bind:class="galleryOpen || donateOpen || reviewOpen || showIntro ? 'overflow-hidden' : ''">
 
-    <!-- Netflix-style Intro Splash Overlay -->
-    <div x-show="showIntro" x-transition:leave="transition ease-in-out duration-500"
-        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="intro-overlay" x-cloak>
-        <div class="intro-logo-container">
-            <div class="intro-logo-glow"></div>
-            <img src="assets/333.png" alt="MB Bloods Logo" class="intro-logo">
-            <div class="intro-shine"></div>
+    <!-- Cinematic Video Intro Overlay -->
+    <div x-show="showIntro" 
+         x-transition:leave="transition ease-in-out duration-700"
+         x-transition:leave-start="opacity-100 scale-100" 
+         x-transition:leave-end="opacity-0 scale-105" 
+         class="fixed inset-0 z-[99999] bg-black flex flex-col items-center justify-center overflow-hidden" 
+         x-cloak>
+        
+        <!-- Red Ambient Radial Glow Backdrop -->
+        <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,_rgba(220,38,38,0.25)_0%,_transparent_75%)] opacity-80 animate-pulse"></div>
+
+
+
+        <!-- Intro Video Player Display -->
+        <div class="relative w-full h-full flex items-center justify-center p-2 sm:p-6 md:p-10">
+            <video x-ref="introVideo"
+                   :src="window.innerWidth < 768 ? 'assets/new%20mobile%20.mp4' : 'assets/new%20web%20.mp4'"
+                   autoplay 
+                   muted 
+                   playsinline
+                   @ended="closeIntro()"
+                   @error="closeIntro()"
+                   class="w-full h-full object-contain max-h-screen rounded-xl sm:rounded-2xl md:rounded-3xl border-none">
+                <source src="assets/new%20mobile%20.mp4" type="video/mp4" media="(max-width: 767px)">
+                <source src="assets/new%20web%20.mp4" type="video/mp4" media="(min-width: 768px)">
+            </video>
         </div>
     </div>
 
@@ -1560,10 +1617,14 @@
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-        (@click.away="donateOpen = false" x-cloak)>
+        @keydown.window.escape="donateOpen = false"
+        x-cloak>
+
+        <!-- Backdrop click handler (Empty space around form) -->
+        <div class="absolute inset-0 z-0 cursor-pointer" @click="donateOpen = false"></div>
 
         <div
-            class="glass rounded-[2rem] w-full max-w-6xl max-h-[90vh] md:aspect-[9/6] overflow-hidden flex flex-col md:flex-row relative">
+            class="glass rounded-[2rem] w-full max-w-6xl max-h-[90vh] md:aspect-[9/6] overflow-hidden flex flex-col md:flex-row relative z-10">
 
             <!-- Left Side: Image -->
             <div
@@ -1766,26 +1827,130 @@
             </style>
 
             <div class="w-full flex-grow overflow-y-auto p-4 md:p-10 gallery-scrollbar overscroll-contain"
-                x-data="{ peekImage: null }">
-                <!-- Gallery Grid (Row-wise Grid) -->
-                <div class="grid grid-cols-4 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-6">
+                x-data="{ 
+                    viewerOpen: false, 
+                    activeIdx: 0,
+                    touchStartX: 0,
+                    touchEndX: 0,
+                    openViewer(index) {
+                        this.activeIdx = index;
+                        this.viewerOpen = true;
+                    },
+                    closeViewer() {
+                        this.viewerOpen = false;
+                    },
+                    nextImage() {
+                        if (this.galleryImages && this.galleryImages.length > 0) {
+                            this.activeIdx = (this.activeIdx + 1) % this.galleryImages.length;
+                        }
+                    },
+                    prevImage() {
+                        if (this.galleryImages && this.galleryImages.length > 0) {
+                            this.activeIdx = (this.activeIdx - 1 + this.galleryImages.length) % this.galleryImages.length;
+                        }
+                    },
+                    handleTouchStart(e) {
+                        this.touchStartX = e.changedTouches[0].screenX;
+                    },
+                    handleTouchEnd(e) {
+                        this.touchEndX = e.changedTouches[0].screenX;
+                        if (this.touchStartX - this.touchEndX > 40) {
+                            this.nextImage();
+                        } else if (this.touchEndX - this.touchStartX > 40) {
+                            this.prevImage();
+                        }
+                    }
+                }"
+                @keydown.window.escape="closeViewer()"
+                @keydown.window.left="if (viewerOpen) prevImage()"
+                @keydown.window.right="if (viewerOpen) nextImage()">
+                
+                <!-- Gallery Grid (Original Aspect Ratio Masonry Layout) -->
+                <div class="columns-2 sm:columns-3 md:columns-4 gap-3 sm:gap-6 space-y-3 sm:space-y-6">
                     <template x-for="(img, index) in galleryImages" :key="index">
-                        <div class="relative w-full h-full flex items-center justify-center">
-                            <img :src="img" @touchstart="peekImage = img" @touchend="peekImage = null"
-                                @touchcancel="peekImage = null" @mousedown="peekImage = img" @mouseup="peekImage = null"
-                                @mouseleave="peekImage = null"
-                                class="w-full h-auto rounded-xl sm:rounded-2xl shadow-md hover:scale-[1.02] hover:shadow-2xl transition-all cursor-pointer border border-gray-100 hover:border-red-600 select-none"
-                                style="-webkit-touch-callout: none;" loading="lazy">
+                        <div class="break-inside-avoid relative w-full group overflow-hidden rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl border border-gray-200 hover:border-red-500 transition-all duration-300 cursor-pointer bg-gray-100/80 flex items-center justify-center"
+                             @click="openViewer(index)">
+                            <img :src="img" 
+                                 class="w-full h-auto block object-contain group-hover:scale-[1.02] transition-transform duration-500 select-none rounded-xl sm:rounded-2xl"
+                                 loading="lazy" alt="Gallery item">
+                            <div class="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl sm:rounded-2xl">
+                                <div class="p-2.5 rounded-full bg-white/20 backdrop-blur-md text-white border border-white/30 transform scale-90 group-hover:scale-100 transition-transform">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"></path>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>
 
-                <!-- Peek Modal -->
-                <div x-show="peekImage !== null" x-transition.opacity.duration.200ms
-                    class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md pointer-events-none px-4"
-                    x-cloak>
-                    <img :src="peekImage"
-                        class="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl scale-100" />
+                <!-- Full-Screen Lightbox Slider Viewer Modal -->
+                <div x-show="viewerOpen" 
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     x-transition:leave="transition ease-in duration-200"
+                     x-transition:leave-start="opacity-100 scale-100"
+                     x-transition:leave-end="opacity-0 scale-95"
+                     class="fixed inset-0 z-[200] flex flex-col items-center justify-between bg-black/95 backdrop-blur-xl p-4 sm:p-6 md:p-8 select-none"
+                     @touchstart="handleTouchStart($event)"
+                     @touchend="handleTouchEnd($event)"
+                     x-cloak>
+
+                    <!-- Top Toolbar: Counter & Close Button -->
+                    <div class="w-full max-w-7xl flex items-center justify-between z-20 pt-2 pb-4">
+                        <div class="px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-md text-white text-xs sm:text-sm font-bold tracking-wider">
+                            <span x-text="(activeIdx + 1)"></span> <span class="text-white/60">/</span> <span x-text="galleryImages.length"></span>
+                        </div>
+
+                        <button @click="closeViewer()" 
+                                class="p-3 rounded-full bg-white/10 hover:bg-red-600 text-white border border-white/20 backdrop-blur-md transition-all active:scale-90"
+                                title="Close viewer (Esc)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Main Image Slider Area -->
+                    <div class="relative w-full max-w-6xl flex-grow flex items-center justify-center my-auto px-2 sm:px-12">
+                        <!-- Prev Button -->
+                        <button @click.stop="prevImage()" 
+                                class="absolute left-1 sm:left-4 z-30 p-3 sm:p-4 rounded-full bg-black/40 hover:bg-red-600/90 border border-white/20 text-white backdrop-blur-md transition-all transform hover:scale-110 active:scale-95 shadow-2xl"
+                                title="Previous image (Left Arrow)">
+                            <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Active Image Display -->
+                        <div class="relative max-w-full max-h-[70vh] sm:max-h-[78vh] flex items-center justify-center overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+                            <img :src="galleryImages[activeIdx]" 
+                                 :key="activeIdx"
+                                 class="max-w-full max-h-[70vh] sm:max-h-[78vh] object-contain rounded-2xl select-none" 
+                                 alt="Enlarged gallery image">
+                        </div>
+
+                        <!-- Next Button -->
+                        <button @click.stop="nextImage()" 
+                                class="absolute right-1 sm:right-4 z-30 p-3 sm:p-4 rounded-full bg-black/40 hover:bg-red-600/90 border border-white/20 text-white backdrop-blur-md transition-all transform hover:scale-110 active:scale-95 shadow-2xl"
+                                title="Next image (Right Arrow)">
+                            <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Bottom Thumbnail Strip -->
+                    <div class="w-full max-w-4xl py-3 overflow-x-auto custom-scrollbar flex items-center justify-center gap-2 z-20">
+                        <template x-for="(img, idx) in galleryImages" :key="idx">
+                            <button @click="activeIdx = idx"
+                                    class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all duration-200"
+                                    :class="activeIdx === idx ? 'border-red-500 scale-105 shadow-lg shadow-red-500/40 opacity-100' : 'border-transparent opacity-50 hover:opacity-80'">
+                                <img :src="img" class="w-full h-full object-cover" alt="Thumbnail">
+                            </button>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2103,7 +2268,13 @@
                 <form @submit.prevent="adminLogin()" class="space-y-5">
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">WhatsApp Phone Number</label>
-                        <input type="text" x-model="adminPhone" required placeholder="e.g. 919948550301"
+                        <input type="text" x-model="adminPhone" required placeholder="e.g. 91912345678"
+                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Admin Password</label>
+                        <input type="password" x-model="adminPassword" required placeholder="Enter password"
                             class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
                     </div>
 

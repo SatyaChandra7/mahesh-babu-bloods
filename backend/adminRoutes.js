@@ -80,21 +80,32 @@ module.exports = function(app, deps) {
     });
 
     app.post('/api/v1/admin/login', loginLimiter, (req, res) => {
-        const { phoneNumber } = req.body;
+        const { phoneNumber, password } = req.body;
         if (!phoneNumber) {
             return res.status(400).json({ success: false, message: 'Phone number is required' });
         }
+        if (!password) {
+            return res.status(400).json({ success: false, message: 'Password is required' });
+        }
         const cleanNumber = phoneNumber.replace(/\D/g, '');
         
-        if (WHITELISTED_NUMBERS.includes(cleanNumber)) {
-            const token = jwt.sign({ username: cleanNumber, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
-            res.json({ success: true, token });
-        } else {
-            res.status(403).json({ 
+        if (!WHITELISTED_NUMBERS.includes(cleanNumber)) {
+            return res.status(403).json({ 
                 success: false, 
                 message: 'WARNING: Unauthorized access attempt! This number is not registered for admin access.' 
             });
         }
+
+        const expectedPassword = process.env.ADMIN_PASSWORD || 'Mahesh@094005';
+        if (password !== expectedPassword) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid admin password.'
+            });
+        }
+
+        const token = jwt.sign({ username: cleanNumber, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
+        res.json({ success: true, token });
     });
 
     app.post('/api/v1/admin/upload', verifyAdmin, upload.single('image'), (req, res) => {

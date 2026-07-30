@@ -227,9 +227,15 @@
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Mobile Phone Number</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-red-600 font-black text-sm">+91</span>
-                                <input type="tel" x-model="credentials.phoneNumber" placeholder="9948550301" required autofocus
+                                <input type="tel" x-model="credentials.phoneNumber" placeholder="Admin mobile number" required autofocus
                                     class="w-full pl-14 pr-4 py-4 bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20 text-base font-semibold transition-all">
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Admin Password</label>
+                            <input type="password" x-model="credentials.password" placeholder="Admin password" required
+                                class="w-full px-4 py-4 bg-slate-50 border border-slate-300 rounded-2xl text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20 text-base font-semibold transition-all">
                         </div>
 
                         <div x-show="loginError" class="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs font-bold text-center flex items-center justify-center gap-2" x-text="loginError" x-cloak></div>
@@ -782,7 +788,7 @@
                 },
                 isLoading: false,
                 loginError: '',
-                credentials: { phoneNumber: '' },
+                credentials: { phoneNumber: '', password: '' },
                 stats: [],
                 totalDonors: 0,
                 donationCount: 0,
@@ -851,7 +857,7 @@
                         const res = await fetch(`${this.apiBase}/api/v1/admin/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ phoneNumber: this.credentials.phoneNumber })
+                            body: JSON.stringify({ phoneNumber: this.credentials.phoneNumber, password: this.credentials.password })
                         });
                         const data = await res.json();
                         
@@ -859,10 +865,10 @@
                             this.token = data.token;
                             localStorage.setItem('adminToken', data.token);
                             this.isAuthenticated = true;
-                            this.credentials = { phoneNumber: '' };
+                            this.credentials = { phoneNumber: '', password: '' };
                             this.loadDashboardData();
                         } else {
-                            this.loginError = data.message || 'Login failed. Verify phone number.';
+                            this.loginError = data.message || 'Login failed. Verify credentials.';
                         }
                     } catch (err) {
                         this.loginError = 'Server connection error.';
