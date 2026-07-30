@@ -60,8 +60,8 @@ const Feedback = sequelize.define('Feedback', {
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 const WHITELISTED_NUMBERS = [
-    process.env.ADMIN_WHATSAPP_1 || '919876543210',
-    process.env.ADMIN_WHATSAPP_2 || '919012345678'
+    process.env.ADMIN_WHATSAPP_1 || '919948550301',
+    process.env.ADMIN_WHATSAPP_2 || '919491463888'
 ];
 let adminOtps = new Map();
 const sharedState = { currentAlert: null };

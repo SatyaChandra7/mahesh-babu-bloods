@@ -281,8 +281,8 @@ const ADMIN_USERS = [
 
 // Whitelisted WhatsApp Numbers for Admin Login
 const WHITELISTED_NUMBERS = [
-    process.env.ADMIN_WHATSAPP_1 || '919876543210', // Replace with real number
-    process.env.ADMIN_WHATSAPP_2 || '919012345678'  // Replace with real number
+    process.env.ADMIN_WHATSAPP_1 || '919948550301',
+    process.env.ADMIN_WHATSAPP_2 || '919491463888'
 ];
 let adminOtps = new Map(); // Temporary OTP storage
 
