@@ -8,35 +8,39 @@ module.exports = function(app, deps) {
     async function getAllMergedDonors() {
         let sqlResults = [];
         try {
-            sqlResults = await Donor.findAll({ order: [['registeredAt', 'DESC']] });
+            sqlResults = await Donor.findAll();
         } catch (e) {
             console.error('SQL query error:', e.message);
         }
         let jsonDonors = [];
         if (typeof loadDonorsFromJSON === 'function') {
-            jsonDonors = loadDonorsFromJSON();
+            try {
+                jsonDonors = loadDonorsFromJSON();
+            } catch (e) {}
         }
         const donorMap = new Map();
         sqlResults.forEach(d => {
             const item = d.toJSON ? d.toJSON() : d;
-            const key = `${item.phoneNumber}_${item.fullName}`;
+            const key = item.id ? `id_${item.id}` : `${item.phoneNumber}_${item.fullName}`;
             donorMap.set(key, item);
         });
         jsonDonors.forEach(item => {
-            const key = `${item.phoneNumber}_${item.fullName}`;
-            if (!donorMap.has(key)) {
-                donorMap.set(key, item);
+            const itemKey = item.id ? `id_${item.id}` : `${item.phoneNumber}_${item.fullName}`;
+            if (!donorMap.has(itemKey)) {
+                donorMap.set(itemKey, item);
             }
         });
         if (Array.isArray(fallbackDonorsStore)) {
             fallbackDonorsStore.forEach(item => {
-                const key = `${item.phoneNumber}_${item.fullName}`;
-                if (!donorMap.has(key)) {
-                    donorMap.set(key, item);
+                const itemKey = item.id ? `id_${item.id}` : `${item.phoneNumber}_${item.fullName}`;
+                if (!donorMap.has(itemKey)) {
+                    donorMap.set(itemKey, item);
                 }
             });
         }
-        return Array.from(donorMap.values());
+        const merged = Array.from(donorMap.values());
+        merged.sort((a, b) => new Date(b.registeredAt || b.createdAt || b.id || 0) - new Date(a.registeredAt || a.createdAt || a.id || 0));
+        return merged;
     }
 
     // Verification Middleware
@@ -131,7 +135,7 @@ module.exports = function(app, deps) {
     app.get('/api/v1/admin/stats', verifyAdmin, async (req, res) => {
         try {
             if (typeof syncSheetsToSQL === 'function') {
-                await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
+                syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
             }
             const allDonors = await getAllMergedDonors();
             const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
@@ -148,7 +152,7 @@ module.exports = function(app, deps) {
     app.get('/api/v1/admin/donors', verifyAdmin, async (req, res) => {
         try {
             if (typeof syncSheetsToSQL === 'function') {
-                await syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
+                syncSheetsToSQL().catch(e => console.error('Admin sync error:', e.message));
             }
             const { bloodGroup, address, pincode, idNumber } = req.query;
             let allDonors = await getAllMergedDonors();
