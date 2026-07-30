@@ -201,7 +201,8 @@ function createFallbackSequelize() {
 }
 
 function initSequelize() {
-    if (process.env.DATABASE_URL) {
+    const dbUrl = process.env.DATABASE_URL || 'postgresql://postgres:Maheshbabu0809@db.komrntxfmoubhyckbkze.supabase.co:5432/postgres';
+    if (dbUrl) {
         console.log('Using PostgreSQL database connection');
         try {
             const options = {
@@ -212,7 +213,7 @@ function initSequelize() {
                 logging: false
             };
             if (pgDriver) options.dialectModule = pgDriver;
-            return new Sequelize(process.env.DATABASE_URL, options);
+            return new Sequelize(dbUrl, options);
         } catch (err) {
             console.error('Postgres Sequelize Initialization Error:', err.message);
         }
@@ -637,7 +638,8 @@ require('./adminRoutes')(app, {
     Feedback,
     sharedState,
     syncSheetsToSQL,
-    loadDonorsFromJSON
+    loadDonorsFromJSON,
+    fallbackDonorsStore
 });
 
 const feedbackLimiter = rateLimit({

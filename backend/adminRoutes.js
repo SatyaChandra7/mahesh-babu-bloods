@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
 
 module.exports = function(app, deps) {
-    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState, syncSheetsToSQL, loadDonorsFromJSON } = deps;
+    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore } = deps;
 
     async function getAllMergedDonors() {
         let sqlResults = [];
@@ -28,6 +28,14 @@ module.exports = function(app, deps) {
                 donorMap.set(key, item);
             }
         });
+        if (Array.isArray(fallbackDonorsStore)) {
+            fallbackDonorsStore.forEach(item => {
+                const key = `${item.phoneNumber}_${item.fullName}`;
+                if (!donorMap.has(key)) {
+                    donorMap.set(key, item);
+                }
+            });
+        }
         return Array.from(donorMap.values());
     }
 
