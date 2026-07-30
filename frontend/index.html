@@ -16,7 +16,6 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('mainApp', () => ({
                 showIntro: true,
-                introMuted: true,
                 donateOpen: false,
                 galleryOpen: false,
                 reviewOpen: false,
@@ -56,13 +55,6 @@
                         try {
                             this.$refs.introVideo.pause();
                         } catch (e) { }
-                    }
-                },
-
-                toggleIntroMute() {
-                    if (this.$refs.introVideo) {
-                        this.introMuted = !this.introMuted;
-                        this.$refs.introVideo.muted = this.introMuted;
                     }
                 },
 
@@ -389,13 +381,10 @@
 
                 openAdminPanel() {
                     this.adminOpen = true;
-                    if (this.adminToken) {
-                        this.adminAuthenticated = true;
-                        this.fetchAdminStats();
-                        this.fetchAdminDonors();
-                        this.fetchAdminFeedbacks();
-                        this.fetchAdminAlert();
-                    }
+                    this.adminAuthenticated = false;
+                    this.adminPhone = '';
+                    this.adminPassword = '';
+                    this.adminError = '';
                 },
 
                 async adminLogin() {
@@ -433,6 +422,9 @@
                     this.adminToken = null;
                     localStorage.removeItem('adminToken');
                     this.adminAuthenticated = false;
+                    this.adminPhone = '';
+                    this.adminPassword = '';
+                    this.adminError = '';
                     this.adminDonors = [];
                     this.adminFeedbacks = [];
                     this.adminHasSearched = false;
@@ -2191,7 +2183,7 @@
             class="glass-3d-card rounded-[2rem] w-full max-w-6xl max-h-[92vh] overflow-y-auto custom-scrollbar relative p-6 md:p-10 my-auto shadow-2xl border border-white/60">
 
             <!-- Close Button -->
-            <button @click="adminOpen = false"
+            <button @click="adminOpen = false; adminAuthenticated = false;"
                 class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
                 <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
