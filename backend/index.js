@@ -874,7 +874,8 @@ require('./adminRoutes')(app, {
     sharedState,
     syncSheetsToSQL,
     loadDonorsFromJSON,
-    fallbackDonorsStore
+    fallbackDonorsStore,
+    getTotalDonationImagesCount
 });
 
 const feedbackLimiter = rateLimit({

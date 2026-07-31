@@ -595,6 +595,10 @@
 
                         const data = await res.json();
                         if (data.success) {
+                            if (data.count !== undefined) {
+                                this.donationCount = data.count;
+                                this.animateCounter(this.donationCount);
+                            }
                             alert('Image uploaded successfully! Gallery and count updated.');
                             this.adminSelectedFile = null;
                             this.adminPreviewUrl = '';

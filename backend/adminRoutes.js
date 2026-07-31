@@ -3,8 +3,9 @@ const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
 
 module.exports = function(app, deps) {
-    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, GalleryImage, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore } = deps;
+    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, GalleryImage, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore, getTotalDonationImagesCount } = deps;
     const fs = require('fs');
+    const path = require('path');
 
     async function getAllMergedDonors() {
         let sqlResults = [];
@@ -159,9 +160,36 @@ module.exports = function(app, deps) {
                 }
             }
 
-            res.json({ success: true, filepath: `api/v1/public/gallery/image/${encodeURIComponent(filename)}` });
+            const newCount = typeof getTotalDonationImagesCount === 'function' ? await getTotalDonationImagesCount() : 0;
+            res.json({ 
+                success: true, 
+                count: newCount,
+                filepath: `api/v1/public/gallery/image/${encodeURIComponent(filename)}` 
+            });
         } catch (err) {
             console.error('Upload handler error:', err.message);
+            res.status(500).json({ success: false, message: err.message });
+        }
+    });
+
+    app.delete('/api/v1/admin/gallery/:filename', verifyAdmin, async (req, res) => {
+        try {
+            const filename = req.params.filename;
+            if (GalleryImage) {
+                try {
+                    await GalleryImage.destroy({ where: { filename } });
+                } catch (e) {}
+            }
+
+            // Remove local file if exists
+            const repoDir = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH, filename);
+            if (fs.existsSync(repoDir)) {
+                try { fs.unlinkSync(repoDir); } catch (e) {}
+            }
+
+            const newCount = typeof getTotalDonationImagesCount === 'function' ? await getTotalDonationImagesCount() : 0;
+            res.json({ success: true, count: newCount });
+        } catch (err) {
             res.status(500).json({ success: false, message: err.message });
         }
     });
