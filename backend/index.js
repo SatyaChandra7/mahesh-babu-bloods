@@ -552,6 +552,63 @@ app.get(['/health', '/api/health'], (req, res) => res.json({
     hasSheets: !!sheets
 }));
 
+async function findDuplicateDonor(fullName, phoneNumber) {
+    if (!fullName || !phoneNumber) return null;
+    const cleanName = String(fullName).trim().toLowerCase();
+    const cleanPhone = String(phoneNumber).trim();
+    if (!cleanName || !cleanPhone) return null;
+
+    if (isDbConnected && Donor) {
+        try {
+            const matches = await Donor.findAll({
+                where: { phoneNumber: cleanPhone }
+            });
+            const found = matches.find(d => String(d.fullName || '').trim().toLowerCase() === cleanName);
+            if (found) return found;
+        } catch (e) {
+            console.error('Error searching SQL DB for duplicate donor:', e.message);
+        }
+    }
+
+    const jsonDonors = loadDonorsFromJSON();
+    const foundJson = jsonDonors.find(d => 
+        String(d.phoneNumber || '').trim() === cleanPhone &&
+        String(d.fullName || '').trim().toLowerCase() === cleanName
+    );
+    if (foundJson) return foundJson;
+
+    if (Array.isArray(fallbackDonorsStore)) {
+        const foundFallback = fallbackDonorsStore.find(d => 
+            String(d.phoneNumber || '').trim() === cleanPhone &&
+            String(d.fullName || '').trim().toLowerCase() === cleanName
+        );
+        if (foundFallback) return foundFallback;
+    }
+
+    return null;
+}
+
+app.get('/api/v1/donors/check-duplicate', async (req, res) => {
+    try {
+        const { fullName, phoneNumber } = req.query;
+        if (!fullName || !phoneNumber) {
+            return res.json({ success: true, isDuplicate: false });
+        }
+        const existing = await findDuplicateDonor(fullName, phoneNumber);
+        if (existing) {
+            return res.json({ 
+                success: true, 
+                isDuplicate: true, 
+                message: 'This donor is already registered' 
+            });
+        }
+        return res.json({ success: true, isDuplicate: false });
+    } catch (err) {
+        console.error('Error checking duplicate donor:', err.message);
+        return res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 const donorLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 500, // Limit each IP to 500 donor registrations per windowMs
@@ -561,6 +618,19 @@ const donorLimiter = rateLimit({
 app.post('/api/v1/donors', donorLimiter, async (req, res) => {
     try {
         const { fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup, address } = req.body;
+        if (!fullName || !phoneNumber) {
+            return res.status(400).json({ success: false, message: 'Full name and phone number are required.' });
+        }
+
+        const duplicate = await findDuplicateDonor(fullName, phoneNumber);
+        if (duplicate) {
+            return res.status(400).json({
+                success: false,
+                duplicate: true,
+                message: 'This donor is already registered'
+            });
+        }
+
         let newDonor;
         try {
             newDonor = await Donor.create({
@@ -594,9 +664,53 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
     }
 });
 
+async function getTotalDonorsCount() {
+    let sqlResults = [];
+    if (isDbConnected && Donor) {
+        try {
+            sqlResults = await Donor.findAll();
+        } catch (e) {}
+    }
+    let jsonDonors = [];
+    if (typeof loadDonorsFromJSON === 'function') {
+        try {
+            jsonDonors = loadDonorsFromJSON();
+        } catch (e) {}
+    }
+    
+    const donorMap = new Set();
+    sqlResults.forEach(d => {
+        const item = d.toJSON ? d.toJSON() : d;
+        if (item.phoneNumber && item.fullName) {
+            donorMap.add(`${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`);
+        }
+    });
+    jsonDonors.forEach(item => {
+        if (item.phoneNumber && item.fullName) {
+            donorMap.add(`${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`);
+        }
+    });
+    if (Array.isArray(fallbackDonorsStore)) {
+        fallbackDonorsStore.forEach(item => {
+            if (item.phoneNumber && item.fullName) {
+                donorMap.add(`${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`);
+            }
+        });
+    }
+
+    if (donorMap.size > 0) return donorMap.size;
+
+    let count = 0;
+    if (isDbConnected && Donor) {
+        try { count = await Donor.count(); } catch (e) {}
+    }
+    if (!count) count = jsonDonors.length || (fallbackDonorsStore ? fallbackDonorsStore.length : 0);
+    return count;
+}
+
 app.get('/api/v1/donations/count', async (req, res) => {
     try {
-        const count = await Donor.count();
+        const count = await getTotalDonorsCount();
         res.json({ count });
     } catch (err) {
         res.json({ count: 0 });
