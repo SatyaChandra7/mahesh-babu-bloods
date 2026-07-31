@@ -1826,15 +1826,51 @@
                     background: #ef4444;
                     border-radius: 10px;
                 }
+
+                @keyframes galleryFlipNext {
+                    0% {
+                        transform: perspective(1000px) rotateY(-90deg) scale(0.92);
+                        opacity: 0.1;
+                    }
+                    100% {
+                        transform: perspective(1000px) rotateY(0deg) scale(1);
+                        opacity: 1;
+                    }
+                }
+
+                @keyframes galleryFlipPrev {
+                    0% {
+                        transform: perspective(1000px) rotateY(90deg) scale(0.92);
+                        opacity: 0.1;
+                    }
+                    100% {
+                        transform: perspective(1000px) rotateY(0deg) scale(1);
+                        opacity: 1;
+                    }
+                }
+
+                .gallery-flip-next {
+                    animation: galleryFlipNext 0.45s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+                    transform-style: preserve-3d;
+                    backface-visibility: hidden;
+                }
+
+                .gallery-flip-prev {
+                    animation: galleryFlipPrev 0.45s cubic-bezier(0.34, 1.3, 0.64, 1) forwards;
+                    transform-style: preserve-3d;
+                    backface-visibility: hidden;
+                }
             </style>
 
             <div class="w-full flex-grow overflow-y-auto p-4 md:p-10 gallery-scrollbar overscroll-contain" x-data="{ 
                     viewerOpen: false, 
                     activeIdx: 0,
+                    flipDir: 'next',
                     touchStartX: 0,
                     touchEndX: 0,
                     openViewer(index) {
                         this.activeIdx = index;
+                        this.flipDir = 'next';
                         this.viewerOpen = true;
                     },
                     closeViewer() {
@@ -1842,12 +1878,20 @@
                     },
                     nextImage() {
                         if (this.galleryImages && this.galleryImages.length > 0) {
+                            this.flipDir = 'next';
                             this.activeIdx = (this.activeIdx + 1) % this.galleryImages.length;
                         }
                     },
                     prevImage() {
                         if (this.galleryImages && this.galleryImages.length > 0) {
+                            this.flipDir = 'prev';
                             this.activeIdx = (this.activeIdx - 1 + this.galleryImages.length) % this.galleryImages.length;
+                        }
+                    },
+                    selectImage(idx) {
+                        if (idx !== this.activeIdx) {
+                            this.flipDir = idx > this.activeIdx ? 'next' : 'prev';
+                            this.activeIdx = idx;
                         }
                     },
                     handleTouchStart(e) {
@@ -1855,9 +1899,10 @@
                     },
                     handleTouchEnd(e) {
                         this.touchEndX = e.changedTouches[0].screenX;
-                        if (this.touchStartX - this.touchEndX > 40) {
+                        const diff = this.touchStartX - this.touchEndX;
+                        if (diff > 40) {
                             this.nextImage();
-                        } else if (this.touchEndX - this.touchStartX > 40) {
+                        } else if (diff < -40) {
                             this.prevImage();
                         }
                     }
@@ -1926,11 +1971,12 @@
                             </svg>
                         </button>
 
-                        <!-- Active Image Display -->
+                        <!-- Active Image Display with 3D Flip Animation -->
                         <div
                             class="relative max-w-full max-h-[70vh] sm:max-h-[78vh] flex items-center justify-center overflow-hidden rounded-2xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
                             <img :src="galleryImages[activeIdx]" :key="activeIdx"
                                 class="max-w-full max-h-[70vh] sm:max-h-[78vh] object-contain rounded-2xl select-none"
+                                :class="flipDir === 'next' ? 'gallery-flip-next' : 'gallery-flip-prev'"
                                 alt="Enlarged gallery image">
                         </div>
 
@@ -1949,7 +1995,7 @@
                     <div
                         class="w-full max-w-4xl py-3 overflow-x-auto custom-scrollbar flex items-center justify-center gap-2 z-20">
                         <template x-for="(img, idx) in galleryImages" :key="idx">
-                            <button @click="activeIdx = idx"
+                            <button @click="selectImage(idx)"
                                 class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border-2 transition-all duration-200"
                                 :class="activeIdx === idx ? 'border-red-500 scale-105 shadow-lg shadow-red-500/40 opacity-100' : 'border-transparent opacity-50 hover:opacity-80'">
                                 <img :src="img" class="w-full h-full object-cover" alt="Thumbnail">
