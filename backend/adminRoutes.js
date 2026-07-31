@@ -3,7 +3,8 @@ const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
 
 module.exports = function(app, deps) {
-    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore } = deps;
+    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, GalleryImage, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore } = deps;
+    const fs = require('fs');
 
     async function getAllMergedDonors() {
         let sqlResults = [];
@@ -134,8 +135,35 @@ module.exports = function(app, deps) {
         res.json({ success: true, token });
     });
 
-    app.post('/api/v1/admin/upload', verifyAdmin, upload.single('image'), (req, res) => {
-        res.json({ success: true, filepath: `assets/${GALLERY_PATH}/${req.file.filename}` });
+    app.post('/api/v1/admin/upload', verifyAdmin, upload.single('image'), async (req, res) => {
+        try {
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'No image file uploaded' });
+            }
+            const filename = req.file.filename;
+            const mimeType = req.file.mimetype || 'image/jpeg';
+
+            if (req.file.path && fs.existsSync(req.file.path)) {
+                try {
+                    const fileBuffer = fs.readFileSync(req.file.path);
+                    const base64Data = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+
+                    if (GalleryImage) {
+                        await GalleryImage.findOrCreate({
+                            where: { filename },
+                            defaults: { filename, imageData: base64Data, mimeType }
+                        });
+                    }
+                } catch (dbErr) {
+                    console.error('Error saving uploaded image to DB:', dbErr.message);
+                }
+            }
+
+            res.json({ success: true, filepath: `api/v1/public/gallery/image/${encodeURIComponent(filename)}` });
+        } catch (err) {
+            console.error('Upload handler error:', err.message);
+            res.status(500).json({ success: false, message: err.message });
+        }
     });
 
     app.get('/api/v1/admin/stats', verifyAdmin, async (req, res) => {

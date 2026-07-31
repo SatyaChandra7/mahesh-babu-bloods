@@ -279,6 +279,15 @@ const Feedback = sequelize.define('Feedback', {
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 });
 
+// GalleryImage Model (Database Storage for Our Work Gallery)
+const GalleryImage = sequelize.define('GalleryImage', {
+    filename: { type: DataTypes.STRING, allowNull: false, unique: true },
+    imageData: { type: DataTypes.TEXT, allowNull: false },
+    mimeType: { type: DataTypes.STRING, defaultValue: 'image/jpeg' },
+    uploadedAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
+});
+
+
 // Admin Config
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
 const ADMIN_USERS = [
@@ -323,6 +332,57 @@ const SPREADSHEET_ID = process.env.GOOGLE_SPREADSHEET_ID;
 let sheets;
 let isInitialized = false;
 
+async function syncLocalImagesToDB() {
+    try {
+        const repoDir = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH);
+        if (!fs.existsSync(repoDir)) return;
+        const localFiles = fs.readdirSync(repoDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f));
+        if (localFiles.length === 0) return;
+
+        let dbFilenames = new Set();
+        if (isDbConnected && GalleryImage) {
+            try {
+                const dbRecords = await GalleryImage.findAll({ attributes: ['filename'] });
+                dbRecords.forEach(r => dbFilenames.add(r.filename));
+            } catch (e) {
+                console.error('Error querying GalleryImage table during auto-sync:', e.message);
+            }
+        }
+
+        let syncedCount = 0;
+        for (const filename of localFiles) {
+            if (!dbFilenames.has(filename)) {
+                try {
+                    const filePath = path.join(repoDir, filename);
+                    const fileBuffer = fs.readFileSync(filePath);
+                    const ext = path.extname(filename).toLowerCase().replace('.', '');
+                    const mimeType = ext === 'png' ? 'image/png' : ext === 'gif' ? 'image/gif' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+                    const base64Data = `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
+
+                    if (isDbConnected && GalleryImage) {
+                        await GalleryImage.findOrCreate({
+                            where: { filename },
+                            defaults: {
+                                filename,
+                                imageData: base64Data,
+                                mimeType
+                            }
+                        });
+                        syncedCount++;
+                    }
+                } catch (err) {
+                    console.error(`Failed to auto-sync image ${filename}:`, err.message);
+                }
+            }
+        }
+        if (syncedCount > 0) {
+            console.log(`✅ Auto-synced ${syncedCount} gallery images to database.`);
+        }
+    } catch (err) {
+        console.error('syncLocalImagesToDB error:', err.message);
+    }
+}
+
 async function initializeApp() {
     if (isInitialized) return;
     
@@ -333,6 +393,7 @@ async function initializeApp() {
             isDbConnected = true;
             await sequelize.sync({ alter: false });
             console.log(`SQL Database (${dbDialect}) initialized successfully.`);
+            await syncLocalImagesToDB();
         }
     } catch (err) {
         isDbConnected = false;
@@ -708,20 +769,96 @@ async function getTotalDonorsCount() {
     return count;
 }
 
+async function getTotalDonationImagesCount() {
+    try {
+        let filesSet = new Set();
+
+        if (isDbConnected && GalleryImage) {
+            try {
+                const dbRecords = await GalleryImage.findAll({ attributes: ['filename'] });
+                dbRecords.forEach(r => filesSet.add(r.filename));
+            } catch (e) {}
+        }
+
+        let repoDir = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH);
+        let tmpDir = UPLOAD_DIR;
+        if (fs.existsSync(repoDir)) {
+            try {
+                fs.readdirSync(repoDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
+            } catch (e) {}
+        }
+        if (fs.existsSync(tmpDir) && tmpDir !== repoDir) {
+            try {
+                fs.readdirSync(tmpDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
+            } catch (e) {}
+        }
+
+        if (filesSet.size > 0) return filesSet.size;
+    } catch (e) {}
+
+    return await getTotalDonorsCount();
+}
+
 app.get('/api/v1/donations/count', async (req, res) => {
     try {
-        const count = await getTotalDonorsCount();
+        const count = await getTotalDonationImagesCount();
         res.json({ count });
     } catch (err) {
         res.json({ count: 0 });
     }
 });
 
-app.get('/api/v1/public/gallery', (req, res) => {
+app.get('/api/v1/public/gallery/image/:filename', async (req, res) => {
     try {
+        const filename = req.params.filename;
+        let imageRecord = null;
+        if (isDbConnected && GalleryImage) {
+            try {
+                imageRecord = await GalleryImage.findOne({ where: { filename } });
+            } catch (e) {}
+        }
+
+        if (imageRecord && imageRecord.imageData) {
+            const matches = imageRecord.imageData.match(/^data:(image\/\w+);base64,(.+)$/);
+            if (matches) {
+                const mimeType = matches[1];
+                const buffer = Buffer.from(matches[2], 'base64');
+                res.setHeader('Content-Type', mimeType);
+                res.setHeader('Cache-Control', 'public, max-age=31536000');
+                return res.send(buffer);
+            }
+        }
+
+        // Fallback to local filesystem
+        let filePath = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH, filename);
+        if (!fs.existsSync(filePath)) {
+            filePath = path.join(UPLOAD_DIR, filename);
+        }
+        if (fs.existsSync(filePath)) {
+            return res.sendFile(filePath);
+        }
+
+        res.status(404).json({ success: false, message: 'Image not found' });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.get('/api/v1/public/gallery', async (req, res) => {
+    try {
+        let filesSet = new Set();
+
+        // 1. Fetch from Database
+        if (isDbConnected && GalleryImage) {
+            try {
+                const dbRecords = await GalleryImage.findAll({ attributes: ['filename'] });
+                dbRecords.forEach(r => filesSet.add(r.filename));
+            } catch (e) {}
+        }
+
+        // 2. Merge with local files
         let repoDir = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH);
         let tmpDir = UPLOAD_DIR;
-        let filesSet = new Set();
         if (fs.existsSync(repoDir)) {
             try {
                 fs.readdirSync(repoDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
@@ -745,7 +882,7 @@ app.get('/api/v1/public/gallery', (req, res) => {
         manualFiles.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
         
         files = [...adminFiles, ...manualFiles];
-        res.json({ success: true, images: files.map(img => `assets/${GALLERY_PATH}/${img}`) });
+        res.json({ success: true, images: files.map(img => `api/v1/public/gallery/image/${encodeURIComponent(img)}`) });
     } catch (err) {
         res.json({ success: false, images: [] });
     }
@@ -760,6 +897,7 @@ require('./adminRoutes')(app, {
     GALLERY_PATH,
     Donor,
     Feedback,
+    GalleryImage,
     sharedState,
     syncSheetsToSQL,
     loadDonorsFromJSON,

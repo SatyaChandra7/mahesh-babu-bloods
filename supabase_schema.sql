@@ -35,16 +35,29 @@ CREATE TABLE IF NOT EXISTS "Feedbacks" (
   "updatedAt" TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 3. Create Performance Indexes
+-- 3. Create GalleryImages Table
+CREATE TABLE IF NOT EXISTS "GalleryImages" (
+  "id" BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  "filename" VARCHAR(255) NOT NULL UNIQUE,
+  "imageData" TEXT NOT NULL,
+  "mimeType" VARCHAR(50) DEFAULT 'image/jpeg',
+  "uploadedAt" TIMESTAMPTZ DEFAULT NOW(),
+  "createdAt" TIMESTAMPTZ DEFAULT NOW(),
+  "updatedAt" TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Create Performance Indexes
 CREATE INDEX IF NOT EXISTS "idx_donors_phone" ON "Donors" ("phoneNumber");
 CREATE INDEX IF NOT EXISTS "idx_donors_blood_group" ON "Donors" ("bloodGroup");
 CREATE INDEX IF NOT EXISTS "idx_donors_location" ON "Donors" ("state", "district");
+CREATE INDEX IF NOT EXISTS "idx_gallery_filename" ON "GalleryImages" ("filename");
 
--- 4. Enable Row Level Security (RLS)
+-- 5. Enable Row Level Security (RLS)
 ALTER TABLE "Donors" ENABLE ROW LEVEL SECURITY;
 ALTER TABLE "Feedbacks" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "GalleryImages" ENABLE ROW LEVEL SECURITY;
 
--- 5. Create Security Policies
+-- 6. Create Security Policies
 -- Donors Policies
 DROP POLICY IF EXISTS "Allow public read on Donors" ON "Donors";
 CREATE POLICY "Allow public read on Donors" 
@@ -75,6 +88,22 @@ CREATE POLICY "Allow public insert on Feedbacks"
   TO anon, authenticated 
   WITH CHECK (true);
 
--- 6. Grant Role Permissions for Data API
+-- GalleryImages Policies
+DROP POLICY IF EXISTS "Allow public read on GalleryImages" ON "GalleryImages";
+CREATE POLICY "Allow public read on GalleryImages" 
+  ON "GalleryImages" 
+  FOR SELECT 
+  TO anon, authenticated 
+  USING (true);
+
+DROP POLICY IF EXISTS "Allow public insert on GalleryImages" ON "GalleryImages";
+CREATE POLICY "Allow public insert on GalleryImages" 
+  ON "GalleryImages" 
+  FOR INSERT 
+  TO anon, authenticated 
+  WITH CHECK (true);
+
+-- 7. Grant Role Permissions for Data API
 GRANT ALL ON TABLE "Donors" TO anon, authenticated, service_role;
 GRANT ALL ON TABLE "Feedbacks" TO anon, authenticated, service_role;
+GRANT ALL ON TABLE "GalleryImages" TO anon, authenticated, service_role;
