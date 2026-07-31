@@ -683,6 +683,30 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             return res.status(400).json({ success: false, message: 'Full name and phone number are required.' });
         }
 
+        if (dateOfBirth) {
+            let birthDate;
+            if (dateOfBirth.includes('-')) {
+                const parts = dateOfBirth.split('-');
+                if (parts[0].length === 4) birthDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                else if (parts[2].length === 4) birthDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            } else if (dateOfBirth.includes('/')) {
+                const parts = dateOfBirth.split('/');
+                if (parts[0].length === 4) birthDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                else if (parts[2].length === 4) birthDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+            } else {
+                birthDate = new Date(dateOfBirth);
+            }
+            if (birthDate && !isNaN(birthDate.getTime())) {
+                const today = new Date();
+                let age = today.getFullYear() - birthDate.getFullYear();
+                const m = today.getMonth() - birthDate.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) age--;
+                if (age < 18) {
+                    return res.status(400).json({ success: false, message: 'Under 18 years age donor are not eligible to donate the blood' });
+                }
+            }
+        }
+
         const duplicate = await findDuplicateDonor(fullName, phoneNumber);
         if (duplicate) {
             return res.status(400).json({

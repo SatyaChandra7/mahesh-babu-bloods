@@ -76,7 +76,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preload" as="image" href="assets/donar%20card%20NEW%20(1)%20(1).jpg">
+    <link rel="preload" as="image" href="assets/donar%20card%20NEW%20web.jpg">
     <link rel="preload" as="image" href="assets/new%20logo%20upscaled.png">
 
     <!-- Tailwind CSS v4 Browser Script -->
@@ -92,6 +92,7 @@
                 reviewOpen: false,
                 successOpen: false,
                 sorryOpen: false,
+                under18Open: false,
                 declareOpen: false,
                 mobileMenuOpen: false,
                 activeImageIndex: 0,
@@ -142,6 +143,7 @@
                     this.mobileMenuOpen = false;
                     this.successOpen = false;
                     this.sorryOpen = false;
+                    this.under18Open = false;
                     this.declareOpen = false;
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     if (window.location.hash) {
@@ -172,7 +174,7 @@
                     // Pre-cache donor card template image in memory for instant certificate rendering
                     try {
                         const cardImg = new Image();
-                        cardImg.src = 'assets/donar%20card%20NEW%20(1)%20(1).jpg';
+                        cardImg.src = 'assets/donar%20card%20NEW%20web.jpg';
                         this._cachedCardImg = cardImg;
                     } catch (e) {}
 
@@ -284,7 +286,7 @@
                         } else {
                             img = new Image();
                             await new Promise((resolve, reject) => {
-                                img.src = 'assets/donar%20card%20NEW%20(1)%20(1).jpg';
+                                img.src = 'assets/donar%20card%20NEW%20web.jpg';
                                 img.onload = resolve;
                                 img.onerror = reject;
                             });
@@ -359,12 +361,52 @@
                     }
                 },
 
+                calculateAge(dobStr) {
+                    if (!dobStr) return 0;
+                    let birthDate;
+                    if (dobStr.includes('-')) {
+                        const parts = dobStr.split('-');
+                        if (parts[0].length === 4) {
+                            birthDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                        } else if (parts[2].length === 4) {
+                            birthDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                        }
+                    } else if (dobStr.includes('/')) {
+                        const parts = dobStr.split('/');
+                        if (parts[0].length === 4) {
+                            birthDate = new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+                        } else if (parts[2].length === 4) {
+                            birthDate = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+                        }
+                    } else {
+                        birthDate = new Date(dobStr);
+                    }
+
+                    if (!birthDate || isNaN(birthDate.getTime())) return 0;
+
+                    const today = new Date();
+                    let age = today.getFullYear() - birthDate.getFullYear();
+                    const m = today.getMonth() - birthDate.getMonth();
+                    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                        age--;
+                    }
+                    return age;
+                },
+
                 async submitDonation(event) {
                     const formData = new FormData(event.target);
                     const data = Object.fromEntries(formData.entries());
 
                     this.donorNameInput = data.fullName || '';
                     this.donorPhoneInput = data.phoneNumber || '';
+
+                    // Age validation: Minimum age is 18 years
+                    const age = this.calculateAge(data.dateOfBirth);
+                    if (age < 18) {
+                        this.donateOpen = false;
+                        this.under18Open = true;
+                        return;
+                    }
 
                     // Weight validation: Must be 50kg or more
                     if (parseFloat(data.weight) < 50) {
@@ -1188,7 +1230,7 @@
 </head>
 
 <body class="bg-gray-50 text-gray-900" x-data="mainApp"
-    x-bind:class="galleryOpen || donateOpen || reviewOpen || declareOpen || adminOpen || showIntro ? 'overflow-hidden' : ''">
+    x-bind:class="galleryOpen || donateOpen || reviewOpen || declareOpen || adminOpen || showIntro || sorryOpen || under18Open ? 'overflow-hidden' : ''">
 
     <!-- Video Intro Overlay (No x-cloak so it covers viewport immediately on page load, eliminating homepage flash glitch) -->
     <div x-show="showIntro" x-transition:leave="transition ease-in-out duration-700"
@@ -1198,11 +1240,11 @@
         <!-- Intro Video Player Display -->
         <div class="relative w-full h-full flex items-center justify-center">
             <video x-ref="introVideo"
-                :src="window.innerWidth < 768 ? 'assets/new%20mobile%20.mp4' : 'assets/new%20web%20.mp4'" autoplay muted
+                :src="window.innerWidth < 768 ? 'assets/new%20web%20intro%20final.mp4' : 'assets/final%20web%20intro%20.mp4'" autoplay muted
                 preload="auto" playsinline @ended="closeIntro()" @error="closeIntro()"
                 class="w-full h-full object-contain max-h-screen border-none outline-none">
-                <source src="assets/new%20mobile%20.mp4" type="video/mp4" media="(max-width: 767px)">
-                <source src="assets/new%20web%20.mp4" type="video/mp4" media="(min-width: 768px)">
+                <source src="assets/new%20web%20intro%20final.mp4" type="video/mp4" media="(max-width: 767px)">
+                <source src="assets/final%20web%20intro%20.mp4" type="video/mp4" media="(min-width: 768px)">
             </video>
         </div>
     </div>
@@ -2182,6 +2224,30 @@
             <p class="text-gray-600 mb-8 font-medium leading-relaxed">To ensure your health and safety, you must weigh
                 at least <span class="text-red-600 font-bold">50kg</span> to donate blood.</p>
             <button @click="sorryOpen = false"
+                class="w-full chrome-3d text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest text-sm">
+                Understood
+            </button>
+        </div>
+    </div>
+
+    <!-- Under 18 Age Limit Modal -->
+    <div x-show="under18Open" x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95"
+        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" x-cloak>
+        <div class="bg-white rounded-3xl p-8 max-w-sm text-center shadow-2xl relative border border-gray-100">
+            <!-- Warning Icon -->
+            <div class="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg class="w-10 h-10 text-red-500" fill="none" stroke="currentColor" stroke-width="2.5"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <h3 class="text-2xl font-black text-gray-900 mb-2 uppercase">Notice</h3>
+            <p class="text-gray-600 mb-8 font-medium leading-relaxed">Under 18 years age donor are not eligible to donate the blood</p>
+            <button @click="under18Open = false"
                 class="w-full chrome-3d text-white font-black py-4 rounded-xl transition-all uppercase tracking-widest text-sm">
                 Understood
             </button>
