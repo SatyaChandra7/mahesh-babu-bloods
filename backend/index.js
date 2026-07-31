@@ -717,8 +717,9 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             fallbackDonorsStore.unshift(newDonor);
         }
         saveDonorToJSON(newDonor);
-        await appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
         res.status(201).json({ success: true, donor: newDonor });
+        // Run Google Sheets sync asynchronously in background without delaying HTTP response
+        appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
     } catch (err) {
         console.error('Registration handler catch:', err.message);
         res.status(500).json({ success: false, message: err.message });
@@ -726,46 +727,18 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
 });
 
 async function getTotalDonorsCount() {
-    let sqlResults = [];
-    if (isDbConnected && Donor) {
-        try {
-            sqlResults = await Donor.findAll();
-        } catch (e) {}
-    }
-    let jsonDonors = [];
-    if (typeof loadDonorsFromJSON === 'function') {
-        try {
-            jsonDonors = loadDonorsFromJSON();
-        } catch (e) {}
-    }
-    
-    const donorMap = new Set();
-    sqlResults.forEach(d => {
-        const item = d.toJSON ? d.toJSON() : d;
-        if (item.phoneNumber && item.fullName) {
-            donorMap.add(`${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`);
-        }
-    });
-    jsonDonors.forEach(item => {
-        if (item.phoneNumber && item.fullName) {
-            donorMap.add(`${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`);
-        }
-    });
-    if (Array.isArray(fallbackDonorsStore)) {
-        fallbackDonorsStore.forEach(item => {
-            if (item.phoneNumber && item.fullName) {
-                donorMap.add(`${String(item.phoneNumber).trim()}_${String(item.fullName).trim().toLowerCase()}`);
-            }
-        });
-    }
-
-    if (donorMap.size > 0) return donorMap.size;
-
     let count = 0;
     if (isDbConnected && Donor) {
-        try { count = await Donor.count(); } catch (e) {}
+        try {
+            count = await Donor.count();
+        } catch (e) {}
     }
-    if (!count) count = jsonDonors.length || (fallbackDonorsStore ? fallbackDonorsStore.length : 0);
+    if (!count) {
+        try {
+            const jsonDonors = loadDonorsFromJSON();
+            count = jsonDonors.length || (fallbackDonorsStore ? fallbackDonorsStore.length : 0);
+        } catch (e) {}
+    }
     return count;
 }
 
