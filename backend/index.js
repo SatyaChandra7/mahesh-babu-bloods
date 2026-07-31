@@ -664,27 +664,6 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
     }
 });
 
-function getGalleryImagesCount() {
-    try {
-        let repoDir = path.join(__dirname, '..', 'frontend', 'assets', GALLERY_PATH);
-        let tmpDir = UPLOAD_DIR;
-        let filesSet = new Set();
-        if (fs.existsSync(repoDir)) {
-            try {
-                fs.readdirSync(repoDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
-            } catch (e) {}
-        }
-        if (fs.existsSync(tmpDir) && tmpDir !== repoDir) {
-            try {
-                fs.readdirSync(tmpDir).filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f)).forEach(f => filesSet.add(f));
-            } catch (e) {}
-        }
-        return filesSet.size;
-    } catch (e) {
-        return 0;
-    }
-}
-
 async function getTotalDonorsCount() {
     let sqlResults = [];
     if (isDbConnected && Donor) {
@@ -719,16 +698,14 @@ async function getTotalDonorsCount() {
         });
     }
 
-    let dbCount = donorMap.size;
-    if (!dbCount) {
-        if (isDbConnected && Donor) {
-            try { dbCount = await Donor.count(); } catch (e) {}
-        }
-        if (!dbCount) dbCount = jsonDonors.length || (fallbackDonorsStore ? fallbackDonorsStore.length : 0);
-    }
+    if (donorMap.size > 0) return donorMap.size;
 
-    const galleryCount = getGalleryImagesCount();
-    return Math.max(dbCount || 0, galleryCount || 0);
+    let count = 0;
+    if (isDbConnected && Donor) {
+        try { count = await Donor.count(); } catch (e) {}
+    }
+    if (!count) count = jsonDonors.length || (fallbackDonorsStore ? fallbackDonorsStore.length : 0);
+    return count;
 }
 
 app.get('/api/v1/donations/count', async (req, res) => {
