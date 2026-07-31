@@ -1296,19 +1296,19 @@
         </div>
 
         <!-- Buttons and Org Note with ECG Pulse -->
-        <div class="relative w-full flex flex-col justify-center items-center gap-12 py-16 animate-fade-in-up">
-            <!-- Shared Wrapper to Align Buttons with Note Edges on Desktop -->
-            <div class="w-full md:w-fit flex flex-col items-center gap-12">
+        <div class="relative w-full flex flex-col justify-center items-center gap-12 py-16 animate-fade-in-up px-4 md:px-8">
+            <!-- Shared Wrapper to Align Buttons with Note Edges -->
+            <div class="w-full max-w-[92vw] sm:max-w-2xl md:max-w-4xl lg:max-w-5xl flex flex-col items-center gap-10 md:gap-12">
                 <!-- Organization Note Highlighted -->
                 <div
-                    class="relative z-10 w-full max-w-none md:max-w-fit bg-white border-l-[6px] border-l-red-600 border border-gray-100 px-8 py-4 md:py-8 rounded-r-[2.5rem] shadow-[0_15px_30px_-5px_rgba(0,0,0,0.08)] transition-transform hover:scale-[1.03] duration-500">
+                    class="relative z-10 w-full bg-white border-l-[6px] border-l-red-600 border border-gray-100 px-4 sm:px-8 py-4 md:py-8 rounded-r-[2.5rem] shadow-[0_15px_30px_-5px_rgba(0,0,0,0.08)] transition-transform hover:scale-[1.02] duration-500">
                     <p
                         class="text-[10px] sm:text-xs md:text-2xl font-black text-red-950 uppercase tracking-[0.1em] sm:tracking-[0.25em] whitespace-normal md:whitespace-nowrap text-center">
                         A non profit organization founded by proud fan.
                     </p>
                 </div>
 
-                <div class="relative z-10 w-full flex flex-row justify-center items-center flex-nowrap shrink-0 py-8">
+                <div class="relative z-10 w-full flex flex-row justify-between items-center shrink-0 py-4">
                     <!-- Dedicated Button Pulse Animation -->
                     <div
                         class="absolute left-1/2 -translate-x-1/2 w-screen pointer-events-none z-0 opacity-100 overflow-hidden select-none">
@@ -1323,19 +1323,19 @@
                     </div>
 
                     <div
-                        class="w-full flex flex-row justify-center items-center gap-4 md:gap-12 lg:gap-20">
+                        class="w-full flex flex-row justify-between items-center gap-3 sm:gap-6 md:gap-10">
                         <button type="button" @click="donateOpen = true"
-                            class="chrome-3d relative z-10 w-44 sm:w-60 md:w-72 lg:w-80 h-14 md:h-16 lg:h-20 rounded-full font-poppins text-[11px] sm:text-base md:text-lg lg:text-xl uppercase tracking-widest whitespace-nowrap flex items-center justify-center gap-2 md:gap-3 active:scale-95 transition-all duration-300">
+                            class="chrome-3d relative z-10 w-[48%] sm:w-[48%] md:w-[48%] lg:w-[48%] h-14 md:h-16 lg:h-20 rounded-full font-poppins text-[10px] sm:text-base md:text-lg lg:text-xl uppercase tracking-widest whitespace-nowrap flex items-center justify-center gap-2 md:gap-3 active:scale-95 transition-all duration-300">
                             <span>BE A DONOR</span>
                             <img src="assets/donor-icon.png" alt="Donor"
-                                class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 icon-red shrink-0">
+                                class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 icon-red shrink-0">
                         </button>
                         <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation."
                             target="_blank"
-                            class="chrome-3d relative z-10 w-44 sm:w-60 md:w-72 lg:w-80 h-14 md:h-16 lg:h-20 rounded-full font-poppins text-[11px] sm:text-base md:text-lg lg:text-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-widest whitespace-nowrap active:scale-95 transition-all duration-300">
+                            class="chrome-3d relative z-10 w-[48%] sm:w-[48%] md:w-[48%] lg:w-[48%] h-14 md:h-16 lg:h-20 rounded-full font-poppins text-[10px] sm:text-base md:text-lg lg:text-xl flex items-center justify-center gap-2 md:gap-3 uppercase tracking-widest whitespace-nowrap active:scale-95 transition-all duration-300">
                             <span>REQUEST BLOOD</span>
                             <img src="assets/request-icon.png" alt="Request"
-                                class="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 icon-red shrink-0">
+                                class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 icon-red shrink-0">
                         </a>
                     </div>
                 </div>
