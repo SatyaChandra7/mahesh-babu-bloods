@@ -167,12 +167,24 @@
                     this.counterAnimId = window.requestAnimationFrame(step);
                 },
 
+                dbDonationCount: 0,
+
+                updateTotalDonationCount() {
+                    const galleryCount = this.galleryImages ? this.galleryImages.length : 0;
+                    const total = Math.max(this.dbDonationCount || 0, galleryCount);
+                    if (total !== this.donationCount) {
+                        this.donationCount = total;
+                        this.animateCounter(this.donationCount);
+                    }
+                },
+
                 async fetchGallery() {
                     try {
                         const res = await fetch(`${this.apiBase}/api/v1/public/gallery`);
                         const data = await res.json();
                         if (data.success) {
-                            this.galleryImages = data.images;
+                            this.galleryImages = data.images || [];
+                            this.updateTotalDonationCount();
                         }
                     } catch (err) { console.log('Failed to fetch gallery'); }
                 },
@@ -182,8 +194,8 @@
                         const res = await fetch(`${this.apiBase}/api/v1/donations/count`);
                         const data = await res.json();
                         if (data.count !== undefined) {
-                            this.donationCount = data.count;
-                            this.animateCounter(this.donationCount);
+                            this.dbDonationCount = data.count;
+                            this.updateTotalDonationCount();
                         }
                     } catch (err) {
                         console.log('Backend not connected, using default count');
