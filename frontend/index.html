@@ -2651,7 +2651,7 @@
         x-cloak>
 
         <div
-            class="glass-3d-card rounded-2xl sm:rounded-[2rem] w-full max-w-6xl max-h-[96vh] sm:max-h-[92vh] overflow-y-auto custom-scrollbar relative p-4 sm:p-6 md:p-10 my-auto shadow-2xl border border-white/60">
+            class="glass-3d-card rounded-2xl sm:rounded-[2rem] w-full max-w-6xl lg:max-w-[96%] xl:max-w-[1800px] 2xl:max-w-[2000px] max-h-[96vh] sm:max-h-[92vh] overflow-y-auto custom-scrollbar relative p-4 sm:p-6 md:p-10 my-auto shadow-2xl border border-white/60">
 
             <!-- Close Button -->
             <button @click="adminOpen = false;"
@@ -2881,7 +2881,7 @@
                                     <p><strong>Phone:</strong> <span class="font-semibold text-gray-900" x-text="donor.phoneNumber"></span></p>
                                     <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" class="text-red-600 font-bold" x-text="`(${donor.weight}kg)`"></span></p>
                                     <p><strong>Location:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span></p>
-                                    <p class="text-[10px] text-gray-400">Registered: <span x-text="new Date(donor.registeredAt || donor.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })"></span></p>
+                                    <p class="text-[11px] text-gray-500 font-medium">Reg. Date & Time: <span class="font-semibold text-gray-900" x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })"></span></p>
                                 </div>
                                 <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
                                     <div class="flex items-center gap-1.5">
@@ -2921,7 +2921,7 @@
                                     <th class="px-6 py-4">Blood Group</th>
                                     <th class="px-6 py-4">Phone</th>
                                     <th class="px-6 py-4">Address</th>
-                                    <th class="px-6 py-4">Registration Date</th>
+                                    <th class="px-6 py-4">Registration Date & Time</th>
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -2948,7 +2948,7 @@
                                                 x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span>
                                         </td>
                                         <td class="px-6 py-4 text-xs font-semibold text-gray-500"
-                                            x-text="new Date(donor.registeredAt || donor.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })">
+                                            x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })">
                                         </td>
                                         <td class="px-6 py-4 text-right space-x-2">
                                             <button @click="verifyDonorAdmin(donor.id)"

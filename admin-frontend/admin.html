@@ -229,7 +229,7 @@
         </header>
 
         <!-- Main Body Content -->
-        <main class="max-w-7xl mx-auto px-4 py-6 md:px-8">
+        <main class="max-w-7xl lg:max-w-[96%] xl:max-w-[1800px] 2xl:max-w-[2000px] mx-auto px-4 py-6 md:px-8">
 
             <!-- ---------------------------------------------------- -->
             <!-- 1. LOGIN SCREEN (Clean White & Crimson Red Theme) -->
@@ -568,7 +568,7 @@
                                         <th class="px-6 py-4">Phone Number</th>
                                         <th class="px-6 py-4">Address</th>
                                         <th class="px-6 py-4">Points</th>
-                                        <th class="px-6 py-4">Date</th>
+                                        <th class="px-6 py-4">Registration Date & Time</th>
                                         <th class="px-6 py-4 text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -597,7 +597,7 @@
                                                     </button>
                                                     <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="text-emerald-600 hover:text-emerald-700 transition-colors" title="WhatsApp Message">
                                                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.15 4.201 4.288-1.124z"/>
+                                                            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.893 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-1.15 4.201 4.288-1.124z"/>
                                                         </svg>
                                                     </a>
                                                 </div>
@@ -607,7 +607,7 @@
                                                 x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}${donor.pincode ? ' - ' + donor.pincode : ''}`">
                                             </td>
                                             <td class="px-6 py-4 text-emerald-600 font-black">50 pts</td>
-                                            <td class="px-6 py-4 text-slate-500 text-xs" x-text="new Date(donor.registeredAt).toLocaleDateString()"></td>
+                                            <td class="px-6 py-4 text-slate-600 text-xs font-semibold" x-text="donor.registeredAt ? new Date(donor.registeredAt).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'"></td>
                                             <td class="px-6 py-4 text-right">
                                                 <button @click="deleteDonor(donor.id)"
                                                     class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
@@ -640,6 +640,7 @@
                                         <p><strong>Phone:</strong> <span x-text="donor.phoneNumber"></span></p>
                                         <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" x-text="`(${donor.weight}kg)`"></span></p>
                                         <p class="truncate"><strong>Address:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.district}, ${donor.state}`"></span></p>
+                                        <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="donor.registeredAt ? new Date(donor.registeredAt).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A'"></span></p>
                                     </div>
                                     <div class="flex items-center justify-between pt-1">
                                         <div class="flex items-center gap-2">
