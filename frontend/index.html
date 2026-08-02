@@ -681,7 +681,7 @@
 
                 // Admin Panel Combined State & Methods
                 adminOpen: false,
-                adminToken: localStorage.getItem('adminToken') || null,
+                adminToken: null,
                 adminAuthenticated: false,
                 adminPhone: '',
                 adminPassword: '',
@@ -702,16 +702,12 @@
                     this.adminOpen = true;
                     this.closeIntro();
                     this.adminError = '';
-                    if (this.adminToken) {
-                        this.adminAuthenticated = true;
-                        this.fetchAdminStats();
-                        this.fetchAdminDonors();
-                        this.fetchAdminFeedbacks();
-                    } else {
-                        this.adminAuthenticated = false;
-                        this.adminPhone = '';
-                        this.adminPassword = '';
-                    }
+                    // For security, always clear saved token and require fresh login on open or refresh
+                    this.adminToken = null;
+                    localStorage.removeItem('adminToken');
+                    this.adminAuthenticated = false;
+                    this.adminPhone = '';
+                    this.adminPassword = '';
                 },
 
                 async adminLogin() {
