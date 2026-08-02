@@ -79,6 +79,34 @@
     <link rel="preload" as="image" href="assets/donar%20card%20NEW%20web.jpg">
     <link rel="preload" as="image" href="assets/new%20logo%20upscaled.png">
 
+    <!-- Older Mobile Browser & WebView Polyfills (Core-JS, Promise.allSettled, Object.fromEntries) -->
+    <script src="https://cdn.jsdelivr.net/npm/core-js-bundle@3.36.0/minified.js"></script>
+    <script>
+        if (!Promise.allSettled) {
+            Promise.allSettled = function (promises) {
+                return Promise.all(promises.map(function (p) {
+                    return Promise.resolve(p).then(
+                        function (value) { return { status: 'fulfilled', value: value }; },
+                        function (reason) { return { status: 'rejected', reason: reason }; }
+                    );
+                }));
+            };
+        }
+        if (!Object.fromEntries) {
+            Object.fromEntries = function (entries) {
+                var obj = {};
+                if (!entries) return obj;
+                for (var i = 0; i < entries.length; i++) {
+                    var pair = entries[i];
+                    if (pair && pair.length >= 2) {
+                        obj[pair[0]] = pair[1];
+                    }
+                }
+                return obj;
+            };
+        }
+    </script>
+
     <!-- Tailwind CSS v4 Browser Script -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <!-- Alpine.js -->
@@ -196,6 +224,12 @@
                         this.openAdminPanel();
                     }
 
+                    window.addEventListener('hashchange', () => {
+                        if (window.location.hash === '#admin') {
+                            this.openAdminPanel();
+                        }
+                    });
+
                     this.$nextTick(() => {
                         if (this.$refs.introVideo) {
                             const playPromise = this.$refs.introVideo.play();
@@ -219,7 +253,7 @@
                     try {
                         const res = await fetch(`${this.apiBase}/api/v1/public/alert`);
                         const data = await res.json();
-                        if (data.alert?.isActive) this.emergencyMessage = data.alert.message;
+                        if (data && data.alert && data.alert.isActive) this.emergencyMessage = data.alert.message;
                     } catch (err) { console.log('Failed to load alert'); }
                 },
 
@@ -298,12 +332,64 @@
                         // Draw template background
                         ctx.drawImage(img, 0, 0);
 
-                        // Base text styling for Name
+                        // Dynamic Name Wrapping & Layout Calculation
+                        const maxNameWidth = 2200;
+                        let nameFontSize = 135;
                         ctx.fillStyle = '#1e293b'; // Slate dark gray
-                        ctx.font = 'bold 140px "Inter", sans-serif';
-                        ctx.fillText((donor.fullName || '').toUpperCase(), 2250, 3450);
+                        ctx.font = `bold ${nameFontSize}px "Inter", sans-serif`;
 
-                        // Draw DOB (Formatted to DD-MM-YYYY if valid) (Set size to 110px)
+                        const nameWords = (donor.fullName || '').toUpperCase().trim().split(/\s+/);
+                        let nameLines = [];
+                        let currentNameLine = '';
+
+                        for (let i = 0; i < nameWords.length; i++) {
+                            const testLine = currentNameLine ? currentNameLine + ' ' + nameWords[i] : nameWords[i];
+                            if (ctx.measureText(testLine).width > maxNameWidth && i > 0) {
+                                nameLines.push(currentNameLine);
+                                currentNameLine = nameWords[i];
+                            } else {
+                                currentNameLine = testLine;
+                            }
+                        }
+                        if (currentNameLine) {
+                            nameLines.push(currentNameLine);
+                        }
+
+                        // Scaledown fallback if name requires >2 lines
+                        if (nameLines.length > 2) {
+                            nameFontSize = 105;
+                            ctx.font = `bold ${nameFontSize}px "Inter", sans-serif`;
+                            nameLines = [];
+                            currentNameLine = '';
+                            for (let i = 0; i < nameWords.length; i++) {
+                                const testLine = currentNameLine ? currentNameLine + ' ' + nameWords[i] : nameWords[i];
+                                if (ctx.measureText(testLine).width > maxNameWidth && i > 0) {
+                                    nameLines.push(currentNameLine);
+                                    currentNameLine = nameWords[i];
+                                } else {
+                                    currentNameLine = testLine;
+                                }
+                            }
+                            if (currentNameLine) nameLines.push(currentNameLine);
+                        }
+
+                        const isMultiLineName = nameLines.length > 1;
+
+                        // Dynamic Y positions: slightly downwards for Name, DOB, and Blood Group (Address unchanged)
+                        const startY_Name = isMultiLineName ? 3260 : 3380;
+                        const nameLineHeight = Math.round(nameFontSize * 1.08);
+
+                        // Draw Name Line(s)
+                        for (let i = 0; i < nameLines.length; i++) {
+                            ctx.fillText(nameLines[i], 2250, startY_Name + (i * nameLineHeight));
+                        }
+
+                        // Calculate dynamic Y coordinates for DOB, Blood Group, and Address
+                        const dobY = isMultiLineName ? 3680 : 3700;
+                        const bloodY = isMultiLineName ? 4020 : 4040;
+                        let addressY = isMultiLineName ? 4300 : 4320; // Unchanged address placement
+
+                        // Draw DOB (Formatted to DD-MM-YYYY if valid)
                         ctx.font = 'bold 110px "Inter", sans-serif';
                         let dobStr = donor.dateOfBirth || '';
                         if (dobStr && dobStr.includes('-')) {
@@ -312,52 +398,103 @@
                                 dobStr = `${parts[2]}-${parts[1]}-${parts[0]}`;
                             }
                         }
-                        ctx.fillText(dobStr, 2250, 3770);
+                        ctx.fillText(dobStr, 2250, dobY);
 
-                        // Draw Blood Group (Red, bold, slightly larger)
+                        // Draw Blood Group (Red, bold)
                         ctx.fillStyle = '#dc2626';
                         ctx.font = 'bold 125px "Inter", sans-serif';
-                        ctx.fillText(donor.bloodGroup || '', 2250, 4120);
+                        ctx.fillText(donor.bloodGroup || '', 2250, bloodY);
 
                         // Draw Address with word wrap
                         ctx.fillStyle = '#1e293b';
                         ctx.font = 'bold 95px "Inter", sans-serif';
 
                         const addressParts = [
-                            donor.village || donor.address?.village,
-                            donor.mandal || donor.address?.mandal,
-                            donor.district || donor.address?.district,
-                            donor.state || donor.address?.state,
-                            donor.pincode || donor.address?.pincode
-                        ].filter(part => part && part.trim() !== '');
+                            donor.village || (donor.address && donor.address.village),
+                            donor.mandal || (donor.address && donor.address.mandal),
+                            donor.district || (donor.address && donor.address.district),
+                            donor.state || (donor.address && donor.address.state),
+                            donor.pincode || (donor.address && donor.address.pincode)
+                        ].filter(part => part && String(part).trim() !== '');
 
                         const fullAddress = addressParts.join(', ');
                         const maxAddressWidth = 2200;
                         const startX = 2250;
-                        let startY = 4470;
+                        let currentAddressY = addressY;
                         const words = fullAddress.split(' ');
                         let line = '';
-                        const lineHeight = 120;
+                        const lineHeight = 115;
 
                         for (let n = 0; n < words.length; n++) {
                             const testLine = line + words[n] + ' ';
                             const metrics = ctx.measureText(testLine);
                             const testWidth = metrics.width;
                             if (testWidth > maxAddressWidth && n > 0) {
-                                ctx.fillText(line.trim(), startX, startY);
+                                ctx.fillText(line.trim(), startX, currentAddressY);
                                 line = words[n] + ' ';
-                                startY += lineHeight;
+                                currentAddressY += lineHeight;
                             } else {
                                 line = testLine;
                             }
                         }
-                        ctx.fillText(line.trim(), startX, startY);
+                        ctx.fillText(line.trim(), startX, currentAddressY);
 
                         this.certificateDataUrl = canvas.toDataURL('image/jpeg', 0.95);
                     } catch (err) {
                         console.error('Failed to generate donor card:', err);
                     } finally {
                         this.certificateLoading = false;
+                    }
+                },
+
+                async downloadDonorCard() {
+                    if (!this.certificateDataUrl) return;
+                    const nameClean = (this.certificateDonorName || 'Donor').trim().replace(/\s+/g, '_');
+                    const fileName = `MB_Bloods_Donor_Card_${nameClean}.jpeg`;
+
+                    try {
+                        const res = await fetch(this.certificateDataUrl);
+                        const blob = await res.blob();
+                        const file = new File([blob], fileName, { type: 'image/jpeg' });
+
+                        // 1. Try Native iOS / Mobile Web Share API first
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'MB Bloods Donor Card',
+                                    text: 'MB Bloods Donor Registration Card'
+                                });
+                                return;
+                            } catch (shareErr) {
+                                if (shareErr.name === 'AbortError') return;
+                            }
+                        }
+
+                        // 2. Blob URL Download / Open fallback for iOS Safari & Android / Desktop
+                        const blobUrl = URL.createObjectURL(blob);
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+                        if (isIOS) {
+                            const newWin = window.open(blobUrl, '_blank');
+                            if (!newWin) {
+                                window.location.href = blobUrl;
+                            }
+                        } else {
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = fileName;
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(() => {
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(blobUrl);
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        console.error('Donor card download error:', err);
+                        window.open(this.certificateDataUrl, '_blank');
                     }
                 },
 
@@ -563,10 +700,18 @@
 
                 openAdminPanel() {
                     this.adminOpen = true;
-                    this.adminAuthenticated = false;
-                    this.adminPhone = '';
-                    this.adminPassword = '';
+                    this.closeIntro();
                     this.adminError = '';
+                    if (this.adminToken) {
+                        this.adminAuthenticated = true;
+                        this.fetchAdminStats();
+                        this.fetchAdminDonors();
+                        this.fetchAdminFeedbacks();
+                    } else {
+                        this.adminAuthenticated = false;
+                        this.adminPhone = '';
+                        this.adminPassword = '';
+                    }
                 },
 
                 async adminLogin() {
@@ -672,9 +817,56 @@
                     } catch (e) { }
                 },
 
-                downloadAdminCSV() {
+                async downloadAdminCSV() {
                     if (!this.adminToken) return;
-                    window.location.href = `${this.apiBase}/api/v1/admin/export?token=${this.adminToken}`;
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/export?token=${this.adminToken}`);
+                        if (!res.ok) {
+                            alert('Failed to download CSV file.');
+                            return;
+                        }
+                        const blob = await res.blob();
+                        const fileName = `MB_Bloods_Donors_${new Date().toISOString().slice(0, 10)}.csv`;
+
+                        if (navigator.canShare) {
+                            const file = new File([blob], fileName, { type: 'text/csv' });
+                            if (navigator.canShare({ files: [file] })) {
+                                try {
+                                    await navigator.share({
+                                        files: [file],
+                                        title: 'MB Bloods Donor CSV Export'
+                                    });
+                                    return;
+                                } catch (shareErr) {
+                                    if (shareErr.name === 'AbortError') return;
+                                }
+                            }
+                        }
+
+                        const blobUrl = URL.createObjectURL(blob);
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+                        if (isIOS) {
+                            const newWin = window.open(blobUrl, '_blank');
+                            if (!newWin) {
+                                window.location.href = blobUrl;
+                            }
+                        } else {
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = fileName;
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(() => {
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(blobUrl);
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        console.error('CSV download error:', err);
+                        window.open(`${this.apiBase}/api/v1/admin/export?token=${this.adminToken}`, '_blank');
+                    }
                 },
 
                 onAdminFileSelected(event) {
@@ -1092,22 +1284,38 @@
             border-radius: 2rem;
         }
 
-        /* Responsive Glass Polish for Mobile Containers */
+        /* High-Performance Mobile Card Styles & Input Optimization */
         @media (max-width: 767px) {
-
             .glass-3d-card,
+            .glass-red-card,
+            .glass-dark-card,
             .glass {
-                backdrop-filter: blur(8px) !important;
-                -webkit-backdrop-filter: blur(8px) !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                background: rgba(255, 255, 255, 0.96) !important;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
             }
 
-            /* Make inputs slightly more transparent on mobile for better glass effect */
+            .glass-dark-card {
+                background: rgba(15, 23, 42, 0.96) !important;
+            }
+
+            .glass-red-card {
+                background: rgba(254, 242, 242, 0.96) !important;
+            }
+
+            /* Make inputs clean and non-zooming on mobile devices */
             .glass-3d-card input,
             .glass-3d-card select,
             .glass input,
             .glass select,
-            .glass textarea {
-                background-color: rgba(255, 255, 255, 0.35) !important;
+            .glass textarea,
+            input[type="text"],
+            input[type="password"],
+            input[type="tel"],
+            select {
+                background-color: #ffffff !important;
+                font-size: 16px !important;
             }
         }
 
@@ -2183,17 +2391,16 @@
 
                         <!-- Action Buttons -->
                         <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                            <a :href="certificateDataUrl"
-                                :download="'MB_Bloods_Donor_Card_' + certificateDonorName.replace(/\s+/g, '_') + '.jpeg'"
-                                class="chrome-3d text-white flex-1 py-3 px-6 rounded-xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-xs flex items-center justify-center gap-2">
+                            <button @click="downloadDonorCard()"
+                                class="chrome-3d text-white flex-1 py-3 px-6 rounded-xl font-bold transition-all shadow-lg active:scale-95 uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round"
                                         d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3">
                                     </path>
                                 </svg>
-                                Download Card
-                            </a>
+                                <span>Download Card</span>
+                            </button>
                             <button @click="successOpen = false"
                                 class="w-full sm:w-auto py-3 px-6 rounded-xl border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 font-bold transition-all text-xs uppercase tracking-wider">
                                 Close
@@ -2448,50 +2655,49 @@
         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md overflow-y-auto"
+        class="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 bg-black/80 md:bg-black/70 md:backdrop-blur-md overflow-y-auto overscroll-none"
         x-cloak>
 
         <div
-            class="glass-3d-card rounded-[2rem] w-full max-w-6xl max-h-[92vh] overflow-y-auto custom-scrollbar relative p-6 md:p-10 my-auto shadow-2xl border border-white/60">
+            class="glass-3d-card rounded-2xl sm:rounded-[2rem] w-full max-w-6xl max-h-[96vh] sm:max-h-[92vh] overflow-y-auto custom-scrollbar relative p-4 sm:p-6 md:p-10 my-auto shadow-2xl border border-white/60">
 
             <!-- Close Button -->
-            <button @click="adminOpen = false; adminAuthenticated = false;"
-                class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button @click="adminOpen = false;"
+                class="absolute top-3 right-3 sm:top-6 sm:right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-30 bg-white/80 md:bg-transparent shadow-sm md:shadow-none">
+                <svg class="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
             </button>
 
             <!-- Admin Login Screen (When Not Authenticated) -->
-            <div x-show="!adminAuthenticated" class="max-w-md mx-auto py-12">
-                <div class="text-center mb-8">
+            <div x-show="!adminAuthenticated" class="max-w-md mx-auto py-6 sm:py-12">
+                <div class="text-center mb-6 sm:mb-8">
                     <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
-                        class="h-24 md:h-28 mx-auto mb-4 object-contain">
-                    <h2 class="text-3xl font-black text-gray-900 uppercase tracking-wide">Admin Portal</h2>
-                    <p class="text-gray-500 font-medium text-sm mt-1">Enter registered WhatsApp phone number to access
-                        control panel.</p>
+                        class="h-16 sm:h-24 md:h-28 mx-auto mb-3 sm:mb-4 object-contain">
+                    <h2 class="text-2xl sm:text-3xl font-black text-gray-900 uppercase tracking-wide">Admin Portal</h2>
+                    <p class="text-gray-500 font-medium text-xs sm:text-sm mt-1">Enter registered WhatsApp phone number to access control panel.</p>
                 </div>
 
                 <div x-show="adminError"
-                    class="mb-6 p-4 glass-red-card text-red-600 rounded-xl text-sm font-semibold text-center"
+                    class="mb-6 p-4 glass-red-card text-red-600 rounded-xl text-xs sm:text-sm font-semibold text-center"
                     x-text="adminError"></div>
 
-                <form @submit.prevent="adminLogin()" class="space-y-5">
+                <form @submit.prevent="adminLogin()" class="space-y-4 sm:space-y-5">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">WhatsApp Phone Number</label>
-                        <input type="text" x-model="adminPhone" required placeholder="e.g. 91912345678"
-                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">WhatsApp Phone Number</label>
+                        <input type="tel" x-model="adminPhone" required placeholder="e.g. 91912345678"
+                            class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Admin Password</label>
+                        <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Admin Password</label>
                         <input type="password" x-model="adminPassword" required placeholder="Enter password"
-                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
+                            class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none shadow-inner text-base font-medium">
                     </div>
 
                     <button type="submit"
-                        class="w-full py-4 chrome-3d rounded-xl font-black uppercase tracking-widest disabled:opacity-50 mt-4 active:scale-95 text-white"
+                        class="w-full py-3.5 sm:py-4 chrome-3d rounded-xl font-black uppercase tracking-widest disabled:opacity-50 mt-3 active:scale-95 text-white text-xs sm:text-sm shadow-md"
                         :disabled="adminLoading">
                         <span x-show="!adminLoading">Login to Dashboard</span>
                         <span x-show="adminLoading" class="flex items-center justify-center gap-2">
@@ -2507,71 +2713,70 @@
             </div>
 
             <!-- Admin Authenticated Dashboard -->
-            <div x-show="adminAuthenticated" class="space-y-8">
+            <div x-show="adminAuthenticated" class="space-y-6 sm:space-y-8">
 
                 <!-- Dashboard Top Bar -->
-                <div class="flex flex-wrap justify-between items-center gap-4 border-b border-gray-200/50 pb-4">
-                    <div class="flex items-center gap-4">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-gray-200/60 pb-4 pr-10 sm:pr-12">
+                    <div class="flex items-center gap-3 sm:gap-4">
                         <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo"
-                            class="h-16 md:h-20 w-auto object-contain">
+                            class="h-12 sm:h-16 md:h-20 w-auto object-contain">
                         <div>
-                            <h2 class="text-2xl font-black text-gray-900 uppercase tracking-tight">Admin Dashboard</h2>
-                            <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Live Control Center</p>
+                            <h2 class="text-xl sm:text-2xl font-black text-gray-900 uppercase tracking-tight">Admin Dashboard</h2>
+                            <p class="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider">Live Control Center</p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
                         <button @click="fetchAdminDonors(); fetchAdminStats();"
-                            class="px-4 py-2 bg-white/60 hover:bg-white border border-gray-200 rounded-xl font-bold text-xs text-gray-700 flex items-center gap-2 active:scale-95 transition-all shadow-sm">
-                            <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            class="px-3 sm:px-4 py-2 bg-white/80 hover:bg-white border border-gray-200 rounded-xl font-bold text-xs text-gray-700 flex items-center gap-1.5 sm:gap-2 active:scale-95 transition-all shadow-sm">
+                            <svg class="w-4 h-4 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
                                 </path>
                             </svg>
-                            Refresh Data
+                            <span>Refresh</span>
                         </button>
                         <button @click="adminLogout()"
-                            class="px-5 py-2 chrome-3d rounded-xl font-black uppercase tracking-widest text-xs active:scale-95 text-white">
+                            class="px-4 sm:px-5 py-2 chrome-3d rounded-xl font-black uppercase tracking-widest text-xs active:scale-95 text-white">
                             Logout
                         </button>
                     </div>
                 </div>
 
-                <!-- Gallery Upload Section (Displays Live Image Upload Count) -->
-                <div class="glass-3d-card p-6 md:p-8">
-                    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+                <!-- Gallery Upload Section -->
+                <div class="glass-3d-card p-4 sm:p-6 md:p-8">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                         <div>
                             <h3
-                                class="text-xl font-black text-gray-900 uppercase tracking-wide flex items-center gap-2">
-                                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                class="text-lg sm:text-xl font-black text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
                                 </svg>
                                 Image Upload & Gallery Manager
                             </h3>
-                            <p class="text-xs text-gray-500 font-medium">Upload photos of blood donation camps / work to
-                                update home page gallery & donation counter.</p>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Upload photos of blood donation camps / work to update gallery & donation counter.</p>
                         </div>
                         <div
-                            class="px-4 py-2 glass-red-card text-red-600 rounded-xl font-black text-sm border border-red-200 shadow-sm flex items-center gap-2">
+                            class="px-3 py-1.5 sm:px-4 sm:py-2 glass-red-card text-red-600 rounded-xl font-black text-xs sm:text-sm border border-red-200 shadow-sm flex items-center gap-2 shrink-0">
                             <span>Image Uploads Count:</span>
-                            <span class="text-lg text-red-700" x-text="galleryImages.length">0</span>
+                            <span class="text-base sm:text-lg text-red-700" x-text="galleryImages.length">0</span>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-center">
                         <div>
                             <input type="file" @change="onAdminFileSelected($event)" accept="image/*"
-                                class="w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
-                            <p class="text-xs text-gray-400 mt-2">Allowed formats: JPG, PNG, GIF, WEBP (Max 5MB)</p>
+                                class="w-full text-xs sm:text-sm text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-red-600 file:text-white hover:file:bg-red-700 cursor-pointer">
+                            <p class="text-[11px] text-gray-400 mt-1.5">Allowed formats: JPG, PNG, GIF, WEBP (Max 5MB)</p>
                         </div>
-                        <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-3 sm:gap-4">
                             <template x-if="adminPreviewUrl">
                                 <img :src="adminPreviewUrl"
-                                    class="h-20 w-20 object-cover rounded-xl border border-red-300 shadow-md">
+                                    class="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-xl border border-red-300 shadow-md shrink-0">
                             </template>
                             <button @click="uploadAdminGalleryImage()" :disabled="!adminSelectedFile || adminUploading"
-                                class="flex-1 py-3 px-6 chrome-3d rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 disabled:opacity-30 text-white flex items-center justify-center gap-2">
+                                class="flex-1 py-3 px-4 sm:px-6 chrome-3d rounded-xl font-black text-xs uppercase tracking-widest active:scale-95 disabled:opacity-30 text-white flex items-center justify-center gap-2 shadow-sm">
                                 <span x-show="!adminUploading">Upload Photo</span>
                                 <span x-show="adminUploading">Uploading...</span>
                             </button>
@@ -2579,46 +2784,46 @@
                     </div>
                 </div>
 
-                <!-- Quick Stats Grid -->
-                <div class="flex flex-wrap items-center justify-between gap-4">
-                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-10 gap-3 flex-1">
-                        <div class="glass-red-card p-3 text-center border border-white/20 shadow-sm">
-                            <span class="block text-2xl font-black text-red-600"
+                <!-- Quick Stats Grid & Export CSV -->
+                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2 sm:gap-3 flex-1">
+                        <div class="glass-red-card p-3 text-center border border-red-200/50 shadow-sm">
+                            <span class="block text-xl sm:text-2xl font-black text-red-600"
                                 x-text="adminTotalDonors || adminDonors.length">0</span>
                             <span class="text-[10px] uppercase font-black text-red-600/80">Total Donors</span>
                         </div>
                         <div class="glass-3d-card p-3 text-center border border-amber-300/40">
-                            <span class="block text-xl font-black text-amber-600" x-text="galleryImages.length">0</span>
-                            <span class="text-[10px] uppercase font-bold text-gray-500">Image Uploads</span>
+                            <span class="block text-lg sm:text-xl font-black text-amber-600" x-text="galleryImages.length">0</span>
+                            <span class="text-[10px] uppercase font-bold text-gray-500">Uploads</span>
                         </div>
                         <template x-for="stat in adminStats" :key="stat.group">
                             <div class="glass-3d-card p-3 text-center">
-                                <span class="block text-lg font-bold text-gray-800" x-text="stat.count">0</span>
+                                <span class="block text-base sm:text-lg font-bold text-gray-800" x-text="stat.count">0</span>
                                 <span class="text-[10px] uppercase font-bold text-gray-400" x-text="stat.group"></span>
                             </div>
                         </template>
                     </div>
                     <button @click="downloadAdminCSV()"
-                        class="px-6 py-4 chrome-3d rounded-2xl font-black text-xs uppercase tracking-widest flex items-center gap-2 active:scale-95 text-white shrink-0">
+                        class="px-5 py-3 sm:py-4 chrome-3d rounded-xl sm:rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 text-white shrink-0 shadow-md">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4"></path>
                         </svg>
-                        Export CSV
+                        <span>Export CSV</span>
                     </button>
                 </div>
 
                 <!-- Search & Filters -->
-                <div class="glass-3d-card p-6 grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div class="glass-3d-card p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Search by ID</label>
+                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Search by ID</label>
                         <input type="text" x-model="adminFilters.idNumber" placeholder="e.g. 900000001"
                             @keydown.enter="fetchAdminDonors()"
-                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Blood Group</label>
+                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Blood Group</label>
                         <select x-model="adminFilters.bloodGroup"
-                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
                             <option value="All">All Blood Groups</option>
                             <option value="A+">A+</option>
                             <option value="A-">A-</option>
@@ -2631,20 +2836,20 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Location / Address</label>
+                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Location / Address</label>
                         <input type="text" x-model="adminFilters.address" placeholder="State, District..."
                             @keydown.enter="fetchAdminDonors()"
-                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1 uppercase">Pincode</label>
+                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Pincode</label>
                         <input type="text" x-model="adminFilters.pincode" placeholder="e.g. 500001"
                             @keydown.enter="fetchAdminDonors()"
-                            class="w-full px-4 py-3 bg-white/60 border border-white/80 rounded-xl text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
                     </div>
-                    <div>
+                    <div class="sm:col-span-2 lg:col-span-1">
                         <button @click="fetchAdminDonors()"
-                            class="w-full px-6 py-3 chrome-3d font-black text-xs uppercase tracking-widest rounded-xl text-white flex items-center justify-center gap-2 active:scale-95"
+                            class="w-full px-5 py-2.5 sm:py-3 chrome-3d font-black text-xs uppercase tracking-widest rounded-xl text-white flex items-center justify-center gap-2 active:scale-95 shadow-sm"
                             :disabled="adminLoading">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -2655,23 +2860,68 @@
                     </div>
                 </div>
 
-                <!-- All Registered Donors Data Table -->
+                <!-- All Registered Donors Data Table & Mobile Cards -->
                 <div class="glass-3d-card overflow-hidden shadow-lg border border-white/60">
-                    <div class="px-6 py-4 border-b border-gray-200/50 flex justify-between items-center bg-white/40">
-                        <div class="flex items-center gap-3">
-                            <h3 class="font-black text-gray-900 uppercase tracking-wider text-sm">All Registered Donors
-                                List</h3>
+                    <div class="px-4 sm:px-6 py-3.5 border-b border-gray-200/50 flex justify-between items-center bg-white/40">
+                        <div class="flex items-center gap-2 sm:gap-3">
+                            <h3 class="font-black text-gray-900 uppercase tracking-wider text-xs sm:text-sm">Registered Donors</h3>
                             <span
-                                class="text-xs font-bold bg-red-100 text-red-700 px-3 py-1 rounded-full border border-red-200"
+                                class="text-[11px] sm:text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 sm:py-1 rounded-full border border-red-200"
                                 x-text="`${adminDonors.length} Registered`"></span>
                         </div>
-                        <span class="text-xs font-semibold text-gray-500">Live Auto-Sync</span>
+                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500">Live Sync</span>
                     </div>
 
-                    <div class="overflow-x-auto max-h-[450px] custom-scrollbar">
+                    <!-- Mobile Card View (< md screens) -->
+                    <div class="block md:hidden p-3 space-y-3 bg-white/30 max-h-[480px] overflow-y-auto custom-scrollbar">
+                        <template x-for="donor in adminDonors" :key="donor.id">
+                            <div class="p-4 bg-white/95 border border-slate-200 rounded-xl space-y-2.5 shadow-sm text-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="font-mono text-[11px] text-gray-500 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
+                                        <h4 class="font-bold text-gray-900 text-base" x-text="donor.fullName"></h4>
+                                    </div>
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-black uppercase"
+                                          :class="donor.bloodGroup.includes('-') ? 'bg-gray-200 text-gray-800' : 'bg-red-100 text-red-700'"
+                                          x-text="donor.bloodGroup"></span>
+                                </div>
+                                <div class="text-xs text-gray-600 space-y-1 border-t border-b border-gray-100 py-2">
+                                    <p><strong>Phone:</strong> <span class="font-semibold text-gray-900" x-text="donor.phoneNumber"></span></p>
+                                    <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" class="text-red-600 font-bold" x-text="`(${donor.weight}kg)`"></span></p>
+                                    <p><strong>Location:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span></p>
+                                    <p class="text-[10px] text-gray-400">Registered: <span x-text="new Date(donor.registeredAt || donor.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })"></span></p>
+                                </div>
+                                <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+                                    <div class="flex items-center gap-1.5">
+                                        <a :href="`tel:${donor.phoneNumber}`" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all border border-slate-200">Call</a>
+                                        <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="px-2.5 py-1.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-lg text-xs font-bold transition-all border border-emerald-200">WhatsApp</a>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <button @click="verifyDonorAdmin(donor.id)"
+                                            class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border"
+                                            :class="donor.isVerified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-600 hover:bg-green-50 border-gray-300'">
+                                            <span x-text="donor.isVerified ? '✓ Verified' : 'Verify'"></span>
+                                        </button>
+                                        <button @click="deleteDonorAdmin(donor.id)"
+                                            class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="adminDonors.length === 0 && !adminLoading">
+                            <div class="text-center py-8 text-gray-400 font-bold uppercase tracking-wider text-xs bg-white/60 rounded-xl">
+                                No registered donors found in database
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Desktop Data Table (>= md screens) -->
+                    <div class="hidden md:block overflow-x-auto max-h-[450px] custom-scrollbar">
                         <table class="w-full text-left whitespace-nowrap">
                             <thead
-                                class="bg-white/40 border-b border-gray-200 text-xs uppercase text-gray-600 font-black tracking-wider sticky top-0 backdrop-blur-md">
+                                class="bg-slate-100 border-b border-gray-200 text-xs uppercase text-gray-700 font-black tracking-wider sticky top-0 z-10">
                                 <tr>
                                     <th class="px-6 py-4">Donor ID</th>
                                     <th class="px-6 py-4">Name</th>
@@ -2683,7 +2933,7 @@
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200/50 text-sm bg-white/20">
+                            <tbody class="divide-y divide-gray-200/50 text-sm bg-white/40">
                                 <template x-for="donor in adminDonors" :key="donor.id">
                                     <tr class="hover:bg-red-50/50 transition-colors">
                                         <td class="px-6 py-4 font-mono font-bold text-gray-600"

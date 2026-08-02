@@ -6,6 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MB Bloods | Premium Admin Portal</title>
     <link rel="icon" href="assets/mahesh%20babu%20bloods.jpg" type="image/jpeg">
+    <!-- Older Mobile Browser & WebView Polyfills (Core-JS, Promise.allSettled, Object.fromEntries) -->
+    <script src="https://cdn.jsdelivr.net/npm/core-js-bundle@3.36.0/minified.js"></script>
+    <script>
+        if (!Promise.allSettled) {
+            Promise.allSettled = function (promises) {
+                return Promise.all(promises.map(function (p) {
+                    return Promise.resolve(p).then(
+                        function (value) { return { status: 'fulfilled', value: value }; },
+                        function (reason) { return { status: 'rejected', reason: reason }; }
+                    );
+                }));
+            };
+        }
+        if (!Object.fromEntries) {
+            Object.fromEntries = function (entries) {
+                var obj = {};
+                if (!entries) return obj;
+                for (var i = 0; i < entries.length; i++) {
+                    var pair = entries[i];
+                    if (pair && pair.length >= 2) {
+                        obj[pair[0]] = pair[1];
+                    }
+                }
+                return obj;
+            };
+        }
+    </script>
     <!-- Tailwind CSS v4 Browser Script -->
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
     <!-- Alpine.js -->
@@ -103,6 +130,12 @@
         }
 
         [x-cloak] { display: none !important; }
+
+        @media (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
     </style>
 </head>
 
@@ -978,9 +1011,56 @@
                     } catch (e) {}
                 },
 
-                downloadCSV() {
+                async downloadCSV() {
                     if (!this.isAuthenticated) return;
-                    window.location.href = `${this.apiBase}/api/v1/admin/export?token=${this.token}`;
+                    try {
+                        const res = await fetch(`${this.apiBase}/api/v1/admin/export?token=${this.token}`);
+                        if (!res.ok) {
+                            alert('Failed to download CSV file.');
+                            return;
+                        }
+                        const blob = await res.blob();
+                        const fileName = `MB_Bloods_Donors_${new Date().toISOString().slice(0, 10)}.csv`;
+
+                        if (navigator.canShare) {
+                            const file = new File([blob], fileName, { type: 'text/csv' });
+                            if (navigator.canShare({ files: [file] })) {
+                                try {
+                                    await navigator.share({
+                                        files: [file],
+                                        title: 'MB Bloods Donor CSV Export'
+                                    });
+                                    return;
+                                } catch (shareErr) {
+                                    if (shareErr.name === 'AbortError') return;
+                                }
+                            }
+                        }
+
+                        const blobUrl = URL.createObjectURL(blob);
+                        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+                        if (isIOS) {
+                            const newWin = window.open(blobUrl, '_blank');
+                            if (!newWin) {
+                                window.location.href = blobUrl;
+                            }
+                        } else {
+                            const a = document.createElement('a');
+                            a.href = blobUrl;
+                            a.download = fileName;
+                            a.style.display = 'none';
+                            document.body.appendChild(a);
+                            a.click();
+                            setTimeout(() => {
+                                document.body.removeChild(a);
+                                URL.revokeObjectURL(blobUrl);
+                            }, 1000);
+                        }
+                    } catch (err) {
+                        console.error('CSV download error:', err);
+                        window.open(`${this.apiBase}/api/v1/admin/export?token=${this.token}`, '_blank');
+                    }
                 },
 
                 async fetchFeedbacks() {
