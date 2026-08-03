@@ -717,6 +717,7 @@
                 adminStats: [],
                 adminTotalDonors: 0,
                 adminDonors: [],
+                adminTab: 'donors',
                 adminHasSearched: false,
                 adminSelectedFile: null,
                 adminPreviewUrl: '',
@@ -735,6 +736,7 @@
                     this.adminAuthenticated = false;
                     this.adminPhone = '';
                     this.adminPassword = '';
+                    this.adminTab = 'donors';
                 },
 
                 async adminLogin() {
@@ -742,7 +744,7 @@
                     this.adminLoading = true;
                     this.adminError = '';
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/login`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/login`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ phoneNumber: this.adminPhone, password: this.adminPassword })
@@ -783,7 +785,7 @@
                 async fetchAdminStats() {
                     if (!this.adminToken) return;
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/stats`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/stats`, {
                             headers: { 'Authorization': `Bearer ${this.adminToken}` }
                         });
                         const data = await res.json();
@@ -804,7 +806,7 @@
                         if (this.adminFilters.pincode.trim()) params.append('pincode', this.adminFilters.pincode);
                         if (this.adminFilters.idNumber.trim()) params.append('idNumber', this.adminFilters.idNumber);
 
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/donors?${params.toString()}`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/donors?${params.toString()}`, {
                             headers: { 'Authorization': `Bearer ${this.adminToken}` }
                         });
                         const data = await res.json();
@@ -820,7 +822,7 @@
 
                 async verifyDonorAdmin(id) {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/donors/verify/${id}?token=${this.adminToken}`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/donors/verify/${id}?token=${this.adminToken}`);
                         const data = await res.json();
                         if (data.success) {
                             this.fetchAdminDonors();
@@ -831,7 +833,7 @@
                 async deleteDonorAdmin(id) {
                     if (!confirm('Are you sure you want to delete this donor?')) return;
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/donors/delete/${id}?token=${this.adminToken}`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/donors/delete/${id}?token=${this.adminToken}`);
                         const data = await res.json();
                         if (data.success) {
                             this.fetchAdminDonors();
@@ -843,7 +845,7 @@
                 async downloadAdminCSV() {
                     if (!this.adminToken) return;
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/export?token=${this.adminToken}`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/export?token=${this.adminToken}`);
                         if (!res.ok) {
                             alert('Failed to download CSV file.');
                             return;
@@ -906,7 +908,7 @@
                         const formData = new FormData();
                         formData.append('image', this.adminSelectedFile);
 
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/upload`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/upload`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${this.adminToken}` },
                             body: formData
@@ -936,7 +938,7 @@
                 async fetchAdminFeedbacks() {
                     if (!this.adminToken) return;
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/feedbacks`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/feedbacks`, {
                             headers: { 'Authorization': `Bearer ${this.adminToken}` }
                         });
                         const data = await res.json();
@@ -946,7 +948,7 @@
 
                 async toggleApproveFeedbackAdmin(id) {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/feedbacks/approve/${id}`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/feedbacks/approve/${id}`, {
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${this.adminToken}` }
                         });
@@ -961,7 +963,7 @@
                 async deleteFeedbackAdmin(id) {
                     if (!confirm('Are you sure you want to delete this review?')) return;
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/feedbacks/${id}`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/feedbacks/${id}`, {
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${this.adminToken}` }
                         });
@@ -975,7 +977,7 @@
 
                 async saveAdminAlert() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/alerts`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/alerts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.adminToken}` },
                             body: JSON.stringify({ message: this.adminTempAlert, isActive: true })
@@ -989,7 +991,7 @@
 
                 async clearAdminAlert() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/admin/alerts`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/alerts`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.adminToken}` },
                             body: JSON.stringify({ message: '', isActive: false })
@@ -1004,7 +1006,7 @@
 
                 async fetchAdminAlert() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/public/alert`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/public/alert`);
                         const data = await res.json();
                         if (data.alert) this.adminTempAlert = data.alert.message;
                     } catch (e) { }
@@ -2754,8 +2756,52 @@
                     </div>
                 </div>
 
-                <!-- Gallery Upload Section -->
-                <div class="glass-3d-card p-4 sm:p-6 md:p-8">
+                <!-- Admin Navigation Tabs -->
+                <div class="flex items-center gap-2 border-b border-gray-200/60 pb-3 overflow-x-auto custom-scrollbar">
+                    <button @click="adminTab = 'donors'"
+                        class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="adminTab === 'donors' ? 'chrome-3d text-white shadow-md' : 'bg-white/80 hover:bg-white text-gray-700 border border-gray-200'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                        <span>Donors Directory</span>
+                    </button>
+
+                    <button @click="adminTab = 'gallery'"
+                        class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="adminTab === 'gallery' ? 'chrome-3d text-white shadow-md' : 'bg-white/80 hover:bg-white text-gray-700 border border-gray-200'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span>Drive Gallery</span>
+                        <span class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[10px] font-extrabold" x-text="galleryImages.length"></span>
+                    </button>
+
+                    <button @click="adminTab = 'reviews'"
+                        class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="adminTab === 'reviews' ? 'chrome-3d text-white shadow-md' : 'bg-white/80 hover:bg-white text-gray-700 border border-gray-200'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+                        </svg>
+                        <span>Reviews Moderation</span>
+                        <span x-show="adminFeedbacks.filter(f => !f.isApproved).length > 0"
+                              class="px-2 py-0.5 bg-red-600 text-white rounded-full text-[10px] font-bold animate-pulse"
+                              x-text="adminFeedbacks.filter(f => !f.isApproved).length"></span>
+                    </button>
+
+                    <button @click="adminTab = 'emergency'"
+                        class="px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 shrink-0 cursor-pointer"
+                        :class="adminTab === 'emergency' ? 'chrome-3d text-white shadow-md' : 'bg-white/80 hover:bg-white text-gray-700 border border-gray-200'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+                        </svg>
+                        <span>Emergency Ticker</span>
+                        <span class="w-2.5 h-2.5 rounded-full" :class="adminTempAlert ? 'bg-green-500 animate-ping' : 'bg-gray-400'"></span>
+                    </button>
+                </div>
+
+                <!-- Gallery Upload Section (TAB: gallery) -->
+                <div x-show="adminTab === 'gallery'" class="glass-3d-card p-4 sm:p-6 md:p-8" x-cloak>
                     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
                         <div>
                             <h3
@@ -2796,208 +2842,312 @@
                     </div>
                 </div>
 
-                <!-- Quick Stats Grid & Export CSV -->
-                <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2 sm:gap-3 flex-1">
-                        <div class="glass-red-card p-3 text-center border border-red-200/50 shadow-sm">
-                            <span class="block text-xl sm:text-2xl font-black text-red-600"
-                                x-text="adminTotalDonors || adminDonors.length">0</span>
-                            <span class="text-[10px] uppercase font-black text-red-600/80">Total Donors</span>
-                        </div>
-                        <div class="glass-3d-card p-3 text-center border border-amber-300/40">
-                            <span class="block text-lg sm:text-xl font-black text-amber-600" x-text="galleryImages.length">0</span>
-                            <span class="text-[10px] uppercase font-bold text-gray-500">Uploads</span>
-                        </div>
-                        <template x-for="stat in adminStats" :key="stat.group">
-                            <div class="glass-3d-card p-3 text-center">
-                                <span class="block text-base sm:text-lg font-bold text-gray-800" x-text="stat.count">0</span>
-                                <span class="text-[10px] uppercase font-bold text-gray-400" x-text="stat.group"></span>
+                <!-- Donors Directory Section (TAB: donors) -->
+                <div x-show="adminTab === 'donors'" class="space-y-6 sm:space-y-8" x-cloak>
+                    <!-- Quick Stats Grid & Export CSV -->
+                    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
+                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2 sm:gap-3 flex-1">
+                            <div class="glass-red-card p-3 text-center border border-red-200/50 shadow-sm">
+                                <span class="block text-xl sm:text-2xl font-black text-red-600"
+                                    x-text="adminTotalDonors || adminDonors.length">0</span>
+                                <span class="text-[10px] uppercase font-black text-red-600/80">Total Donors</span>
                             </div>
-                        </template>
-                    </div>
-                    <button @click="downloadAdminCSV()"
-                        class="px-5 py-3 sm:py-4 chrome-3d rounded-xl sm:rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 text-white shrink-0 shadow-md">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4"></path>
-                        </svg>
-                        <span>Export CSV</span>
-                    </button>
-                </div>
-
-                <!-- Search & Filters -->
-                <div class="glass-3d-card p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
-                    <div>
-                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Search by ID</label>
-                        <input type="text" x-model="adminFilters.idNumber" placeholder="e.g. 900000001"
-                            @keydown.enter="fetchAdminDonors()"
-                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Blood Group</label>
-                        <select x-model="adminFilters.bloodGroup"
-                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
-                            <option value="All">All Blood Groups</option>
-                            <option value="A+">A+</option>
-                            <option value="A-">A-</option>
-                            <option value="B+">B+</option>
-                            <option value="B-">B-</option>
-                            <option value="O+">O+</option>
-                            <option value="O-">O-</option>
-                            <option value="AB+">AB+</option>
-                            <option value="AB-">AB-</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Location / Address</label>
-                        <input type="text" x-model="adminFilters.address" placeholder="State, District..."
-                            @keydown.enter="fetchAdminDonors()"
-                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Pincode</label>
-                        <input type="text" x-model="adminFilters.pincode" placeholder="e.g. 500001"
-                            @keydown.enter="fetchAdminDonors()"
-                            class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-1">
-                        <button @click="fetchAdminDonors()"
-                            class="w-full px-5 py-2.5 sm:py-3 chrome-3d font-black text-xs uppercase tracking-widest rounded-xl text-white flex items-center justify-center gap-2 active:scale-95 shadow-sm"
-                            :disabled="adminLoading">
+                            <div class="glass-3d-card p-3 text-center border border-amber-300/40">
+                                <span class="block text-lg sm:text-xl font-black text-amber-600" x-text="galleryImages.length">0</span>
+                                <span class="text-[10px] uppercase font-bold text-gray-500">Uploads</span>
+                            </div>
+                            <template x-for="stat in adminStats" :key="stat.group">
+                                <div class="glass-3d-card p-3 text-center">
+                                    <span class="block text-base sm:text-lg font-bold text-gray-800" x-text="stat.count">0</span>
+                                    <span class="text-[10px] uppercase font-bold text-gray-400" x-text="stat.group"></span>
+                                </div>
+                            </template>
+                        </div>
+                        <button @click="downloadAdminCSV()"
+                            class="px-5 py-3 sm:py-4 chrome-3d rounded-xl sm:rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 text-white shrink-0 shadow-md">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                <path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                            Search Donors
+                            <span>Export CSV</span>
                         </button>
                     </div>
-                </div>
 
-                <!-- All Registered Donors Data Table & Mobile Cards -->
-                <div class="glass-3d-card overflow-hidden shadow-lg border border-white/60">
-                    <div class="px-4 sm:px-6 py-3.5 border-b border-gray-200/50 flex justify-between items-center bg-white/40">
-                        <div class="flex items-center gap-2 sm:gap-3">
-                            <h3 class="font-black text-gray-900 uppercase tracking-wider text-xs sm:text-sm">Registered Donors</h3>
-                            <span
-                                class="text-[11px] sm:text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 sm:py-1 rounded-full border border-red-200"
-                                x-text="`${adminDonors.length} Registered`"></span>
+                    <!-- Search & Filters -->
+                    <div class="glass-3d-card p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 items-end">
+                        <div>
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Search by ID</label>
+                            <input type="text" x-model="adminFilters.idNumber" placeholder="e.g. 900000001"
+                                @keydown.enter="fetchAdminDonors()"
+                                class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
                         </div>
-                        <span class="text-[10px] sm:text-xs font-semibold text-gray-500">Live Sync</span>
+                        <div>
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Blood Group</label>
+                            <select x-model="adminFilters.bloodGroup"
+                                class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                                <option value="All">All Blood Groups</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Location / Address</label>
+                            <input type="text" x-model="adminFilters.address" placeholder="State, District..."
+                                @keydown.enter="fetchAdminDonors()"
+                                class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700 mb-1 uppercase">Pincode</label>
+                            <input type="text" x-model="adminFilters.pincode" placeholder="e.g. 500001"
+                                @keydown.enter="fetchAdminDonors()"
+                                class="w-full px-3.5 py-2.5 sm:py-3 bg-white border border-gray-200 rounded-xl text-base sm:text-sm focus:ring-2 focus:ring-red-500 focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2 lg:col-span-1">
+                            <button @click="fetchAdminDonors()"
+                                class="w-full px-5 py-2.5 sm:py-3 chrome-3d font-black text-xs uppercase tracking-widest rounded-xl text-white flex items-center justify-center gap-2 active:scale-95 shadow-sm"
+                                :disabled="adminLoading">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                Search Donors
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Mobile Card View (< md screens) -->
-                    <div class="block md:hidden p-3 space-y-3 bg-white/30 max-h-[480px] overflow-y-auto custom-scrollbar">
-                        <template x-for="donor in adminDonors" :key="donor.id">
-                            <div class="p-4 bg-white/95 border border-slate-200 rounded-xl space-y-2.5 shadow-sm text-sm">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <span class="font-mono text-[11px] text-gray-500 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
-                                        <h4 class="font-bold text-gray-900 text-base" x-text="donor.fullName"></h4>
-                                    </div>
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-black uppercase"
-                                          :class="donor.bloodGroup.includes('-') ? 'bg-gray-200 text-gray-800' : 'bg-red-100 text-red-700'"
-                                          x-text="donor.bloodGroup"></span>
-                                </div>
-                                <div class="text-xs text-gray-600 space-y-1 border-t border-b border-gray-100 py-2">
-                                    <p><strong>Phone:</strong> <span class="font-semibold text-gray-900" x-text="donor.phoneNumber"></span></p>
-                                    <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" class="text-red-600 font-bold" x-text="`(${donor.weight}kg)`"></span></p>
-                                    <p><strong>Location:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span></p>
-                                    <p class="text-[11px] text-gray-500 font-medium">Reg. Date & Time: <span class="font-semibold text-gray-900" x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })"></span></p>
-                                </div>
-                                <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
-                                    <div class="flex items-center gap-1.5">
-                                        <a :href="`tel:${donor.phoneNumber}`" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all border border-slate-200">Call</a>
-                                        <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="px-2.5 py-1.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-lg text-xs font-bold transition-all border border-emerald-200">WhatsApp</a>
-                                    </div>
-                                    <div class="flex items-center gap-1.5">
-                                        <button @click="verifyDonorAdmin(donor.id)"
-                                            class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border"
-                                            :class="donor.isVerified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-600 hover:bg-green-50 border-gray-300'">
-                                            <span x-text="donor.isVerified ? '✓ Verified' : 'Verify'"></span>
-                                        </button>
-                                        <button @click="deleteDonorAdmin(donor.id)"
-                                            class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
+                    <!-- All Registered Donors Data Table & Mobile Cards -->
+                    <div class="glass-3d-card overflow-hidden shadow-lg border border-white/60">
+                        <div class="px-4 sm:px-6 py-3.5 border-b border-gray-200/50 flex justify-between items-center bg-white/40">
+                            <div class="flex items-center gap-2 sm:gap-3">
+                                <h3 class="font-black text-gray-900 uppercase tracking-wider text-xs sm:text-sm">Registered Donors</h3>
+                                <span
+                                    class="text-[11px] sm:text-xs font-bold bg-red-100 text-red-700 px-2.5 py-0.5 sm:py-1 rounded-full border border-red-200"
+                                    x-text="`${adminDonors.length} Registered`"></span>
                             </div>
-                        </template>
-                        <template x-if="adminDonors.length === 0 && !adminLoading">
-                            <div class="text-center py-8 text-gray-400 font-bold uppercase tracking-wider text-xs bg-white/60 rounded-xl">
-                                No registered donors found in database
-                            </div>
-                        </template>
-                    </div>
+                            <span class="text-[10px] sm:text-xs font-semibold text-gray-500">Live Sync</span>
+                        </div>
 
-                    <!-- Desktop Data Table (>= md screens) -->
-                    <div class="hidden md:block overflow-x-auto max-h-[450px] custom-scrollbar">
-                        <table class="w-full text-left whitespace-nowrap">
-                            <thead
-                                class="bg-slate-100 border-b border-gray-200 text-xs uppercase text-gray-700 font-black tracking-wider sticky top-0 z-10">
-                                <tr>
-                                    <th class="px-6 py-4">Donor ID</th>
-                                    <th class="px-6 py-4">Name</th>
-                                    <th class="px-6 py-4">Gender / Weight</th>
-                                    <th class="px-6 py-4">Blood Group</th>
-                                    <th class="px-6 py-4">Phone</th>
-                                    <th class="px-6 py-4">Address</th>
-                                    <th class="px-6 py-4">Registration Date & Time</th>
-                                    <th class="px-6 py-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200/50 text-sm bg-white/40">
-                                <template x-for="donor in adminDonors" :key="donor.id">
-                                    <tr class="hover:bg-red-50/50 transition-colors">
-                                        <td class="px-6 py-4 font-mono font-bold text-gray-600"
-                                            x-text="'9' + String(donor.id).padStart(9, '0')"></td>
-                                        <td class="px-6 py-4 font-bold text-gray-900" x-text="donor.fullName"></td>
-                                        <td class="px-6 py-4 text-gray-700 font-medium">
-                                            <span x-text="donor.gender"></span>
-                                            <span x-show="donor.weight" class="ml-1 text-xs font-bold text-red-600"
-                                                x-text="`(${donor.weight}kg)`"></span>
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            <span class="px-3 py-1 rounded-full text-xs font-black"
-                                                :class="donor.bloodGroup.includes('-') ? 'bg-gray-200 text-gray-800' : 'bg-red-100 text-red-700'"
-                                                x-text="donor.bloodGroup">
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-gray-800 font-bold" x-text="donor.phoneNumber"></td>
-                                        <td class="px-6 py-4 text-gray-700 text-xs">
-                                            <span
-                                                x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span>
-                                        </td>
-                                        <td class="px-6 py-4 text-xs font-semibold text-gray-500"
-                                            x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })">
-                                        </td>
-                                        <td class="px-6 py-4 text-right space-x-2">
+                        <!-- Mobile Card View (< md screens) -->
+                        <div class="block md:hidden p-3 space-y-3 bg-white/30 max-h-[480px] overflow-y-auto custom-scrollbar">
+                            <template x-for="donor in adminDonors" :key="donor.id">
+                                <div class="p-4 bg-white/95 border border-slate-200 rounded-xl space-y-2.5 shadow-sm text-sm">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="font-mono text-[11px] text-gray-500 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
+                                            <h4 class="font-bold text-gray-900 text-base" x-text="donor.fullName"></h4>
+                                        </div>
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-black uppercase"
+                                              :class="donor.bloodGroup.includes('-') ? 'bg-gray-200 text-gray-800' : 'bg-red-100 text-red-700'"
+                                              x-text="donor.bloodGroup"></span>
+                                    </div>
+                                    <div class="text-xs text-gray-600 space-y-1 border-t border-b border-gray-100 py-2">
+                                        <p><strong>Phone:</strong> <span class="font-semibold text-gray-900" x-text="donor.phoneNumber"></span></p>
+                                        <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" class="text-red-600 font-bold" x-text="`(${donor.weight}kg)`"></span></p>
+                                        <p><strong>Location:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span></p>
+                                        <p class="text-[11px] text-gray-500 font-medium">Reg. Date & Time: <span class="font-semibold text-gray-900" x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })"></span></p>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
+                                        <div class="flex items-center gap-1.5">
+                                            <a :href="`tel:${donor.phoneNumber}`" class="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-all border border-slate-200">Call</a>
+                                            <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="px-2.5 py-1.5 bg-emerald-100 text-emerald-800 hover:bg-emerald-200 rounded-lg text-xs font-bold transition-all border border-emerald-200">WhatsApp</a>
+                                        </div>
+                                        <div class="flex items-center gap-1.5">
                                             <button @click="verifyDonorAdmin(donor.id)"
-                                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border"
+                                                class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all border"
                                                 :class="donor.isVerified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-600 hover:bg-green-50 border-gray-300'">
                                                 <span x-text="donor.isVerified ? '✓ Verified' : 'Verify'"></span>
                                             </button>
                                             <button @click="deleteDonorAdmin(donor.id)"
-                                                class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all">
+                                                class="px-2.5 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all">
                                                 Delete
                                             </button>
-                                        </td>
-                                    </tr>
-                                </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="adminDonors.length === 0 && !adminLoading">
+                                <div class="text-center py-8 text-gray-400 font-bold uppercase tracking-wider text-xs bg-white/60 rounded-xl">
+                                    No registered donors found in database
+                                </div>
+                            </template>
+                        </div>
 
-                                <template x-if="adminDonors.length === 0 && !adminLoading">
+                        <!-- Desktop Data Table (>= md screens) -->
+                        <div class="hidden md:block overflow-x-auto max-h-[450px] custom-scrollbar">
+                            <table class="w-full text-left whitespace-nowrap">
+                                <thead
+                                    class="bg-slate-100 border-b border-gray-200 text-xs uppercase text-gray-700 font-black tracking-wider sticky top-0 z-10">
                                     <tr>
-                                        <td colspan="8"
-                                            class="text-center py-12 text-gray-400 font-bold uppercase tracking-wider text-xs">
-                                            No registered donors found in database
-                                        </td>
+                                        <th class="px-6 py-4">Donor ID</th>
+                                        <th class="px-6 py-4">Name</th>
+                                        <th class="px-6 py-4">Gender / Weight</th>
+                                        <th class="px-6 py-4">Blood Group</th>
+                                        <th class="px-6 py-4">Phone</th>
+                                        <th class="px-6 py-4">Address</th>
+                                        <th class="px-6 py-4">Registration Date & Time</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
                                     </tr>
-                                </template>
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200/50 text-sm bg-white/40">
+                                    <template x-for="donor in adminDonors" :key="donor.id">
+                                        <tr class="hover:bg-red-50/50 transition-colors">
+                                            <td class="px-6 py-4 font-mono font-bold text-gray-600"
+                                                x-text="'9' + String(donor.id).padStart(9, '0')"></td>
+                                            <td class="px-6 py-4 font-bold text-gray-900" x-text="donor.fullName"></td>
+                                            <td class="px-6 py-4 text-gray-700 font-medium">
+                                                <span x-text="donor.gender"></span>
+                                                <span x-show="donor.weight" class="ml-1 text-xs font-bold text-red-600"
+                                                    x-text="`(${donor.weight}kg)`"></span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black"
+                                                    :class="donor.bloodGroup.includes('-') ? 'bg-gray-200 text-gray-800' : 'bg-red-100 text-red-700'"
+                                                    x-text="donor.bloodGroup">
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-gray-800 font-bold" x-text="donor.phoneNumber"></td>
+                                            <td class="px-6 py-4 text-gray-700 text-xs">
+                                                <span
+                                                    x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span>
+                                            </td>
+                                            <td class="px-6 py-4 text-xs font-semibold text-gray-500"
+                                                x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })">
+                                            </td>
+                                            <td class="px-6 py-4 text-right space-x-2">
+                                                <button @click="verifyDonorAdmin(donor.id)"
+                                                    class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border"
+                                                    :class="donor.isVerified ? 'bg-green-100 text-green-700 border-green-300' : 'bg-gray-100 text-gray-600 hover:bg-green-50 border-gray-300'">
+                                                    <span x-text="donor.isVerified ? '✓ Verified' : 'Verify'"></span>
+                                                </button>
+                                                <button @click="deleteDonorAdmin(donor.id)"
+                                                    class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+
+                                    <template x-if="adminDonors.length === 0 && !adminLoading">
+                                        <tr>
+                                            <td colspan="8"
+                                                class="text-center py-12 text-gray-400 font-bold uppercase tracking-wider text-xs">
+                                                No registered donors found in database
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-            </div>
+                <!-- Reviews Moderation Section (TAB: reviews) -->
+                <div x-show="adminTab === 'reviews'" class="space-y-6" x-cloak>
+                    <div class="glass-3d-card rounded-2xl overflow-hidden shadow-lg border border-white/60">
+                        <div class="px-4 sm:px-6 py-4 border-b border-gray-200/50 flex justify-between items-center bg-white/40 flex-wrap gap-3">
+                            <div>
+                                <h3 class="font-black text-gray-900 uppercase tracking-wider text-sm sm:text-base">Donor Reviews & Testimonials Moderation</h3>
+                                <p class="text-xs text-gray-500 font-medium mt-0.5">Approve user reviews to showcase them on the public landing page slider.</p>
+                            </div>
+                            <span class="px-3 py-1 bg-red-100 text-red-700 border border-red-200 rounded-full text-xs font-bold"
+                                  x-text="`${adminFeedbacks.filter(f => !f.isApproved).length} Pending Approval`"></span>
+                        </div>
+
+                        <div class="overflow-x-auto custom-scrollbar max-h-[500px]">
+                            <table class="w-full text-left whitespace-nowrap">
+                                <thead class="bg-slate-100 border-b border-gray-200 text-xs uppercase text-gray-700 font-black tracking-wider sticky top-0 z-10">
+                                    <tr>
+                                        <th class="px-6 py-4">Submitted By</th>
+                                        <th class="px-6 py-4">Rating</th>
+                                        <th class="px-6 py-4">Comment</th>
+                                        <th class="px-6 py-4">Date</th>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200/50 text-sm bg-white/40">
+                                    <template x-for="review in adminFeedbacks" :key="review.id">
+                                        <tr class="hover:bg-red-50/50 transition-colors">
+                                            <td class="px-6 py-4 font-bold text-gray-900" x-text="review.name"></td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-0.5 text-amber-500">
+                                                    <template x-for="star in 5">
+                                                        <svg class="w-4 h-4" :class="star <= review.rating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-300'" viewBox="0 0 20 20">
+                                                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                        </svg>
+                                                    </template>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-gray-700 max-w-xs truncate" :title="review.comment" x-text="review.comment"></td>
+                                            <td class="px-6 py-4 text-gray-500 text-xs" x-text="new Date(review.createdAt).toLocaleDateString()"></td>
+                                            <td class="px-6 py-4">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
+                                                      :class="review.isApproved ? 'bg-green-100 text-green-700 border-green-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+                                                      x-text="review.isApproved ? 'Approved' : 'Pending'">
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 text-right space-x-2">
+                                                <button @click="toggleApproveFeedbackAdmin(review.id)"
+                                                        class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer"
+                                                        :class="review.isApproved ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' : 'bg-green-600 hover:bg-green-700 text-white border-green-500'"
+                                                        x-text="review.isApproved ? 'Unapprove' : 'Approve'">
+                                                </button>
+                                                <button @click="deleteFeedbackAdmin(review.id)"
+                                                        class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all cursor-pointer">
+                                                    Delete
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <template x-if="adminFeedbacks.length === 0">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-12 text-gray-400 font-bold uppercase tracking-wider text-xs">
+                                                No donor reviews submitted yet
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Ticker Section (TAB: emergency) -->
+                <div x-show="adminTab === 'emergency'" class="space-y-6" x-cloak>
+                    <div class="glass-3d-card p-6 md:p-8 rounded-2xl max-w-3xl mx-auto space-y-6">
+                        <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+                            <div>
+                                <h3 class="font-black text-gray-900 uppercase tracking-wide text-lg sm:text-xl">Emergency Broadcast Ticker</h3>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Post urgent blood requirement announcements directly to the public home page ticker.</p>
+                            </div>
+                            <span class="w-4 h-4 rounded-full" :class="adminTempAlert ? 'bg-green-500 shadow-[0_0_15px_#22c55e] animate-ping' : 'bg-gray-300'"></span>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-2">Announcement Message</label>
+                                <textarea x-model="adminTempAlert" rows="3" placeholder="e.g. URGENT! O+ Blood needed at Guntur Government Hospital. Contact: 9948550301"
+                                    class="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-red-500 focus:outline-none text-sm font-medium"></textarea>
+                            </div>
+
+                            <div class="flex items-center gap-3 sm:gap-4 flex-wrap sm:flex-nowrap">
+                                <button @click="saveAdminAlert()"
+                                    class="flex-1 py-3.5 chrome-3d rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 text-white shadow-md cursor-pointer">
+                                    Broadcast Emergency Alert
+                                </button>
+                                <button @click="clearAdminAlert()"
+                                    class="px-5 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-bold uppercase tracking-wider border border-gray-300 transition-all active:scale-95 cursor-pointer">
+                                    Turn Off Ticker
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>     </div>
         </div>
     </div>
 
