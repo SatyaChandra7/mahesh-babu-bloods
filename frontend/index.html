@@ -156,7 +156,7 @@
                     }
 
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/donors/check-duplicate?fullName=${encodeURIComponent(name)}&phoneNumber=${encodeURIComponent(phone)}`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/donors/check-duplicate?fullName=${encodeURIComponent(name)}&phoneNumber=${encodeURIComponent(phone)}`);
                         const data = await res.json();
                         if (data.isDuplicate) {
                             this.isDuplicateDonor = true;
@@ -167,6 +167,22 @@
                         }
                     } catch (err) {
                         console.error('Error checking duplicate donor:', err);
+                    }
+                },
+
+                async fetchWithRetry(url, options = {}, retries = 3, backoff = 1000) {
+                    try {
+                        const response = await fetch(url, options);
+                        if (!response.ok && response.status >= 500 && retries > 0) {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                        return response;
+                    } catch (err) {
+                        if (retries > 0) {
+                            await new Promise(res => setTimeout(res, backoff));
+                            return this.fetchWithRetry(url, options, retries - 1, backoff * 2);
+                        }
+                        throw err;
                     }
                 },
 
@@ -196,9 +212,13 @@
                 },
 
                 get apiBase() {
-                    const customUrl = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL');
+                    let customUrl = window.VITE_API_BASE_URL || window.REACT_APP_API_BASE_URL || window.API_BASE_URL || localStorage.getItem('API_BASE_URL');
                     if (customUrl) {
-                        return customUrl.replace(/\/+$/, '');
+                        customUrl = customUrl.replace(/\/+$/, '');
+                        if (window.location.protocol === 'https:' && customUrl.startsWith('http://')) {
+                            customUrl = customUrl.replace(/^http:\/\//i, 'https://');
+                        }
+                        return customUrl;
                     }
                     return window.location.origin;
                 },
@@ -258,7 +278,7 @@
 
                 async fetchAlert() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/public/alert`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/public/alert`);
                         const data = await res.json();
                         if (data && data.alert && data.alert.isActive) this.emergencyMessage = data.alert.message;
                     } catch (err) { console.log('Failed to load alert'); }
@@ -292,7 +312,7 @@
 
                 async fetchGallery() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/public/gallery`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/public/gallery`);
                         const data = await res.json();
                         if (data.success) {
                             this.galleryImages = data.images || [];
@@ -302,7 +322,7 @@
 
                 async fetchDonationCount() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/donations/count`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/donations/count`);
                         const data = await res.json();
                         if (data.count !== undefined) {
                             this.donationCount = data.count;
@@ -567,7 +587,7 @@
 
                     this.isSubmitting = true;
                     try {
-                        const response = await fetch(`${this.apiBase}/api/v1/donors`, {
+                        const response = await this.fetchWithRetry(`${this.apiBase}/api/v1/donors`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
@@ -648,7 +668,7 @@
 
                 async fetchFeedbacks() {
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/public/feedbacks`);
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/public/feedbacks`);
                         const data = await res.json();
                         if (data.success) {
                             this.feedbacks = data.feedbacks;
@@ -660,7 +680,7 @@
                     if (!this.feedbackName || !this.feedbackComment) return;
                     this.feedbackSubmitting = true;
                     try {
-                        const res = await fetch(`${this.apiBase}/api/v1/feedbacks`, {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/feedbacks`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({

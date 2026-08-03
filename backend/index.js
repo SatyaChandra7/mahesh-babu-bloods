@@ -78,10 +78,11 @@ app.use(cors({
             return callback(null, origin);
         }
         
-        // Check allowed origins, vercel domains, or localhost
+        // Check allowed origins, production domains, vercel domains, or localhost
         const isAllowed = allowedOrigins.includes(origin) || 
-                          /^https:\/\/.*\.vercel\.app$/.test(origin) || 
-                          /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+                          /^https:\/\/(www\.)?(mbbloods\.org|maheshbabubloods\.org)$/i.test(origin) ||
+                          /^https:\/\/.*\.vercel\.app$/i.test(origin) || 
+                          /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
 
         if (isAllowed) {
             return callback(null, origin);
