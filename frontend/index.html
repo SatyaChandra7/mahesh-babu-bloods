@@ -726,6 +726,20 @@
                 adminFeedbacks: [],
                 adminFilters: { bloodGroup: 'All', address: '', pincode: '', idNumber: '' },
 
+                formatAdminDate(val) {
+                    if (!val) return 'N/A';
+                    if (typeof val === 'number') {
+                        const d = new Date(val);
+                        return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                    }
+                    let str = String(val).trim();
+                    if (str.includes(' ') && !str.includes('T')) {
+                        str = str.replace(' ', 'T');
+                    }
+                    const d = new Date(str);
+                    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                },
+
                 openAdminPanel() {
                     this.adminOpen = true;
                     this.closeIntro();
@@ -2867,19 +2881,19 @@
                 <div x-show="adminTab === 'donors'" class="space-y-6 sm:space-y-8" x-cloak>
                     <!-- Quick Stats Grid & Export CSV -->
                     <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2 sm:gap-3 flex-1">
-                            <div class="glass-red-card p-3 text-center border border-red-200/50 shadow-sm">
+                        <div class="flex overflow-x-auto custom-scrollbar pb-2 sm:pb-0 sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-10 gap-2 sm:gap-3 flex-1 snap-x">
+                            <div class="glass-red-card p-3 text-center border border-red-200/50 shadow-sm shrink-0 min-w-[95px] sm:min-w-0 snap-start">
                                 <span class="block text-xl sm:text-2xl font-black text-red-600"
                                     x-text="adminTotalDonors || adminDonors.length">0</span>
                                 <span class="text-[10px] uppercase font-black text-red-600/80">Total Donors</span>
                             </div>
-                            <div class="glass-3d-card p-3 text-center border border-amber-300/40">
+                            <div class="glass-3d-card p-3 text-center border border-amber-300/40 shrink-0 min-w-[95px] sm:min-w-0 snap-start">
                                 <span class="block text-lg sm:text-xl font-black text-amber-600" x-text="galleryImages.length">0</span>
                                 <span class="text-[10px] uppercase font-bold text-gray-500">Uploads</span>
                             </div>
                             <template x-for="stat in adminStats" :key="stat.group">
                                 <div @click="adminFilters.bloodGroup = stat.group; fetchAdminDonors()"
-                                     class="glass-3d-card p-3 text-center cursor-pointer hover:border-red-400 transition-all">
+                                     class="glass-3d-card p-3 text-center cursor-pointer hover:border-red-400 transition-all shrink-0 min-w-[75px] sm:min-w-0 snap-start">
                                     <span class="block text-base sm:text-lg font-bold text-gray-800" x-text="stat.count">0</span>
                                     <span class="text-[10px] uppercase font-bold text-gray-400" x-text="stat.group"></span>
                                 </div>
@@ -2975,7 +2989,7 @@
                                         <p><strong>Phone:</strong> <span class="font-semibold text-gray-900" x-text="donor.phoneNumber"></span></p>
                                         <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" class="text-red-600 font-bold" x-text="`(${donor.weight}kg)`"></span></p>
                                         <p><strong>Location:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span></p>
-                                        <p class="text-[11px] text-gray-500 font-medium">Reg. Date & Time: <span class="font-semibold text-gray-900" x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })"></span></p>
+                                        <p class="text-[11px] text-gray-500 font-medium">Reg. Date & Time: <span class="font-semibold text-gray-900" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
                                     </div>
                                     <div class="flex items-center justify-between pt-1 flex-wrap gap-2">
                                         <div class="flex items-center gap-1.5">
@@ -3042,7 +3056,7 @@
                                                     x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district || ''}, ${donor.state || ''}${donor.pincode ? ' - ' + donor.pincode : ''}`"></span>
                                             </td>
                                             <td class="px-6 py-4 text-xs font-semibold text-gray-500"
-                                                x-text="new Date(donor.registeredAt || donor.createdAt || donor.id).toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })">
+                                                x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)">
                                             </td>
                                             <td class="px-6 py-4 text-right space-x-2">
                                                 <button @click="verifyDonorAdmin(donor.id)"
@@ -3084,7 +3098,51 @@
                                   x-text="`${adminFeedbacks.filter(f => !f.isApproved).length} Pending Approval`"></span>
                         </div>
 
-                        <div class="overflow-x-auto custom-scrollbar max-h-[500px]">
+                        <!-- Mobile Card View (< md screens) -->
+                        <div class="block md:hidden p-3 space-y-3 bg-white/30 max-h-[480px] overflow-y-auto custom-scrollbar">
+                            <template x-for="review in adminFeedbacks" :key="review.id">
+                                <div class="p-4 bg-white/95 border border-slate-200 rounded-xl space-y-2.5 shadow-sm text-sm">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-bold text-gray-900 text-base" x-text="review.name"></span>
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-black uppercase border"
+                                              :class="review.isApproved ? 'bg-green-100 text-green-700 border-green-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+                                              x-text="review.isApproved ? 'Approved' : 'Pending'">
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-1 text-amber-500">
+                                        <template x-for="star in 5">
+                                            <svg class="w-4 h-4" :class="star <= review.rating ? 'fill-amber-400 text-amber-400' : 'fill-gray-200 text-gray-300'" viewBox="0 0 20 20">
+                                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                            </svg>
+                                        </template>
+                                        <span class="text-xs text-gray-400 font-semibold ml-2" x-text="formatAdminDate(review.createdAt)"></span>
+                                    </div>
+
+                                    <p class="text-xs text-gray-700 bg-gray-50/80 p-2.5 rounded-lg border border-gray-100 font-medium italic" x-text="`“${review.comment}”`"></p>
+
+                                    <div class="flex items-center justify-end gap-2 pt-1">
+                                        <button @click="toggleApproveFeedbackAdmin(review.id)"
+                                                class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all border cursor-pointer"
+                                                :class="review.isApproved ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200' : 'bg-green-600 hover:bg-green-700 text-white border-green-500'"
+                                                x-text="review.isApproved ? 'Unapprove' : 'Approve'">
+                                        </button>
+                                        <button @click="deleteFeedbackAdmin(review.id)"
+                                                class="px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all cursor-pointer">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                            <template x-if="adminFeedbacks.length === 0">
+                                <div class="text-center py-8 text-gray-400 font-bold uppercase tracking-wider text-xs bg-white/60 rounded-xl">
+                                    No donor reviews submitted yet
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Desktop Data Table (>= md screens) -->
+                        <div class="hidden md:block overflow-x-auto custom-scrollbar max-h-[500px]">
                             <table class="w-full text-left whitespace-nowrap">
                                 <thead class="bg-slate-100 border-b border-gray-200 text-xs uppercase text-gray-700 font-black tracking-wider sticky top-0 z-10">
                                     <tr>
@@ -3110,7 +3168,7 @@
                                                 </div>
                                             </td>
                                             <td class="px-6 py-4 text-gray-700 max-w-xs truncate" :title="review.comment" x-text="review.comment"></td>
-                                            <td class="px-6 py-4 text-gray-500 text-xs" x-text="new Date(review.createdAt).toLocaleDateString()"></td>
+                                            <td class="px-6 py-4 text-gray-500 text-xs" x-text="formatAdminDate(review.createdAt)"></td>
                                             <td class="px-6 py-4">
                                                 <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
                                                       :class="review.isApproved ? 'bg-green-100 text-green-700 border-green-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
