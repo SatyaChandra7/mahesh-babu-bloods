@@ -36,12 +36,20 @@
             };
         }
     </script>
-    <!-- Tailwind CSS v4 Browser Script -->
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        button, a, input, select, textarea {
+            touch-action: manipulation;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
@@ -75,18 +83,31 @@
             box-shadow: 0 8px 20px rgba(220, 38, 38, 0.35), inset 0 2px 3px rgba(255, 255, 255, 0.4);
             color: #ffffff;
             font-weight: 800;
-            transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: opacity 0.15s ease, transform 0.15s ease;
         }
 
-        .chrome-3d:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 12px 28px rgba(220, 38, 38, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.6);
-            filter: brightness(1.08);
+        @media (hover: hover) and (pointer: fine) {
+            .chrome-3d:hover {
+                transform: translateY(-2px) scale(1.02);
+                box-shadow: 0 12px 28px rgba(220, 38, 38, 0.5), inset 0 2px 5px rgba(255, 255, 255, 0.6);
+                filter: brightness(1.08);
+            }
+            .chrome-light:hover {
+                background: #f1f5f9;
+                border-color: #cbd5e1;
+                color: #0f172a;
+                transform: translateY(-1px);
+            }
         }
 
-        .chrome-3d:active {
-            transform: translateY(1px) scale(0.98);
-            box-shadow: 0 4px 10px rgba(220, 38, 38, 0.3);
+        @media (hover: none) or (pointer: coarse) {
+            .chrome-3d:active {
+                opacity: 0.9;
+                transform: scale(0.98);
+            }
+            .chrome-light:active {
+                opacity: 0.9;
+            }
         }
 
         /* Light Slate Button */
@@ -95,14 +116,7 @@
             border: 1px solid #e2e8f0;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             color: #334155;
-            transition: all 0.25s ease;
-        }
-
-        .chrome-light:hover {
-            background: #f1f5f9;
-            border-color: #cbd5e1;
-            color: #0f172a;
-            transform: translateY(-1px);
+            transition: opacity 0.15s ease, background-color 0.15s ease;
         }
 
         /* Custom Scrollbar */
@@ -357,9 +371,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                         </svg>
                         <span>Reviews Moderation</span>
-                        <span x-show="feedbacks.filter(f => !f.isApproved).length > 0"
+                        <span x-show="pendingFeedbackCount > 0"
                               class="px-2 py-0.5 bg-red-600 text-white rounded-full text-[10px] animate-pulse"
-                              x-text="feedbacks.filter(f => !f.isApproved).length"></span>
+                              x-text="pendingFeedbackCount"></span>
                     </button>
 
                     <button @click="activeTab = 'emergency'"
@@ -415,7 +429,9 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <span class="text-xs font-bold text-sky-600 uppercase tracking-widest block mb-1">Reviews Pending</span>
-                                    <h3 class="text-4xl font-display font-black text-sky-600" x-text="feedbacks.filter(f => !f.isApproved).length">0</h3>
+                                    <h3 class="text-4xl font-display font-black text-sky-600" x-text="pendingFeedbackCount">0</h3>
+                                    <span class="text-[11px] text-slate-500 font-medium mt-1 block">Feedback awaiting approval</span>
+                                </div>
                                     <span class="text-[11px] text-slate-500 font-medium mt-1 block">Feedback awaiting approval</span>
                                 </div>
                                 <div class="w-14 h-14 rounded-2xl bg-sky-600 text-white flex items-center justify-center shadow-lg shadow-sky-600/30">
@@ -583,8 +599,8 @@
                                             </td>
                                             <td class="px-6 py-4">
                                                 <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
-                                                      :class="donor.bloodGroup.includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
-                                                      x-text="donor.bloodGroup">
+                                                      :class="(donor.bloodGroup || '').includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
+                                                      x-text="donor.bloodGroup || 'N/A'">
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4">
@@ -632,86 +648,86 @@
                                             <span class="font-mono text-xs text-slate-400 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
                                             <h4 class="font-bold text-slate-900 text-base" x-text="donor.fullName"></h4>
                                         </div>
-                                        <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
-                                              :class="donor.bloodGroup.includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
-                                              x-text="donor.bloodGroup"></span>
-                                    </div>
-                                    <div class="text-xs text-slate-600 space-y-1 border-t border-b border-slate-100 py-2">
-                                        <p><strong>Phone:</strong> <span x-text="donor.phoneNumber"></span></p>
-                                        <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" x-text="`(${donor.weight}kg)`"></span></p>
-                                        <p class="truncate"><strong>Address:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.district}, ${donor.state}`"></span></p>
-                                        <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
-                                    </div>
-                                    <div class="grid grid-cols-3 gap-2 pt-1">
-                                        <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold flex items-center justify-center">Call</a>
-                                        <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-2 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center">WhatsApp</a>
-                                        <button @click="deleteDonor(donor.id)" class="py-2 px-2 bg-red-100 text-red-700 rounded-lg text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-                </div>
+                                         <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
+                                              :class="(donor.bloodGroup || '').includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
+                                              x-text="donor.bloodGroup || 'N/A'"></span>
+                                     </div>
+                                     <div class="text-xs text-slate-600 space-y-1 border-t border-b border-slate-100 py-2">
+                                         <p><strong>Phone:</strong> <span x-text="donor.phoneNumber"></span></p>
+                                         <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" x-text="`(${donor.weight}kg)`"></span></p>
+                                         <p class="truncate"><strong>Address:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.district}, ${donor.state}`"></span></p>
+                                         <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
+                                     </div>
+                                     <div class="grid grid-cols-3 gap-2 pt-1">
+                                         <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold flex items-center justify-center">Call</a>
+                                         <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-2 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center">WhatsApp</a>
+                                         <button @click="deleteDonor(donor.id)" class="py-2 px-2 bg-red-100 text-red-700 rounded-lg text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
+                                     </div>
+                                 </div>
+                             </template>
+                         </div>
+                     </div>
+                 </div>
 
-                <!-- TAB 2: LIVE GALLERY MANAGEMENT MODULE -->
-                <div x-show="activeTab === 'gallery'" class="space-y-8" x-cloak>
-                    <div class="white-card p-6 md:p-8 rounded-3xl space-y-6">
-                        <div class="flex items-center justify-between border-b border-red-100 pb-4">
-                            <div>
-                                <h3 class="font-display font-black text-slate-900 uppercase tracking-wider text-xl">"Our Work" Gallery Uploader</h3>
-                                <p class="text-xs text-slate-500 font-medium">Upload photos from blood donation camps to display on the public landing gallery.</p>
-                            </div>
-                            <div class="px-4 py-2 bg-red-100 border border-red-200 rounded-2xl text-red-700 text-xs font-black">
-                                <span x-text="donationCount">0</span> Published Drives
-                            </div>
-                        </div>
+                 <!-- TAB 2: LIVE GALLERY MANAGEMENT MODULE -->
+                 <div x-show="activeTab === 'gallery'" class="space-y-8" x-cloak>
+                     <div class="white-card p-6 md:p-8 rounded-3xl space-y-6">
+                         <div class="flex items-center justify-between border-b border-red-100 pb-4">
+                             <div>
+                                 <h3 class="font-display font-black text-slate-900 uppercase tracking-wider text-xl">"Our Work" Gallery Uploader</h3>
+                                 <p class="text-xs text-slate-500 font-medium">Upload photos from blood donation camps to display on the public landing gallery.</p>
+                             </div>
+                             <div class="px-4 py-2 bg-red-100 border border-red-200 rounded-2xl text-red-700 text-xs font-black">
+                                 <span x-text="donationCount">0</span> Published Drives
+                             </div>
+                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                            <!-- Dropzone File Selector -->
-                            <div class="w-full h-56 bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden group hover:border-red-600 transition-all cursor-pointer">
-                                <input type="file" @change="onFileSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*">
-                                <div class="text-center p-4 space-y-2" x-show="!previewUrl">
-                                    <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto text-red-600">
-                                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <span class="text-xs font-bold text-slate-800 uppercase tracking-widest block">Choose Donation Photo</span>
-                                    <span class="text-[10px] text-slate-400 block">Supports JPG, PNG, WEBP files</span>
-                                </div>
-                                <img x-show="previewUrl" :src="previewUrl" class="absolute inset-0 w-full h-full object-cover">
-                            </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                             <!-- Dropzone File Selector -->
+                             <div class="w-full h-56 bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden group hover:border-red-600 transition-all cursor-pointer">
+                                 <input type="file" @change="onFileSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*">
+                                 <div class="text-center p-4 space-y-2" x-show="!previewUrl">
+                                     <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto text-red-600">
+                                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                         </svg>
+                                     </div>
+                                     <span class="text-xs font-bold text-slate-800 uppercase tracking-widest block">Choose Donation Photo</span>
+                                     <span class="text-[10px] text-slate-400 block">Supports JPG, PNG, WEBP files</span>
+                                 </div>
+                                 <img x-show="previewUrl" :src="previewUrl" class="absolute inset-0 w-full h-full object-cover">
+                             </div>
 
-                            <!-- Upload Action Button -->
-                            <div class="space-y-4">
-                                <div class="p-4 bg-red-50 border border-red-100 rounded-2xl text-xs text-slate-700 space-y-1">
-                                    <p class="font-bold text-red-900">📌 Gallery Sync Notice:</p>
-                                    <p>Uploading a photo immediately updates the "Our Work" section on the main page and increases the total donation drive counter.</p>
-                                </div>
+                             <!-- Upload Action Button -->
+                             <div class="space-y-4">
+                                 <div class="p-4 bg-red-50 border border-red-100 rounded-2xl text-xs text-slate-700 space-y-1">
+                                     <p class="font-bold text-red-900">📌 Gallery Sync Notice:</p>
+                                     <p>Uploading a photo immediately updates the "Our Work" section on the main page and increases the total donation drive counter.</p>
+                                 </div>
 
-                                <button @click="uploadGalleryImage()" :disabled="!selectedFile || isUploading"
-                                    class="w-full py-4 chrome-3d rounded-2xl text-sm font-black uppercase tracking-wider active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer shadow-xl">
-                                    <svg x-show="isUploading" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                                    </svg>
-                                    <span x-text="isUploading ? 'Uploading Image to Gallery...' : 'Publish Drive Photo'"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                                 <button @click="uploadGalleryImage()" :disabled="!selectedFile || isUploading"
+                                     class="w-full py-4 chrome-3d rounded-2xl text-sm font-black uppercase tracking-wider active:scale-95 disabled:opacity-40 flex items-center justify-center gap-2 cursor-pointer shadow-xl">
+                                     <svg x-show="isUploading" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                     </svg>
+                                     <span x-text="isUploading ? 'Uploading Image to Gallery...' : 'Publish Drive Photo'"></span>
+                                 </button>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
 
-                <!-- TAB 3: REVIEWS & TESTIMONIALS MODERATION MODULE -->
-                <div x-show="activeTab === 'moderation'" class="space-y-8" x-cloak>
-                    <div class="white-card rounded-3xl overflow-hidden shadow-xl">
-                        <div class="px-6 py-5 bg-red-50/80 border-b border-red-100 flex justify-between items-center flex-wrap gap-4">
-                            <div>
-                                <h3 class="font-display font-black text-slate-900 uppercase tracking-wider text-xl">Donor Testimonials & Reviews</h3>
-                                <p class="text-xs text-slate-500 font-medium mt-0.5">Approve user reviews to showcase them on the public landing page slider.</p>
-                            </div>
-                            <span class="px-3.5 py-1.5 bg-sky-100 text-sky-800 border border-sky-200 rounded-full text-xs font-black"
-                                  x-text="`${feedbacks.filter(f => !f.isApproved).length} Reviews Pending Approval`"></span>
+                 <!-- TAB 3: REVIEWS & TESTIMONIALS MODERATION MODULE -->
+                 <div x-show="activeTab === 'moderation'" class="space-y-8" x-cloak>
+                     <div class="white-card rounded-3xl overflow-hidden shadow-xl">
+                         <div class="px-6 py-5 bg-red-50/80 border-b border-red-100 flex justify-between items-center flex-wrap gap-4">
+                             <div>
+                                 <h3 class="font-display font-black text-slate-900 uppercase tracking-wider text-xl">Donor Testimonials & Reviews</h3>
+                                 <p class="text-xs text-slate-500 font-medium mt-0.5">Approve user reviews to showcase them on the public landing page slider.</p>
+                             </div>
+                             <span class="px-3.5 py-1.5 bg-sky-100 text-sky-800 border border-sky-200 rounded-full text-xs font-black"
+                                   x-text="`${pendingFeedbackCount} Reviews Pending Approval`"></span>
                         </div>
 
                         <!-- Mobile View Responsive Review Cards -->
@@ -899,6 +915,21 @@
                     idNumber: ''
                 },
 
+                get pendingFeedbackCount() {
+                    if (!this.feedbacks || !Array.isArray(this.feedbacks)) return 0;
+                    return this.feedbacks.filter(f => !f.isApproved).length;
+                },
+
+                get statsMap() {
+                    const map = {};
+                    if (Array.isArray(this.stats)) {
+                        this.stats.forEach(s => {
+                            if (s && s.group) map[s.group] = s.count || 0;
+                        });
+                    }
+                    return map;
+                },
+
                 formatAdminDate(val) {
                     if (!val) return 'N/A';
                     if (typeof val === 'number') {
@@ -914,15 +945,11 @@
                 },
 
                 initApp() {
-                    const savedToken = localStorage.getItem('adminToken');
-                    if (savedToken) {
-                        this.token = savedToken;
-                        this.isAuthenticated = true;
-                        this.loadDashboardData();
-                    } else {
-                        this.token = null;
-                        this.isAuthenticated = false;
-                    }
+                    // Always enforce fresh login on page reload or opening the panel
+                    this.token = null;
+                    this.isAuthenticated = false;
+                    localStorage.removeItem('adminToken');
+                    sessionStorage.removeItem('adminToken');
                 },
 
                 loadDashboardData() {
@@ -934,9 +961,7 @@
                 },
 
                 getGroupCount(group) {
-                    if (!this.stats || !Array.isArray(this.stats)) return 0;
-                    const item = this.stats.find(s => s.group === group);
-                    return item ? item.count : 0;
+                    return this.statsMap[group] || 0;
                 },
 
                 getGroupPercentage(group) {
@@ -973,7 +998,6 @@
                         
                         if (data.success) {
                             this.token = data.token;
-                            localStorage.setItem('adminToken', data.token);
                             this.isAuthenticated = true;
                             this.credentials = { phoneNumber: '', password: '' };
                             this.loadDashboardData();
@@ -987,13 +1011,17 @@
                     }
                 },
 
-                logout() {
+                logout(message = '') {
                     this.token = null;
                     localStorage.removeItem('adminToken');
+                    sessionStorage.removeItem('adminToken');
                     this.isAuthenticated = false;
                     this.donors = [];
                     this.feedbacks = [];
                     this.hasSearched = false;
+                    if (message) {
+                        this.loginError = message;
+                    }
                 },
 
                 async fetchStats() {
@@ -1002,6 +1030,10 @@
                         const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/stats`, {
                             headers: { 'Authorization': `Bearer ${this.token}` }
                         });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         const data = await res.json();
                         if (data.success) {
                             this.stats = data.stats;
@@ -1046,6 +1078,11 @@
                             body: formData
                         });
 
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
+
                         const data = await res.json();
                         if (data.success) {
                             if (data.count !== undefined) this.donationCount = data.count;
@@ -1070,6 +1107,10 @@
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
                             body: JSON.stringify({ message: this.tempAlert, isActive: true })
                         });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         if (res.ok) alert('Emergency Alert Broadcasted!');
                     } catch (e) {}
                 },
@@ -1081,6 +1122,10 @@
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${this.token}` },
                             body: JSON.stringify({ message: '', isActive: false })
                         });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         if (res.ok) {
                             this.tempAlert = '';
                             alert('Alert Turned Off');
@@ -1092,6 +1137,10 @@
                     if (!this.isAuthenticated) return;
                     try {
                         const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/export?token=${this.token}`);
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         if (!res.ok) {
                             alert('Failed to download CSV file.');
                             return;
@@ -1146,6 +1195,10 @@
                         const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/feedbacks`, {
                             headers: { 'Authorization': `Bearer ${this.token}` }
                         });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         const data = await res.json();
                         if (data.success) {
                             this.feedbacks = data.feedbacks;
@@ -1159,6 +1212,10 @@
                             method: 'POST',
                             headers: { 'Authorization': `Bearer ${this.token}` }
                         });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         const data = await res.json();
                         if (data.success) {
                             this.fetchFeedbacks();
@@ -1177,6 +1234,10 @@
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${this.token}` }
                         });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         const data = await res.json();
                         if (data.success) {
                             this.fetchFeedbacks();
@@ -1192,6 +1253,10 @@
                     if (!confirm('Are you sure you want to delete this donor? This action cannot be undone.')) return;
                     try {
                         const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/donors/delete/${id}?token=${this.token}`);
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
                         const data = await res.json();
                         if (data.success) {
                             this.fetchDonors();
@@ -1222,8 +1287,7 @@
                         });
                         
                         if (res.status === 401 || res.status === 403) {
-                            this.logout();
-                            this.loginError = 'Session expired. Please login again.';
+                            this.logout('Session expired. Please login again.');
                             return;
                         }
 
