@@ -290,7 +290,7 @@ const GalleryImage = sequelize.define('GalleryImage', {
 
 
 // Admin Config
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const JWT_SECRET = process.env.JWT_SECRET || 'mb_bloods_admin_jwt_secret_key_stable_2026';
 const ADMIN_USERS = [
     { username: process.env.ADMIN1_USER, password: process.env.ADMIN1_PASS },
     { username: process.env.ADMIN2_USER, password: process.env.ADMIN2_PASS }

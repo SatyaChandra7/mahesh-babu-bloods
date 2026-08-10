@@ -642,12 +642,10 @@
                                         <p class="truncate"><strong>Address:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.district}, ${donor.state}`"></span></p>
                                         <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
                                     </div>
-                                    <div class="flex items-center justify-between pt-1">
-                                        <div class="flex items-center gap-2">
-                                            <a :href="`tel:${donor.phoneNumber}`" class="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold">Call</a>
-                                            <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold">WhatsApp</a>
-                                        </div>
-                                        <button @click="deleteDonor(donor.id)" class="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-xs font-bold cursor-pointer">Delete</button>
+                                    <div class="grid grid-cols-3 gap-2 pt-1">
+                                        <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold flex items-center justify-center">Call</a>
+                                        <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-2 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center">WhatsApp</a>
+                                        <button @click="deleteDonor(donor.id)" class="py-2 px-2 bg-red-100 text-red-700 rounded-lg text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
                                     </div>
                                 </div>
                             </template>

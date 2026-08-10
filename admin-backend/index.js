@@ -58,7 +58,7 @@ const Feedback = sequelize.define('Feedback', {
     createdAt: { type: DataTypes.DATE, defaultValue: DataTypes.NOW }
 });
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-for-dev';
+const JWT_SECRET = process.env.JWT_SECRET || 'mb_bloods_admin_jwt_secret_key_stable_2026';
 const WHITELISTED_NUMBERS = [
     process.env.ADMIN_WHATSAPP_1 || '919948550301',
     process.env.ADMIN_WHATSAPP_2 || '919491463888'
