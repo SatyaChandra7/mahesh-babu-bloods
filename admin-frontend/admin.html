@@ -866,10 +866,15 @@
                 },
 
                 initApp() {
-                    // For security purpose, require authentication login whenever admin page is opened or refreshed
-                    localStorage.removeItem('adminToken');
-                    this.token = null;
-                    this.isAuthenticated = false;
+                    const savedToken = localStorage.getItem('adminToken');
+                    if (savedToken) {
+                        this.token = savedToken;
+                        this.isAuthenticated = true;
+                        this.loadDashboardData();
+                    } else {
+                        this.token = null;
+                        this.isAuthenticated = false;
+                    }
                 },
 
                 loadDashboardData() {
