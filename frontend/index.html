@@ -119,6 +119,15 @@
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
+        function checkAdminHash() {
+            const hash = (window.location.hash || '').toLowerCase();
+            if (hash === '#admin' || hash === '#/admin') {
+                window.location.href = '/admin';
+            }
+        }
+        checkAdminHash();
+        window.addEventListener('hashchange', checkAdminHash);
+
         document.addEventListener('alpine:init', () => {
             Alpine.data('mainApp', () => ({
                 showIntro: true,
