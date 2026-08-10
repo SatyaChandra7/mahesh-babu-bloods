@@ -945,11 +945,15 @@
                 },
 
                 initApp() {
-                    // Always enforce fresh login on page reload or opening the panel
-                    this.token = null;
-                    this.isAuthenticated = false;
-                    localStorage.removeItem('adminToken');
-                    sessionStorage.removeItem('adminToken');
+                    const savedToken = localStorage.getItem('adminToken');
+                    if (savedToken) {
+                        this.token = savedToken;
+                        this.isAuthenticated = true;
+                        this.loadDashboardData();
+                    } else {
+                        this.token = null;
+                        this.isAuthenticated = false;
+                    }
                 },
 
                 loadDashboardData() {
@@ -998,6 +1002,7 @@
                         
                         if (data.success) {
                             this.token = data.token;
+                            localStorage.setItem('adminToken', data.token);
                             this.isAuthenticated = true;
                             this.credentials = { phoneNumber: '', password: '' };
                             this.loadDashboardData();
