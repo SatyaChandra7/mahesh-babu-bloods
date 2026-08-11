@@ -210,6 +210,15 @@
                                 Live Admin Active
                             </span>
 
+                            <!-- Refresh Button -->
+                             <button type="button" @click="loadDashboardData()"
+                                 class="chrome-light px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 active:scale-95 cursor-pointer">
+                                 <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17"></path>
+                                 </svg>
+                                 <span>Refresh</span>
+                             </button>
+
                             <!-- Export CSV Button -->
                             <button @click="downloadCSV()"
                                 class="chrome-light px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 active:scale-95 cursor-pointer">
@@ -388,7 +397,7 @@
                 </div>
 
                 <!-- TAB 1: OVERVIEW & DONOR DIRECTORY MODULE -->
-                <div x-show="activeTab === 'overview'" class="space-y-8">
+                <div x-show="activeTab === 'overview'" class="space-y-8" x-cloak>
                     
                     <!-- KPI STAT CARDS ROW -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
