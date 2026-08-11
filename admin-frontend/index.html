@@ -639,12 +639,12 @@
                                             </td>
                                             <td class="px-6 py-4 text-slate-600 text-xs font-semibold" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></td>
                                             <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                                <button @click="toggleVerifyDonor(donor.id)"
+                                                <button type="button" @click.prevent.stop="toggleVerifyDonor(donor.id)"
                                                     class="px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
                                                     :class="donor.isVerified ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
                                                     x-text="donor.isVerified ? 'Unverify' : 'Verify'">
                                                 </button>
-                                                <button @click="deleteDonor(donor.id)"
+                                                <button type="button" @click.prevent.stop="deleteDonor(donor.id)"
                                                     class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                                                     Delete
                                                 </button>
@@ -685,11 +685,11 @@
                                      <div class="grid grid-cols-4 gap-1.5 pt-1">
                                          <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center">Call</a>
                                          <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-1 bg-emerald-100 text-emerald-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center">WhatsApp</a>
-                                         <button @click="toggleVerifyDonor(donor.id)" 
+                                         <button type="button" @click.prevent.stop="toggleVerifyDonor(donor.id)" 
                                              class="py-2 px-1 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center border cursor-pointer"
                                              :class="donor.isVerified ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-emerald-600 text-white border-emerald-500'"
                                              x-text="donor.isVerified ? 'Unverify' : 'Verify'"></button>
-                                         <button @click="deleteDonor(donor.id)" class="py-2 px-1 bg-red-100 text-red-700 rounded-lg text-[10px] sm:text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
+                                         <button type="button" @click.prevent.stop="deleteDonor(donor.id)" class="py-2 px-1 bg-red-100 text-red-700 rounded-lg text-[10px] sm:text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
                                      </div>
                                  </div>
                              </template>
@@ -812,12 +812,12 @@
                                     </div>
                                     <p class="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-100 font-medium italic" x-text="`“${review.comment}”`"></p>
                                     <div class="flex items-center justify-end gap-2 pt-1">
-                                        <button @click="toggleApproveFeedback(review.id)"
+                                        <button type="button" @click.prevent.stop="toggleApproveFeedback(review.id)"
                                                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
                                                 :class="review.isApproved ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
                                                 x-text="review.isApproved ? 'Unverify' : 'Verify'">
                                         </button>
-                                        <button @click="deleteFeedback(review.id)"
+                                        <button type="button" @click.prevent.stop="deleteFeedback(review.id)"
                                                 class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                                             Delete
                                         </button>
@@ -861,12 +861,12 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                                <button @click="toggleApproveFeedback(review.id)"
+                                                <button type="button" @click.prevent.stop="toggleApproveFeedback(review.id)"
                                                         class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
                                                         :class="review.isApproved ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
                                                         x-text="review.isApproved ? 'Unverify' : 'Verify'">
                                                 </button>
-                                                <button @click="deleteFeedback(review.id)"
+                                                <button type="button" @click.prevent.stop="deleteFeedback(review.id)"
                                                         class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                                                     Delete
                                                 </button>
