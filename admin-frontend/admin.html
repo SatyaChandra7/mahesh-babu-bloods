@@ -570,7 +570,7 @@
                     </div>
 
                     <!-- DONOR DIRECTORY TABLE & MOBILE CARDS -->
-                    <div x-show="hasSearched && !isLoading" class="white-card rounded-3xl overflow-hidden shadow-xl" x-cloak>
+                    <div x-show="hasSearched" class="white-card rounded-3xl overflow-hidden shadow-xl relative transition-all duration-200" :class="isLoading ? 'opacity-60 pointer-events-none' : ''" x-cloak>
                         <div class="px-6 py-4 bg-red-50/80 border-b border-red-100 flex justify-between items-center flex-wrap gap-3">
                             <div class="flex items-center gap-3">
                                 <h3 class="font-display font-black text-red-950 uppercase tracking-wider text-base">Donor Directory</h3>
@@ -1419,6 +1419,7 @@
                         const data = await res.json();
                         if (data.success) {
                             this.fetchDonors();
+                            this.fetchStats();
                         } else {
                             alert('Verification toggle failed');
                         }
