@@ -584,6 +584,7 @@
                                         <th class="px-6 py-4">Phone Number</th>
                                         <th class="px-6 py-4">Address</th>
                                         <th class="px-6 py-4">Points</th>
+                                        <th class="px-6 py-4">Verification</th>
                                         <th class="px-6 py-4">Registration Date & Time</th>
                                         <th class="px-6 py-4 text-right">Actions</th>
                                     </tr>
@@ -623,8 +624,19 @@
                                                 x-text="`${donor.village ? donor.village+', ' : ''}${donor.mandal ? donor.mandal+', ' : ''}${donor.district}, ${donor.state}${donor.pincode ? ' - ' + donor.pincode : ''}`">
                                             </td>
                                             <td class="px-6 py-4 text-emerald-600 font-black">50 pts</td>
+                                            <td class="px-6 py-4">
+                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
+                                                      :class="donor.isVerified ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+                                                      x-text="donor.isVerified ? 'Verified' : 'Pending'">
+                                                </span>
+                                            </td>
                                             <td class="px-6 py-4 text-slate-600 text-xs font-semibold" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></td>
-                                            <td class="px-6 py-4 text-right">
+                                            <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
+                                                <button @click="toggleVerifyDonor(donor.id)"
+                                                    class="px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
+                                                    :class="donor.isVerified ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
+                                                    x-text="donor.isVerified ? 'Unverify' : 'Verify'">
+                                                </button>
                                                 <button @click="deleteDonor(donor.id)"
                                                     class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                                                     Delete
@@ -633,7 +645,7 @@
                                         </tr>
                                     </template>
                                     <tr x-show="donors.length === 0">
-                                        <td colspan="9" class="px-6 py-12 text-center text-slate-400 font-medium">No donors match your selected criteria.</td>
+                                        <td colspan="10" class="px-6 py-12 text-center text-slate-400 font-medium">No donors match your selected criteria.</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -648,9 +660,14 @@
                                             <span class="font-mono text-xs text-slate-400 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
                                             <h4 class="font-bold text-slate-900 text-base" x-text="donor.fullName"></h4>
                                         </div>
-                                         <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
-                                              :class="(donor.bloodGroup || '').includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
-                                              x-text="donor.bloodGroup || 'N/A'"></span>
+                                        <div class="flex flex-col items-end gap-1">
+                                            <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
+                                                 :class="(donor.bloodGroup || '').includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
+                                                 x-text="donor.bloodGroup || 'N/A'"></span>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase border"
+                                                 :class="donor.isVerified ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
+                                                 x-text="donor.isVerified ? 'Verified' : 'Pending'"></span>
+                                        </div>
                                      </div>
                                      <div class="text-xs text-slate-600 space-y-1 border-t border-b border-slate-100 py-2">
                                          <p><strong>Phone:</strong> <span x-text="donor.phoneNumber"></span></p>
@@ -658,10 +675,14 @@
                                          <p class="truncate"><strong>Address:</strong> <span x-text="`${donor.village ? donor.village+', ' : ''}${donor.district}, ${donor.state}`"></span></p>
                                          <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
                                      </div>
-                                     <div class="grid grid-cols-3 gap-2 pt-1">
-                                         <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-2 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold flex items-center justify-center">Call</a>
-                                         <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-2 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold flex items-center justify-center">WhatsApp</a>
-                                         <button @click="deleteDonor(donor.id)" class="py-2 px-2 bg-red-100 text-red-700 rounded-lg text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
+                                     <div class="grid grid-cols-4 gap-1.5 pt-1">
+                                         <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center">Call</a>
+                                         <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-1 bg-emerald-100 text-emerald-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center">WhatsApp</a>
+                                         <button @click="toggleVerifyDonor(donor.id)" 
+                                             class="py-2 px-1 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center border cursor-pointer"
+                                             :class="donor.isVerified ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-emerald-600 text-white border-emerald-500'"
+                                             x-text="donor.isVerified ? 'Unverify' : 'Verify'"></button>
+                                         <button @click="deleteDonor(donor.id)" class="py-2 px-1 bg-red-100 text-red-700 rounded-lg text-[10px] sm:text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
                                      </div>
                                  </div>
                              </template>
@@ -716,6 +737,27 @@
                              </div>
                          </div>
                      </div>
+
+                     <!-- Gallery Images List Section -->
+                     <div class="white-card p-6 md:p-8 rounded-3xl space-y-6">
+                         <h4 class="font-display font-black text-slate-900 uppercase tracking-wider text-lg">Published Gallery Photos</h4>
+                         
+                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                             <template x-for="img in galleryImages" :key="img">
+                                 <div class="relative group rounded-2xl overflow-hidden border border-slate-200 aspect-square bg-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                     <img :src="`${apiBase}/${img}`" class="w-full h-full object-cover">
+                                     <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-2 text-center">
+                                         <button @click="deleteGalleryImage(img)" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg active:scale-95 cursor-pointer">
+                                             Delete
+                                         </button>
+                                     </div>
+                                 </div>
+                             </template>
+                             <div x-show="galleryImages.length === 0" class="col-span-full py-12 text-center text-slate-400 font-medium">
+                                 No drive photos published yet. Use the uploader above to add photos.
+                             </div>
+                         </div>
+                     </div>
                  </div>
 
                  <!-- TAB 3: REVIEWS & TESTIMONIALS MODERATION MODULE -->
@@ -724,10 +766,10 @@
                          <div class="px-6 py-5 bg-red-50/80 border-b border-red-100 flex justify-between items-center flex-wrap gap-4">
                              <div>
                                  <h3 class="font-display font-black text-slate-900 uppercase tracking-wider text-xl">Donor Testimonials & Reviews</h3>
-                                 <p class="text-xs text-slate-500 font-medium mt-0.5">Approve user reviews to showcase them on the public landing page slider.</p>
+                                 <p class="text-xs text-slate-500 font-medium mt-0.5">Verify user reviews to showcase them on the public landing page slider.</p>
                              </div>
                              <span class="px-3.5 py-1.5 bg-sky-100 text-sky-800 border border-sky-200 rounded-full text-xs font-black"
-                                   x-text="`${pendingFeedbackCount} Reviews Pending Approval`"></span>
+                                   x-text="`${pendingFeedbackCount} Reviews Pending Verification`"></span>
                         </div>
 
                         <!-- Mobile View Responsive Review Cards -->
@@ -738,7 +780,7 @@
                                         <h4 class="font-bold text-slate-900 text-base" x-text="review.name"></h4>
                                         <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
                                               :class="review.isApproved ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
-                                              x-text="review.isApproved ? 'Approved' : 'Pending'">
+                                              x-text="review.isApproved ? 'Verified' : 'Pending'">
                                         </span>
                                     </div>
                                     <div class="flex items-center gap-1 text-amber-500">
@@ -754,7 +796,7 @@
                                         <button @click="toggleApproveFeedback(review.id)"
                                                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
                                                 :class="review.isApproved ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
-                                                x-text="review.isApproved ? 'Unapprove' : 'Approve'">
+                                                x-text="review.isApproved ? 'Unverify' : 'Verify'">
                                         </button>
                                         <button @click="deleteFeedback(review.id)"
                                                 class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
@@ -796,14 +838,14 @@
                                             <td class="px-6 py-4">
                                                 <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
                                                       :class="review.isApproved ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
-                                                      x-text="review.isApproved ? 'Approved' : 'Pending'">
+                                                      x-text="review.isApproved ? 'Verified' : 'Pending'">
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
                                                 <button @click="toggleApproveFeedback(review.id)"
                                                         class="px-3.5 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
                                                         :class="review.isApproved ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
-                                                        x-text="review.isApproved ? 'Unapprove' : 'Approve'">
+                                                        x-text="review.isApproved ? 'Unverify' : 'Verify'">
                                                 </button>
                                                 <button @click="deleteFeedback(review.id)"
                                                         class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
@@ -903,6 +945,7 @@
                 donationCount: 0,
                 donors: [],
                 feedbacks: [],
+                galleryImages: [],
                 tempAlert: '',
                 hasSearched: false,
                 selectedFile: null,
@@ -958,6 +1001,7 @@
                     this.fetchAlertAdmin();
                     this.fetchFeedbacks();
                     this.fetchDonors();
+                    this.fetchGalleryImages();
                 },
 
                 getGroupCount(group) {
@@ -1090,6 +1134,7 @@
                             this.selectedFile = null;
                             this.previewUrl = '';
                             this.fetchDonationCountAdmin();
+                            this.fetchGalleryImages();
                         } else {
                             alert(data.message || 'Upload failed');
                         }
@@ -1302,6 +1347,64 @@
                         alert('Error connecting to Server');
                     } finally {
                         this.isLoading = false;
+                    }
+                },
+
+                async fetchGalleryImages() {
+                    try {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/public/gallery`);
+                        const data = await res.json();
+                        if (data.success && Array.isArray(data.images)) {
+                            this.galleryImages = data.images;
+                        }
+                    } catch (err) { console.error('Gallery fetch error', err); }
+                },
+
+                async deleteGalleryImage(imageUrl) {
+                    if (!confirm('Are you sure you want to delete this drive photo?')) return;
+                    try {
+                        const parts = imageUrl.split('/');
+                        const filename = parts[parts.length - 1];
+                        
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/gallery/${filename}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
+                        const data = await res.json();
+                        if (data.success) {
+                            alert('Photo deleted successfully!');
+                            this.fetchGalleryImages();
+                            this.fetchDonationCountAdmin();
+                        } else {
+                            alert('Deletion failed');
+                        }
+                    } catch (err) {
+                        alert('Error communicating with the server');
+                    }
+                },
+
+                async toggleVerifyDonor(id) {
+                    try {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/donors/verify/${id}`, {
+                            method: 'GET',
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
+                        const data = await res.json();
+                        if (data.success) {
+                            this.fetchDonors();
+                        } else {
+                            alert('Verification toggle failed');
+                        }
+                    } catch (err) {
+                        alert('Error connecting to Server');
                     }
                 }
             }));
