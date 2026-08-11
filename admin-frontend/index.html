@@ -707,14 +707,26 @@
                              <!-- Dropzone File Selector -->
                              <div class="w-full h-56 bg-slate-50 border-2 border-dashed border-slate-300 rounded-3xl flex flex-col items-center justify-center relative overflow-hidden group hover:border-red-600 transition-all cursor-pointer">
                                  <input type="file" @change="onFileSelected($event)" class="absolute inset-0 opacity-0 cursor-pointer z-10" accept="image/*">
-                                 <div class="text-center p-4 space-y-2" x-show="!previewUrl">
+                                 <div class="text-center p-4 space-y-3" x-show="!previewUrl">
                                      <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto text-red-600">
                                          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                          </svg>
                                      </div>
-                                     <span class="text-xs font-bold text-slate-800 uppercase tracking-widest block">Choose Donation Photo</span>
-                                     <span class="text-[10px] text-slate-400 block">Supports JPG, PNG, WEBP files</span>
+                                     <div>
+                                         <span class="text-xs font-bold text-slate-800 uppercase tracking-widest block">Choose Donation Photo</span>
+                                         <div class="inline-block mt-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-[11px] font-black uppercase rounded-xl tracking-wider shadow-md transition-all">
+                                             Browse Files
+                                         </div>
+                                     </div>
+                                     <span class="text-[10px] text-slate-400 block pt-1">Supports JPG, PNG, WEBP files</span>
+                                 </div>
+                                 <div class="absolute top-3 right-3 z-20" x-show="previewUrl">
+                                     <button @click.stop="selectedFile = null; previewUrl = ''" class="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full shadow-lg active:scale-95 cursor-pointer">
+                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                         </svg>
+                                     </button>
                                  </div>
                                  <img x-show="previewUrl" :src="previewUrl" class="absolute inset-0 w-full h-full object-cover">
                              </div>
