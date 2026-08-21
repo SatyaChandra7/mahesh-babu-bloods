@@ -276,21 +276,44 @@
                         </svg>
                     </div>
 
-                    <!-- Header Content -->
-                    <div class="text-center space-y-3 mb-8 relative z-10">
+                    <!-- Step 1: Credentials Header Content -->
+                    <div class="text-center space-y-3 mb-8 relative z-10" x-show="!is2FAStage">
                         <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-20 w-auto mx-auto mb-3 object-contain drop-shadow">
                         
                         <div>
                             <span class="inline-block px-3.5 py-1 bg-red-100 border border-red-200 rounded-full text-red-700 text-xs font-black uppercase tracking-widest mb-2">
-                                🔐 SECURE PORTAL ACCESS
+                                🔐 STEP 1: CREDENTIAL VERIFICATION
                             </span>
                             <h2 class="text-3xl font-display font-black uppercase tracking-tight text-slate-900">Admin Authentication</h2>
-                            <p class="text-xs text-slate-500 font-medium mt-1.5 max-w-xs mx-auto">Enter your registered admin mobile number to access the control panel.</p>
+                            <p class="text-xs text-slate-500 font-medium mt-1.5 max-w-xs mx-auto">Enter your registered admin mobile number & password to request 2FA OTP code.</p>
                         </div>
                     </div>
 
-                    <!-- Login Form -->
-                    <form @submit.prevent="login()" class="space-y-6 relative z-10">
+                    <!-- Step 2: 2FA OTP Header Content -->
+                    <div class="text-center space-y-3 mb-8 relative z-10" x-show="is2FAStage" x-cloak>
+                        <div class="w-16 h-16 bg-red-100 border border-red-200 rounded-3xl flex items-center justify-center mx-auto text-3xl shadow-inner mb-2">
+                            🛡️
+                        </div>
+                        
+                        <div>
+                            <span class="inline-block px-3.5 py-1 bg-emerald-100 border border-emerald-300 rounded-full text-emerald-800 text-xs font-black uppercase tracking-widest mb-2">
+                                🔒 STEP 2: TWO-FACTOR VERIFICATION
+                            </span>
+                            <h2 class="text-3xl font-display font-black uppercase tracking-tight text-slate-900">Enter 2FA OTP Code</h2>
+                            <p class="text-xs text-slate-500 font-medium mt-1.5 max-w-xs mx-auto">
+                                Password verified! Enter 6-digit WhatsApp OTP sent to <strong class="text-slate-900 font-mono" x-text="`+91 ${twoFactorPhone}`"></strong>
+                            </p>
+                        </div>
+
+                        <!-- OTP Demo Quick Badge -->
+                        <div x-show="demoOtp" class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs font-semibold flex items-center justify-between gap-2 mt-3">
+                            <span>WhatsApp 2FA Code: <strong class="font-mono text-base font-black text-amber-900" x-text="demoOtp"></strong></span>
+                            <button type="button" @click="twoFactorOtp = demoOtp" class="px-2.5 py-1 bg-amber-200 hover:bg-amber-300 rounded-xl text-[11px] font-black uppercase tracking-wider text-amber-900 transition-all cursor-pointer">Autofill</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Password Login Form -->
+                    <form x-show="!is2FAStage" @submit.prevent="login()" class="space-y-6 relative z-10">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">Mobile Phone Number</label>
                             <div class="relative">
@@ -314,8 +337,33 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                             </svg>
-                            <span x-text="isLoading ? 'Verifying Admin Credentials...' : 'Unlock Admin Portal'"></span>
+                            <span x-text="isLoading ? 'Verifying Credentials...' : 'Verify Password & Request 2FA OTP'"></span>
                         </button>
+                    </form>
+
+                    <!-- Step 2: 2FA OTP Verification Form -->
+                    <form x-show="is2FAStage" @submit.prevent="verify2FA()" class="space-y-6 relative z-10" x-cloak>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-2">6-Digit 2FA OTP Code</label>
+                            <input type="text" x-model="twoFactorOtp" placeholder="e.g. 123456" maxlength="6" required autofocus
+                                class="w-full px-4 py-4 bg-slate-50 border border-slate-300 rounded-2xl text-center text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:border-red-600 focus:ring-2 focus:ring-red-600/20 text-2xl font-mono font-black tracking-[0.3em] transition-all">
+                        </div>
+
+                        <div x-show="loginError" class="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-700 text-xs font-bold text-center flex items-center justify-center gap-2" x-text="loginError" x-cloak></div>
+
+                        <button type="submit" :disabled="isLoading"
+                            class="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-sm font-black uppercase tracking-widest active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-600/30 border border-emerald-500">
+                            <svg x-show="isLoading" class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                            <span x-text="isLoading ? 'Verifying 2FA OTP...' : 'Verify 2FA & Unlock Admin Portal 🔓'"></span>
+                        </button>
+
+                        <div class="flex items-center justify-between text-xs font-bold pt-2">
+                            <button type="button" @click="backToPasswordLogin()" class="text-slate-500 hover:text-slate-800 uppercase tracking-wider cursor-pointer">← Back to Password</button>
+                            <button type="button" @click="login()" class="text-red-600 hover:text-red-700 uppercase tracking-wider cursor-pointer">Resend 2FA OTP 🔄</button>
+                        </div>
                     </form>
 
                     <div class="mt-8 pt-6 border-t border-slate-100 text-center">
@@ -1199,6 +1247,10 @@
                 isLoading: false,
                 loginError: '',
                 credentials: { phoneNumber: '', password: '' },
+                is2FAStage: false,
+                twoFactorOtp: '',
+                demoOtp: '',
+                twoFactorPhone: '',
                 stats: [],
                 totalDonors: 0,
                 donationCount: 0,
@@ -1599,10 +1651,18 @@
                         const data = await res.json();
                         
                         if (data.success) {
-                            this.token = data.token;
-                            this.isAuthenticated = true;
-                            this.credentials = { phoneNumber: '', password: '' };
-                            this.loadDashboardData();
+                            if (data.requires2FA) {
+                                this.is2FAStage = true;
+                                this.twoFactorPhone = data.phoneNumber || this.credentials.phoneNumber;
+                                this.demoOtp = data.otp || '';
+                                this.twoFactorOtp = data.otp || '';
+                                this.loginError = '';
+                            } else if (data.token) {
+                                this.token = data.token;
+                                this.isAuthenticated = true;
+                                this.credentials = { phoneNumber: '', password: '' };
+                                this.loadDashboardData();
+                            }
                         } else {
                             this.loginError = data.message || 'Login failed. Verify credentials.';
                         }
@@ -1613,12 +1673,54 @@
                     }
                 },
 
+                async verify2FA() {
+                    if (!this.twoFactorOtp || String(this.twoFactorOtp).trim().length < 4) {
+                        this.loginError = 'Please enter valid 6-digit 2FA OTP code.';
+                        return;
+                    }
+                    this.isLoading = true;
+                    this.loginError = '';
+                    try {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/verify-2fa`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ phoneNumber: this.twoFactorPhone || this.credentials.phoneNumber, otp: this.twoFactorOtp })
+                        });
+                        const data = await res.json();
+
+                        if (data.success && data.token) {
+                            this.token = data.token;
+                            this.isAuthenticated = true;
+                            this.is2FAStage = false;
+                            this.twoFactorOtp = '';
+                            this.demoOtp = '';
+                            this.credentials = { phoneNumber: '', password: '' };
+                            this.loadDashboardData();
+                        } else {
+                            this.loginError = data.message || 'Invalid 2FA OTP code.';
+                        }
+                    } catch (err) {
+                        this.loginError = 'Error verifying 2FA OTP.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                backToPasswordLogin() {
+                    this.is2FAStage = false;
+                    this.twoFactorOtp = '';
+                    this.loginError = '';
+                },
+
                 logout(message = '') {
                     this.stopLiveSyncTimer();
                     this.token = null;
                     localStorage.removeItem('adminToken');
                     sessionStorage.removeItem('adminToken');
                     this.isAuthenticated = false;
+                    this.is2FAStage = false;
+                    this.twoFactorOtp = '';
+                    this.demoOtp = '';
                     this.donors = [];
                     this.feedbacks = [];
                     this.emergencyRequests = [];
