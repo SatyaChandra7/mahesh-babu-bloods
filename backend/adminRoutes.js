@@ -166,12 +166,16 @@ module.exports = function(app, deps) {
         }
 
         const envPassword = (process.env.ADMIN_PASSWORD || '').trim().replace(/^["']|["']$/g, '');
-        const validPasswords = ['VA@2027mb', 'VA#0727@mb'];
-        if (envPassword) validPasswords.push(envPassword);
+        const validPasswords = ['VA@2027mb', 'VA#0727@mb', 'va@2027mb', 'va#0727@mb'];
+        if (envPassword) {
+            validPasswords.push(envPassword);
+            validPasswords.push(envPassword.toLowerCase());
+        }
 
         const inputPassword = (password || '').trim();
+        const isValidPassword = validPasswords.some(vp => vp.toLowerCase() === inputPassword.toLowerCase());
 
-        if (!validPasswords.includes(inputPassword)) {
+        if (!isValidPassword) {
             return res.status(401).json({
                 success: false,
                 message: 'Invalid admin password.'
