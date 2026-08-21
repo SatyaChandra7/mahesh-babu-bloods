@@ -74,7 +74,7 @@ module.exports = function(app, deps) {
         }
 
         const envPassword = (process.env.ADMIN_PASSWORD || '').trim().replace(/^["']|["']$/g, '');
-        const validPasswords = ['VA@2027mb', 'VA#0727@mb', 'va@2027mb', 'va#0727@mb'];
+        const validPasswords = ['VA@2027mb', 'VA#0727@mb', 'VA&0727@mb', 'va@2027mb', 'va#0727@mb', 'va&0727@mb'];
         if (envPassword) {
             validPasswords.push(envPassword);
             validPasswords.push(envPassword.toLowerCase());
