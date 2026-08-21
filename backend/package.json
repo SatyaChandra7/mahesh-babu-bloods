@@ -11,9 +11,10 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
-    "@supabase/server": "^1.4.0",
-    "@supabase/ssr": "^0.12.3",
-    "@supabase/supabase-js": "^2.110.7",
+    "@aws-sdk/client-s3": "^3.750.0",
+    "@aws-sdk/rds-signer": "^3.750.0",
+    "@vercel/oidc-aws-credentials-provider": "^0.1.0",
+    "aws-sdk": "^2.1692.0",
     "better-sqlite3": "^12.11.1",
     "cors": "^2.8.5",
     "dotenv": "^17.4.1",

@@ -9,3 +9,6 @@ node_modules/
 service-account.json
 mahesh-babu-bloods-*.json
 .env*
+scratch/
+*.backup.gz
+

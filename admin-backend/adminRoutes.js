@@ -74,7 +74,7 @@ module.exports = function(app, deps) {
         }
 
         const envPassword = (process.env.ADMIN_PASSWORD || '').trim().replace(/^["']|["']$/g, '');
-        const validPasswords = ['Mahesh@094005'];
+        const validPasswords = ['VA@2027mb', 'VA#0727@mb'];
         if (envPassword) validPasswords.push(envPassword);
 
         const inputPassword = (password || '').trim();
@@ -164,6 +164,92 @@ module.exports = function(app, deps) {
     app.post('/api/v1/admin/alerts', verifyAdmin, (req, res) => {
         sharedState.currentAlert = { ...req.body, createdAt: new Date() };
         res.json({ success: true });
+    });
+
+    // Live Sync Status Endpoint
+    app.get('/api/v1/admin/donors/live-status', verifyAdmin, async (req, res) => {
+        try {
+            const total = await Donor.count();
+            const lastDonor = await Donor.findOne({ order: [['id', 'DESC']] });
+            const lastDonorId = lastDonor ? lastDonor.id : 0;
+            const latestRegisteredAt = lastDonor ? (lastDonor.registeredAt || lastDonor.createdAt || '') : '';
+            const pendingEmergencyCount = (sharedState.emergencyRequests || []).filter(r => r.status !== 'resolved').length;
+
+            const groups = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
+            const stats = await Promise.all(groups.map(async (g) => ({
+                group: g,
+                count: await Donor.count({ where: { bloodGroup: g } })
+            })));
+
+            res.json({
+                success: true,
+                total,
+                lastDonorId,
+                latestRegisteredAt,
+                pendingEmergencyCount,
+                stats,
+                currentAlert: sharedState.currentAlert
+            });
+        } catch (err) {
+            res.status(500).json({ success: false, message: err.message });
+        }
+    });
+
+    // Admin WhatsApp Emergency Request Endpoints
+    app.get('/api/v1/admin/emergency-requests', verifyAdmin, (req, res) => {
+        if (!sharedState.emergencyRequests) sharedState.emergencyRequests = [];
+        res.json({ success: true, requests: sharedState.emergencyRequests });
+    });
+
+    app.post('/api/v1/admin/emergency-requests/broadcast', verifyAdmin, (req, res) => {
+        const { id, customMessage } = req.body || {};
+        if (!sharedState.emergencyRequests) sharedState.emergencyRequests = [];
+        const item = sharedState.emergencyRequests.find(r => r.id === id);
+        let alertMsg = customMessage;
+        if (!alertMsg && item) {
+            alertMsg = `🚨 URGENT: ${item.bloodGroup} Blood required for ${item.patientName} at ${item.hospital || item.city || 'Hospital'}. Contact: ${item.phoneNumber}`;
+        }
+        if (!alertMsg) alertMsg = 'Urgent Blood Requirement Notification';
+
+        sharedState.currentAlert = { message: alertMsg, isActive: true, createdAt: new Date() };
+        if (item) item.status = 'broadcasted';
+
+        res.json({ success: true, alert: sharedState.currentAlert });
+    });
+
+    app.delete('/api/v1/admin/emergency-requests/:id', verifyAdmin, (req, res) => {
+        if (!sharedState.emergencyRequests) sharedState.emergencyRequests = [];
+        sharedState.emergencyRequests = sharedState.emergencyRequests.filter(r => r.id !== req.params.id);
+        res.json({ success: true });
+    });
+
+    app.post('/api/v1/admin/emergency-requests/simulate', verifyAdmin, (req, res) => {
+        if (!sharedState.emergencyRequests) sharedState.emergencyRequests = [];
+        const bloodGroups = ['O+', 'B+', 'A+', 'O-', 'AB+'];
+        const cities = ['Guntur', 'Vijayawada', 'Hyderabad', 'Tirupati', 'Visakhapatnam'];
+        const hospitals = ['Government General Hospital', 'Apollo Specialty Hospital', 'RIMS Medical Center', 'KIMS Hospital'];
+        const names = ['Ramesh Kumar', 'Sita Devi', 'Venkatesh Rao', 'Anitha Reddy', 'Kalyan Babu'];
+
+        const randomGroup = bloodGroups[Math.floor(Math.random() * bloodGroups.length)];
+        const randomCity = cities[Math.floor(Math.random() * cities.length)];
+        const randomHosp = hospitals[Math.floor(Math.random() * hospitals.length)];
+        const randomName = names[Math.floor(Math.random() * names.length)];
+        const randomPhone = '919' + Math.floor(10000000 + Math.random() * 90000000);
+
+        const simRequest = {
+            id: 'EMG-' + Date.now(),
+            patientName: randomName,
+            bloodGroup: randomGroup,
+            phoneNumber: randomPhone,
+            hospital: randomHosp,
+            city: randomCity,
+            urgency: 'IMMEDIATE (WhatsApp Request)',
+            notes: 'Simulated WhatsApp emergency blood request message from patient family.',
+            createdAt: new Date().toISOString(),
+            status: 'pending'
+        };
+        sharedState.emergencyRequests.unshift(simRequest);
+        res.json({ success: true, request: simRequest });
     });
 
     // Admin Feedback Endpoints
