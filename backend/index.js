@@ -268,7 +268,7 @@ function initSequelize() {
                 try { pgModule = require('pg'); } catch (e) {}
             }
             // Strip sslmode query parameter from URL to allow custom dialectOptions.ssl to handle SSL
-            const cleanDbUrl = dbUrl.replace(/[?&]sslmode=[^&]+/gi, '');
+            const cleanDbUrl = dbUrl.replace(/[?&]sslmode=[^&]+/gi, '').replace(/\?$/, '');
             const options = {
                 dialect: 'postgres',
                 dialectOptions: {
