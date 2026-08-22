@@ -29,8 +29,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Database Connection
-const sequelize = process.env.DATABASE_URL
-    ? new Sequelize(process.env.DATABASE_URL, { dialect: 'postgres', logging: false, dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } })
+let dbUrl = process.env.DATABASE_URL;
+if (dbUrl) {
+    dbUrl = dbUrl.replace(/[?&]sslmode=[^&]+/gi, '').replace(/\?$/, '');
+}
+const sequelize = dbUrl
+    ? new Sequelize(dbUrl, { dialect: 'postgres', logging: false, dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } })
     : new Sequelize({ dialect: 'sqlite', storage: path.join(__dirname, 'database.sqlite'), logging: false });
 
 // Models

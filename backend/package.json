@@ -11,10 +11,10 @@
     "dev": "nodemon index.js"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.750.0",
-    "@aws-sdk/rds-signer": "^3.750.0",
-    "@vercel/oidc-aws-credentials-provider": "^0.1.0",
-    "aws-sdk": "^2.1692.0",
+    "@aws-sdk/client-s3": "^3.1113.0",
+    "@aws-sdk/rds-signer": "^3.1113.0",
+    "@vercel/oidc-aws-credentials-provider": "^3.3.4",
+    "aws-sdk": "^2.1693.0",
     "better-sqlite3": "^12.11.1",
     "cors": "^2.8.5",
     "dotenv": "^17.4.1",
