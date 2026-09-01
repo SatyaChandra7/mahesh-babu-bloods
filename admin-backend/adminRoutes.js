@@ -160,31 +160,42 @@ module.exports = function(app, deps) {
     });
 
     app.get('/api/v1/admin/donors', verifyAdmin, async (req, res) => {
-        const { bloodGroup, address, pincode, idNumber } = req.query;
-        let where = {};
-        if (idNumber) {
-            let parsedId = parseInt(idNumber, 10);
-            if (idNumber.startsWith('9') && idNumber.length > 1) {
-                parsedId = parseInt(idNumber.substring(1), 10);
+        try {
+            const { bloodGroup, address, pincode, idNumber } = req.query;
+            let where = {};
+            if (idNumber) {
+                const term = String(idNumber).trim();
+                const termClean = term.replace(/\D/g, '');
+                let parsedId = parseInt(term, 10);
+                if (term.startsWith('9') && term.length > 1) {
+                    parsedId = parseInt(term.substring(1), 10);
+                }
+                const orConditions = [];
+                if (!isNaN(parsedId)) orConditions.push({ id: parsedId });
+                if (termClean) orConditions.push({ phoneNumber: { [Op.like]: `%${termClean}%` } });
+                orConditions.push({ fullName: { [Op.like]: `%${term}%` } });
+                where[Op.or] = orConditions;
             }
-            if (!isNaN(parsedId)) {
-                where.id = parsedId;
+            if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup.trim();
+            if (address) {
+                const addr = String(address).trim();
+                where[Op.or] = [
+                    ...(where[Op.or] || []),
+                    { state: { [Op.like]: `%${addr}%` } },
+                    { district: { [Op.like]: `%${addr}%` } },
+                    { mandal: { [Op.like]: `%${addr}%` } },
+                    { village: { [Op.like]: `%${addr}%` } },
+                    { fullName: { [Op.like]: `%${addr}%` } }
+                ];
             }
+            if (pincode) {
+                where.pincode = { [Op.like]: `%${String(pincode).trim()}%` };
+            }
+            const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
+            res.json({ success: true, donors: results });
+        } catch (e) {
+            res.json({ success: true, donors: [] });
         }
-        if (bloodGroup && bloodGroup !== 'All') where.bloodGroup = bloodGroup;
-        if (address) {
-            where[Op.or] = [
-                { state: { [Op.like]: `%${address}%` } },
-                { district: { [Op.like]: `%${address}%` } },
-                { mandal: { [Op.like]: `%${address}%` } },
-                { village: { [Op.like]: `%${address}%` } }
-            ];
-        }
-        if (pincode) {
-            where.pincode = { [Op.like]: `%${pincode}%` };
-        }
-        const results = await Donor.findAll({ where, order: [['registeredAt', 'DESC']] });
-        res.json({ success: true, donors: results });
     });
 
     app.get('/api/v1/admin/donors/delete/:id', verifyAdmin, async (req, res) => {

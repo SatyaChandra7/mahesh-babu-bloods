@@ -787,12 +787,7 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 text-slate-600 text-xs font-semibold" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></td>
-                                            <td class="px-6 py-4 text-right flex items-center justify-end gap-2">
-                                                <button type="button" @click.prevent.stop="toggleVerifyDonor(donor.id)"
-                                                    class="px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all border cursor-pointer"
-                                                    :class="donor.isVerified ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-500'"
-                                                    x-text="donor.isVerified ? 'Unverify' : 'Verify'">
-                                                </button>
+                                            <td class="px-6 py-4 text-right flex items-center justify-end">
                                                 <button type="button" @click.prevent.stop="deleteDonor(donor.id)"
                                                     class="px-3.5 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 cursor-pointer">
                                                     Delete
@@ -831,14 +826,10 @@
                                          <p class="truncate"><strong>Address:</strong> <span x-text="[donor.village, donor.mandal, donor.district, donor.state].filter(Boolean).join(', ') || 'N/A'"></span></p>
                                          <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
                                      </div>
-                                     <div class="grid grid-cols-4 gap-1.5 pt-1">
-                                         <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center">Call</a>
-                                         <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-1 bg-emerald-100 text-emerald-800 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center">WhatsApp</a>
-                                         <button type="button" @click.prevent.stop="toggleVerifyDonor(donor.id)" 
-                                             class="py-2 px-1 rounded-lg text-[10px] sm:text-xs font-bold flex items-center justify-center border cursor-pointer"
-                                             :class="donor.isVerified ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-emerald-600 text-white border-emerald-500'"
-                                             x-text="donor.isVerified ? 'Unverify' : 'Verify'"></button>
-                                         <button type="button" @click.prevent.stop="deleteDonor(donor.id)" class="py-2 px-1 bg-red-100 text-red-700 rounded-lg text-[10px] sm:text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
+                                     <div class="grid grid-cols-3 gap-2 pt-1">
+                                         <a :href="`tel:${donor.phoneNumber}`" class="py-2 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center">Call</a>
+                                         <a :href="`https://wa.me/91${donor.phoneNumber}`" target="_blank" class="py-2 px-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center">WhatsApp</a>
+                                         <button type="button" @click.prevent.stop="deleteDonor(donor.id)" class="py-2 px-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl text-xs font-bold cursor-pointer flex items-center justify-center">Delete</button>
                                      </div>
                                  </div>
                              </template>
