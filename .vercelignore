@@ -8,4 +8,7 @@ backend/*.sqlite*
 .vercel/
 *.log
 scratch*
+*.gz
+*.backup*
+*.sql
 
