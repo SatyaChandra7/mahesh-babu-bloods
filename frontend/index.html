@@ -142,7 +142,7 @@
                 activeImageIndex: 0,
                 galleryImages: [],
                 displayCount: 0,
-                donationCount: 0,
+                donationCount: 100,
                 isSubmitting: false,
                 serverWaking: false,
                 emergencyMessage: '',
@@ -352,6 +352,7 @@
                 counterAnimId: null,
 
                 animateCounter(target) {
+                    target = Math.max(100, Number(target) || 100);
                     if (this.counterAnimId) {
                         cancelAnimationFrame(this.counterAnimId);
                         this.counterAnimId = null;
@@ -390,11 +391,16 @@
                         const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/donations/count`);
                         const data = await res.json();
                         if (data.count !== undefined) {
-                            this.donationCount = data.count;
+                            this.donationCount = Math.max(100, Number(data.count) || 100);
                             this.animateCounter(this.donationCount);
+                        } else {
+                            this.donationCount = 100;
+                            this.animateCounter(100);
                         }
                     } catch (err) {
                         console.log('Backend not connected, using default count');
+                        this.donationCount = 100;
+                        this.animateCounter(100);
                     }
                 },
 
@@ -1665,8 +1671,6 @@
                 <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
                 <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation."
                     target="_blank" class="hover:text-red-600 transition-colors">Request</a>
-                <a href="#" @click.prevent="galleryOpen = true" class="hover:text-red-600 transition-colors">Our
-                    Work</a>
                 <a href="#" @click.prevent="reviewOpen = true" class="hover:text-red-600 transition-colors">Review</a>
             </div>
 
@@ -1703,8 +1707,6 @@
                     <a href="https://wa.me/918758754005?text=I_need_blood_request" target="_blank"
                         @click="mobileMenuOpen = false"
                         class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Request</a>
-                    <a href="#" @click.prevent="galleryOpen = true; mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Our Work</a>
                     <a href="#" @click.prevent="reviewOpen = true; mobileMenuOpen = false"
                         class="py-3 hover:text-red-600 transition-colors">Review</a>
                 </div>
@@ -1931,7 +1933,7 @@
 
                     <span
                         class="relative z-10 text-6xl md:text-8xl font-black tracking-tighter font-display bg-gradient-to-br from-red-600 to-orange-500 bg-clip-text text-transparent leading-none"
-                        x-text="displayCount">0</span>
+                        x-text="displayCount ? (displayCount + '+') : '100+'">100+</span>
                     <span
                         class="relative z-10 text-[10px] md:text-sm font-black text-red-600 uppercase tracking-[0.3em] mt-3">Donations</span>
                 </div>
@@ -1948,14 +1950,6 @@
             </div>
 
             <div class="flex flex-col sm:flex-row items-center justify-center gap-6 mt-4 w-full px-6">
-                <button @click.prevent="galleryOpen = true"
-                    class="chrome-3d hover-scale px-8 py-5 md:px-12 md:py-6 rounded-full font-poppins text-xs md:text-lg uppercase tracking-widest whitespace-nowrap flex items-center justify-center gap-3 active:scale-95 transition-all duration-300 h-16 md:h-20 drop-shadow-2xl">
-                    VIEW OUR WORK
-                    <svg class="w-5 h-5 md:w-6 md:h-6 icon-red" fill="currentColor" viewBox="0 0 24 24">
-                        <path
-                            d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
-                    </svg>
-                </button>
                 <button @click.prevent="reviewOpen = true"
                     class="chrome-3d hover-scale px-8 py-5 md:px-12 md:py-6 rounded-full font-poppins text-xs md:text-lg uppercase tracking-widest whitespace-nowrap flex items-center justify-center gap-3 active:scale-95 transition-all duration-300 h-16 md:h-20 drop-shadow-2xl">
                     WRITE A REVIEW

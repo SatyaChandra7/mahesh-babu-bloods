@@ -1200,18 +1200,19 @@ async function getTotalDonationImagesCount() {
             } catch (e) {}
         }
 
-        if (filesSet.size > 0) return filesSet.size;
+        if (filesSet.size > 0) return Math.max(100, filesSet.size);
     } catch (e) {}
 
-    return await getTotalDonorsCount();
+    const totalDonors = await getTotalDonorsCount();
+    return Math.max(100, totalDonors || 100);
 }
 
 app.get('/api/v1/donations/count', async (req, res) => {
     try {
         const count = await getTotalDonationImagesCount();
-        res.json({ count });
+        res.json({ count: Math.max(100, count || 100) });
     } catch (err) {
-        res.json({ count: 0 });
+        res.json({ count: 100 });
     }
 });
 
