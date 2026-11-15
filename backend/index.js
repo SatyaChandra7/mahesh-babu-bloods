@@ -1309,79 +1309,31 @@ function getGoogleSheetInfo() {
     };
 }
 
-// Internal Service Binding: If ADMIN_BACKEND_URL is provided by Vercel services binding,
-// route admin requests to the internal admin-backend service. Otherwise fallback to local admin routes.
-if (process.env.ADMIN_BACKEND_URL) {
-    app.use('/api/v1/admin', async (req, res) => {
-        try {
-            const targetUrl = new URL(req.originalUrl || req.url, process.env.ADMIN_BACKEND_URL);
-            const headers = {};
-            for (const [key, value] of Object.entries(req.headers)) {
-                if (key.toLowerCase() !== 'host') {
-                    headers[key] = value;
-                }
-            }
-
-            const fetchOptions = {
-                method: req.method,
-                headers,
-                redirect: 'manual'
-            };
-
-            if (req.method !== 'GET' && req.method !== 'HEAD') {
-                const contentType = req.headers['content-type'] || '';
-                if (contentType.includes('application/json') || (req.body && Object.keys(req.body).length > 0)) {
-                    fetchOptions.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
-                    if (!headers['content-type']) {
-                        headers['content-type'] = 'application/json';
-                    }
-                } else {
-                    fetchOptions.body = req;
-                    fetchOptions.duplex = 'half';
-                }
-            }
-
-            const response = await fetch(targetUrl, fetchOptions);
-            res.status(response.status);
-            response.headers.forEach((val, key) => {
-                if (key.toLowerCase() !== 'transfer-encoding' && key.toLowerCase() !== 'content-encoding') {
-                    res.setHeader(key, val);
-                }
-            });
-            const data = await response.arrayBuffer();
-            res.send(Buffer.from(data));
-        } catch (err) {
-            console.error('[ADMIN_BACKEND SERVICE CALL ERROR]', err);
-            res.status(502).json({ success: false, message: 'Bad Gateway: internal admin-backend unreachable' });
-        }
-    });
-} else {
-    // Fallback: Load local Admin Routes when running standalone without service binding
-    require('./adminRoutes')(app, {
-        JWT_SECRET,
-        WHITELISTED_NUMBERS,
-        adminOtps,
-        upload,
-        GALLERY_PATH,
-        Donor,
-        Feedback,
-        GalleryImage,
-        sharedState,
-        syncSheetsToSQL,
-        loadDonorsFromJSON,
-        fallbackDonorsStore,
-        getTotalDonationImagesCount,
-        getGoogleSheetInfo,
-        loadFeedbacksFromJSON,
-        toggleDonorVerificationInJSON,
-        deleteDonorFromJSON,
-        toggleFeedbackApprovalInJSON,
-        deleteFeedbackFromJSON,
-        saveFeedbackToGoogleSheet,
-        updateFeedbackInGoogleSheet,
-        syncFeedbacksFromSheets
-    });
-}
+// Load Admin Backend Routes
+require('./adminRoutes')(app, {
+    JWT_SECRET,
+    WHITELISTED_NUMBERS,
+    adminOtps,
+    upload,
+    GALLERY_PATH,
+    Donor,
+    Feedback,
+    GalleryImage,
+    sharedState,
+    syncSheetsToSQL,
+    loadDonorsFromJSON,
+    fallbackDonorsStore,
+    getTotalDonationImagesCount,
+    getGoogleSheetInfo,
+    loadFeedbacksFromJSON,
+    toggleDonorVerificationInJSON,
+    deleteDonorFromJSON,
+    toggleFeedbackApprovalInJSON,
+    deleteFeedbackFromJSON,
+    saveFeedbackToGoogleSheet,
+    updateFeedbackInGoogleSheet,
+    syncFeedbacksFromSheets
+});
 
 const feedbackLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
