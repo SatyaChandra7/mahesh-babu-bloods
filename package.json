@@ -7,7 +7,7 @@
   "description": "Backend for Mahesh Babu Bloods Landing Page",
   "main": "backend/index.js",
   "scripts": {
-    "build": "tailwindcss -i frontend/input.css -o frontend/style.min.css --minify",
+    "build": "node build-unified.js",
     "start": "node backend/index.js",
     "dev": "nodemon"
   },

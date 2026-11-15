@@ -1,0 +1,17 @@
+User-agent: Google-Favicon
+Allow: /favicon.ico
+Allow: /logo.png
+Allow: /assets/
+
+User-agent: Googlebot-Image
+Allow: /favicon.ico
+Allow: /logo.png
+Allow: /assets/
+
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /api/v1/admin/
+
+Sitemap: https://maheshbabubloods.org/sitemap.xml
