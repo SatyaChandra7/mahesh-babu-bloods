@@ -314,6 +314,10 @@
 
                             <!-- Dual Channel Delivery Badges -->
                             <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                                <div class="px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-amber-800 text-[11px] font-bold flex items-center gap-1.5 shadow-sm" x-show="twoFactorDelivery && twoFactorDelivery.sms">
+                                    <span>📱 SMS:</span>
+                                    <strong class="font-mono text-amber-950" x-text="twoFactorDelivery ? twoFactorDelivery.sms : '+91 ' + twoFactorPhone"></strong>
+                                </div>
                                 <div class="px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
                                     <span>💬 WhatsApp:</span>
                                     <strong class="font-mono text-emerald-950" x-text="twoFactorDelivery ? twoFactorDelivery.whatsapp : `+91 ${twoFactorPhone}`"></strong>

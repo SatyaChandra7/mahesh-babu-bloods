@@ -129,7 +129,43 @@ module.exports = function(app, deps) {
         message: { success: false, message: 'Too many login attempts. Please try again later.' }
     });
 
-    async function sendWhatsAppOTP(phoneNumber, otp) {
+        async function sendSMSOTP(phoneNumber, otp) {
+        const apiKey = (process.env.FAST2SMS_API_KEY || '').trim().replace(/^["']|["']$/g, '');
+        if (!apiKey) {
+            console.log(`[SMS OTP MOCK] (Set FAST2SMS_API_KEY in env) To: ${phoneNumber}, Code: ${otp}`);
+            return { success: true, mock: true };
+        }
+
+        const cleanNumber = String(phoneNumber).replace(/\D/g, '').slice(-10);
+
+        try {
+            const response = await fetch('https://www.fast2sms.com/dev/bulkV2', {
+                method: 'POST',
+                headers: {
+                    'authorization': apiKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    route: 'otp',
+                    variables_values: String(otp),
+                    numbers: cleanNumber
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok || data.return === false || (data.status_code && data.status_code !== 200)) {
+                console.warn('[FAST2SMS API NOTICE]:', data.message || data);
+                return { success: false, error: data.message };
+            }
+            console.log(`[SMS OTP SENT via Fast2SMS] To: ${cleanNumber}, Request ID: ${data.request_id}`);
+            return { success: true, data };
+        } catch (err) {
+            console.error('[FAST2SMS REQUEST ERROR]:', err.message);
+            return { success: false, error: err.message };
+        }
+    }
+
+async function sendWhatsAppOTP(phoneNumber, otp) {
         const token = process.env.WHATSAPP_TOKEN;
         const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
@@ -166,10 +202,21 @@ module.exports = function(app, deps) {
 
     async function dispatchDualChannel2FA({ cleanNumber, otp, req, preferredChannel = 'both', actionName = 'Admin Authentication' }) {
         const profile = resolveAdminProfile(cleanNumber);
-        const results = { whatsapp: false, email: false };
+        const results = { sms: false, whatsapp: false, email: false };
 
         const tasks = [];
-        if (preferredChannel === 'both' || preferredChannel === 'whatsapp') {
+
+        // 1. Regular SMS Text Message (Fast2SMS)
+        if (preferredChannel === 'both' || preferredChannel === 'all' || preferredChannel === 'sms') {
+            tasks.push(
+                sendSMSOTP(cleanNumber, otp)
+                    .then(res => { if (res && res.success && !res.mock) results.sms = true; })
+                    .catch(err => { console.error('[SMS 2FA ERROR]:', err.message); })
+            );
+        }
+
+        // 2. WhatsApp Message (Meta Cloud API)
+        if (preferredChannel === 'both' || preferredChannel === 'all' || preferredChannel === 'whatsapp') {
             tasks.push(
                 sendWhatsAppOTP(cleanNumber, otp)
                     .then(() => { results.whatsapp = true; })
@@ -177,7 +224,8 @@ module.exports = function(app, deps) {
             );
         }
 
-        if (preferredChannel === 'both' || preferredChannel === 'email') {
+        // 3. Security Email (Nodemailer)
+        if (preferredChannel === 'both' || preferredChannel === 'all' || preferredChannel === 'email') {
             tasks.push(
                 sendAdminOTPEmail({
                     toEmails: profile.allEmails,
@@ -198,9 +246,11 @@ module.exports = function(app, deps) {
             profile,
             results,
             delivery: {
+                sms: maskPhoneNumber(cleanNumber),
                 whatsapp: maskPhoneNumber(cleanNumber),
                 email: maskEmailList(profile.allEmails),
                 channels: [
+                    ...(results.sms ? ['sms'] : []),
                     ...(results.whatsapp ? ['whatsapp'] : []),
                     ...(results.email ? ['email'] : [])
                 ]
@@ -262,7 +312,7 @@ module.exports = function(app, deps) {
             success: true,
             delivery: dispatch.delivery,
             cooldownSeconds: 45,
-            message: `OTP dispatched to WhatsApp (${dispatch.delivery.whatsapp}) and Security Email (${dispatch.delivery.email}).`
+            message: `OTP dispatched across security channels (SMS, WhatsApp & Email).`
         });
     });
 
@@ -311,7 +361,7 @@ module.exports = function(app, deps) {
             success: true,
             delivery: dispatch.delivery,
             cooldownSeconds: 45,
-            message: `Fresh 2FA code dispatched via ${channel === 'both' ? 'WhatsApp & Security Email' : channel}.`
+            message: `Fresh 2FA code dispatched via ${channel === 'both' ? 'SMS, WhatsApp & Security Email' : channel}.`
         });
     });
 
@@ -389,7 +439,13 @@ module.exports = function(app, deps) {
             }
         }
 
-        // Return 2FA requirement prompt with dual-channel metadata
+        const activeCh = [];
+        if (dispatch.results.sms) activeCh.push(`SMS (${dispatch.delivery.sms})`);
+        if (dispatch.results.whatsapp) activeCh.push(`WhatsApp (${dispatch.delivery.whatsapp})`);
+        if (dispatch.results.email) activeCh.push(`Security Email (${dispatch.delivery.email})`);
+        const chSummary = activeCh.length > 0 ? activeCh.join(', ') : 'registered security channels';
+
+        // Return 2FA requirement prompt with multi-channel metadata
         res.json({
             success: true,
             requires2FA: true,
@@ -397,7 +453,7 @@ module.exports = function(app, deps) {
             phoneNumber: cleanNumber,
             delivery: dispatch.delivery,
             cooldownSeconds: 45,
-            message: `Password verified! Enter 6-digit 2FA OTP sent to WhatsApp (${dispatch.delivery.whatsapp}) and Security Email (${dispatch.delivery.email}).`
+            message: `Password verified! Enter 6-digit 2FA OTP dispatched to ${chSummary}.`
         });
     });
 
