@@ -1312,7 +1312,7 @@ function getGoogleSheetInfo() {
 // Internal Service Binding: If ADMIN_BACKEND_URL is provided by Vercel services binding,
 // route admin requests to the internal admin-backend service. Otherwise fallback to local admin routes.
 if (process.env.ADMIN_BACKEND_URL) {
-    app.all('/api/v1/admin*', async (req, res) => {
+    app.use('/api/v1/admin', async (req, res) => {
         try {
             const targetUrl = new URL(req.originalUrl || req.url, process.env.ADMIN_BACKEND_URL);
             const headers = {};
