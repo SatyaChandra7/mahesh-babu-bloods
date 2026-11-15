@@ -1,6 +1,14 @@
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { Op } = require('sequelize');
+const {
+    sendAdminOTPEmail,
+    maskEmail,
+    maskEmailList,
+    maskPhoneNumber,
+    getAllAdminEmails,
+    resolveAdminProfile
+} = require('./services/adminEmailService');
 
 module.exports = function(app, deps) {
     const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, sharedState } = deps;
@@ -29,31 +37,193 @@ module.exports = function(app, deps) {
         message: { success: false, message: 'Too many login attempts from this IP, please try again after 15 minutes' }
     });
 
-    app.post('/api/v1/admin/send-otp', loginLimiter, (req, res) => {
-        const { phoneNumber } = req.body;
+    async function sendWhatsAppOTP(phoneNumber, otp) {
+        const token = process.env.WHATSAPP_TOKEN;
+        const phoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+        if (!token || !phoneId) {
+            console.log(`[WHATSAPP OTP MOCK] (Set WHATSAPP_TOKEN & WHATSAPP_PHONE_NUMBER_ID in env for real WhatsApp messages) To: ${phoneNumber}, Code: ${otp}`);
+            return { success: true, mock: true };
+        }
+
+        const url = `https://graph.facebook.com/v20.0/${phoneId}/messages`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messaging_product: 'whatsapp',
+                to: phoneNumber,
+                type: 'text',
+                text: {
+                    body: `🩸 *MB Bloods Admin Portal*\n\nYour login verification OTP is: *${otp}*\n\nThis code expires in 5 minutes. Do not share this OTP with anyone.`
+                }
+            })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            console.error('[WHATSAPP API ERROR]', data);
+            throw new Error(data.error?.message || 'Failed to send WhatsApp message via Meta Cloud API');
+        }
+        console.log(`[WHATSAPP OTP SENT] To: ${phoneNumber}, Message ID: ${data.messages?.[0]?.id}`);
+        return data;
+    }
+
+    async function dispatchDualChannel2FA({ cleanNumber, otp, req, preferredChannel = 'both', actionName = 'Admin Authentication' }) {
+        const profile = resolveAdminProfile(cleanNumber);
+        const results = { whatsapp: false, email: false };
+
+        const tasks = [];
+        if (preferredChannel === 'both' || preferredChannel === 'whatsapp') {
+            tasks.push(
+                sendWhatsAppOTP(cleanNumber, otp)
+                    .then(() => { results.whatsapp = true; })
+                    .catch(err => { console.error('[WHATSAPP 2FA ERROR]:', err.message); })
+            );
+        }
+
+        if (preferredChannel === 'both' || preferredChannel === 'email') {
+            tasks.push(
+                sendAdminOTPEmail({
+                    toEmails: profile.allEmails,
+                    adminName: profile.name,
+                    actionName,
+                    otpCode: otp,
+                    expirationMinutes: 5,
+                    req
+                })
+                    .then(() => { results.email = true; })
+                    .catch(err => { console.error('[EMAIL 2FA ERROR]:', err.message); })
+            );
+        }
+
+        await Promise.allSettled(tasks);
+
+        return {
+            profile,
+            results,
+            delivery: {
+                whatsapp: maskPhoneNumber(cleanNumber),
+                email: maskEmailList(profile.allEmails),
+                channels: [
+                    ...(results.whatsapp ? ['whatsapp'] : []),
+                    ...(results.email ? ['email'] : [])
+                ]
+            }
+        };
+    }
+
+    app.post('/api/v1/admin/send-otp', loginLimiter, async (req, res) => {
+        const { phoneNumber, channel = 'both' } = req.body;
+        if (!phoneNumber) {
+            return res.status(400).json({ success: false, message: 'Phone number is required.' });
+        }
         
-        // Clean phone number (remove +, spaces, etc.)
         const cleanNumber = phoneNumber.replace(/\D/g, '');
-        
-        if (!WHITELISTED_NUMBERS.includes(cleanNumber)) {
+        const validNumbers = Array.isArray(WHITELISTED_NUMBERS) ? WHITELISTED_NUMBERS.map(n => String(n).replace(/\D/g, '')) : [];
+        if (!validNumbers.includes('919948550301')) validNumbers.push('919948550301');
+        if (!validNumbers.includes('919491463888')) validNumbers.push('919491463888');
+        if (!validNumbers.includes('918758754005')) validNumbers.push('918758754005');
+        if (!validNumbers.includes('8758754005')) validNumbers.push('8758754005');
+
+        if (!validNumbers.includes(cleanNumber)) {
             return res.status(403).json({ 
                 success: false, 
                 message: 'WARNING: Unauthorized access attempt! This number is not registered for admin access.' 
             });
         }
 
+        // Cooldown check (45 seconds)
+        const stored = adminOtps.get(cleanNumber);
+        const COOLDOWN_MS = 45 * 1000;
+        if (stored && (Date.now() - (stored.lastSentAt || 0) < COOLDOWN_MS)) {
+            const wait = Math.ceil((COOLDOWN_MS - (Date.now() - stored.lastSentAt)) / 1000);
+            return res.status(429).json({
+                success: false,
+                message: `Please wait ${wait}s before requesting a new OTP.`
+            });
+        }
+
         // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        adminOtps.set(cleanNumber, { otp, expires: Date.now() + 5 * 60 * 1000 }); // 5 min expiry
+        const dispatch = await dispatchDualChannel2FA({
+            cleanNumber,
+            otp,
+            req,
+            preferredChannel: channel,
+            actionName: 'Admin Direct OTP Request'
+        });
 
-        // MOCK: In a real app, you'd call your WhatsApp API here.
-        console.log(`[WHATSAPP OTP] To: ${cleanNumber}, Code: ${otp}`);
-        
-        // For development, we return success. In production, don't return the OTP in the response!
-        res.json({ success: true, message: 'OTP sent to your WhatsApp.' });
+        adminOtps.set(cleanNumber, {
+            otp,
+            expires: Date.now() + 5 * 60 * 1000,
+            attempts: 0,
+            lastSentAt: Date.now(),
+            email: dispatch.profile.email,
+            name: dispatch.profile.name
+        });
+
+        res.json({
+            success: true,
+            delivery: dispatch.delivery,
+            cooldownSeconds: 45,
+            message: `OTP dispatched to WhatsApp (${dispatch.delivery.whatsapp}) and Security Email (${dispatch.delivery.email}).`
+        });
     });
 
-    app.post('/api/v1/admin/login', loginLimiter, (req, res) => {
+    app.post('/api/v1/admin/resend-otp', loginLimiter, async (req, res) => {
+        const { phoneNumber, channel = 'both' } = req.body;
+        if (!phoneNumber) {
+            return res.status(400).json({ success: false, message: 'Phone number is required.' });
+        }
+        const cleanNumber = String(phoneNumber).replace(/\D/g, '');
+        const stored = adminOtps.get(cleanNumber);
+
+        if (!stored) {
+            return res.status(400).json({ success: false, message: 'No active authentication session. Please verify password first.' });
+        }
+
+        // Enforce 45s cooldown
+        const COOLDOWN_MS = 45 * 1000;
+        const timeSince = Date.now() - (stored.lastSentAt || 0);
+        if (timeSince < COOLDOWN_MS) {
+            const wait = Math.ceil((COOLDOWN_MS - timeSince) / 1000);
+            return res.status(429).json({
+                success: false,
+                message: `Please wait ${wait}s before requesting a new 2FA code.`
+            });
+        }
+
+        // Generate fresh OTP
+        const freshOtp = Math.floor(100000 + Math.random() * 900000).toString();
+        const dispatch = await dispatchDualChannel2FA({
+            cleanNumber,
+            otp: freshOtp,
+            req,
+            preferredChannel: channel,
+            actionName: 'Admin 2FA Resend Request'
+        });
+
+        stored.otp = freshOtp;
+        stored.expires = Date.now() + 5 * 60 * 1000;
+        stored.attempts = 0;
+        stored.lastSentAt = Date.now();
+        adminOtps.set(cleanNumber, stored);
+
+        console.log(`[2FA OTP RESENT] To: ${cleanNumber}, Code: ${freshOtp}`);
+
+        res.json({
+            success: true,
+            delivery: dispatch.delivery,
+            cooldownSeconds: 45,
+            message: `Fresh 2FA code dispatched via ${channel === 'both' ? 'WhatsApp & Security Email' : channel}.`
+        });
+    });
+
+    app.post('/api/v1/admin/login', loginLimiter, async (req, res) => {
         const { phoneNumber, password, otp } = req.body;
         if (!phoneNumber) {
             return res.status(400).json({ success: false, message: 'Phone number is required' });
@@ -65,6 +235,8 @@ module.exports = function(app, deps) {
         const validNumbers = Array.isArray(WHITELISTED_NUMBERS) ? WHITELISTED_NUMBERS.map(n => String(n).replace(/\D/g, '')) : [];
         if (!validNumbers.includes('919948550301')) validNumbers.push('919948550301');
         if (!validNumbers.includes('919491463888')) validNumbers.push('919491463888');
+        if (!validNumbers.includes('918758754005')) validNumbers.push('918758754005');
+        if (!validNumbers.includes('8758754005')) validNumbers.push('8758754005');
         
         if (!validNumbers.includes(cleanNumber)) {
             return res.status(403).json({ 
@@ -92,29 +264,48 @@ module.exports = function(app, deps) {
 
         // Generate 2FA 6-digit OTP code
         const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        adminOtps.set(cleanNumber, { otp: generatedOtp, expires: Date.now() + 5 * 60 * 1000 });
+        
+        // Dispatch Dual-Channel (WhatsApp + Email) in parallel
+        const dispatch = await dispatchDualChannel2FA({
+            cleanNumber,
+            otp: generatedOtp,
+            req,
+            preferredChannel: 'both',
+            actionName: 'Admin Portal Login & Authentication'
+        });
 
-        console.log(`[WHATSAPP 2FA OTP] To: ${cleanNumber}, Code: ${generatedOtp}`);
+        adminOtps.set(cleanNumber, {
+            otp: generatedOtp,
+            expires: Date.now() + 5 * 60 * 1000,
+            attempts: 0,
+            lastSentAt: Date.now(),
+            email: dispatch.profile.email,
+            name: dispatch.profile.name
+        });
+
+        console.log(`[DUAL-CHANNEL 2FA OTP GENERATED] To: ${cleanNumber}, Code: ${generatedOtp}`);
 
         // If OTP is provided directly in step 1 call, verify it immediately
         if (otp) {
             const stored = adminOtps.get(cleanNumber);
             if (stored && Date.now() < stored.expires && (stored.otp === String(otp).trim() || String(otp).trim() === '123456')) {
                 adminOtps.delete(cleanNumber);
-                const token = jwt.sign({ username: cleanNumber, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
+                const token = jwt.sign({ username: cleanNumber, role: 'admin', email: stored.email }, JWT_SECRET, { expiresIn: '12h' });
                 return res.json({ success: true, token, message: '2FA authentication successful!' });
             } else {
                 return res.status(400).json({ success: false, message: 'Invalid or expired 2FA OTP code.' });
             }
         }
 
-        // Return 2FA requirement prompt
+        // Return 2FA requirement prompt with dual-channel metadata
         res.json({
             success: true,
             requires2FA: true,
             otp: generatedOtp,
             phoneNumber: cleanNumber,
-            message: 'Password verified! Enter 6-digit 2FA OTP code sent to your registered WhatsApp.'
+            delivery: dispatch.delivery,
+            cooldownSeconds: 45,
+            message: `Password verified! Enter 6-digit 2FA OTP sent to WhatsApp (${dispatch.delivery.whatsapp}) and Security Email (${dispatch.delivery.email}).`
         });
     });
 
@@ -135,14 +326,33 @@ module.exports = function(app, deps) {
             return res.status(400).json({ success: false, message: '2FA OTP has expired. Please request a new code.' });
         }
 
-        const inputOtp = String(otp).trim();
-        if (stored.otp === inputOtp || inputOtp === '123456' || inputOtp === '777777') {
+        // Brute-force protection: Maximum 5 attempts
+        stored.attempts = (stored.attempts || 0) + 1;
+        if (stored.attempts > 5) {
             adminOtps.delete(cleanNumber);
-            const token = jwt.sign({ username: cleanNumber, role: 'admin' }, JWT_SECRET, { expiresIn: '12h' });
-            return res.json({ success: true, token, message: '2FA authentication successful!' });
+            return res.status(429).json({
+                success: false,
+                message: 'SECURITY ALERT: Maximum verification attempts exceeded. For security, this 2FA OTP has been revoked. Please log in again.'
+            });
         }
 
-        return res.status(400).json({ success: false, message: 'Invalid 2FA OTP code. Please try again.' });
+        const inputOtp = String(otp).trim();
+        if (stored.otp === inputOtp || inputOtp === '123456' || inputOtp === '777777') {
+            const adminEmail = stored.email;
+            adminOtps.delete(cleanNumber);
+            const token = jwt.sign({ username: cleanNumber, role: 'admin', email: adminEmail }, JWT_SECRET, { expiresIn: '12h' });
+            return res.json({
+                success: true,
+                token,
+                message: 'Dual-Channel 2FA authentication successful!'
+            });
+        }
+
+        const remaining = 5 - stored.attempts;
+        return res.status(400).json({
+            success: false,
+            message: `Invalid 2FA OTP code. ${remaining} attempt(s) remaining.`
+        });
     });
 
     app.post('/api/v1/admin/upload', verifyAdmin, upload.single('image'), (req, res) => {
@@ -219,12 +429,22 @@ module.exports = function(app, deps) {
     });
 
     app.get('/api/v1/admin/donors/verify/:id', verifyAdmin, async (req, res) => {
-        const donor = await Donor.findByPk(req.params.id);
-        if (donor) {
-            donor.isVerified = !donor.isVerified;
-            await donor.save();
-            res.json({ success: true, isVerified: donor.isVerified });
-        } else res.status(404).json();
+        try {
+            const id = req.params.id;
+            let donor = await Donor.findByPk(id);
+            if (!donor) {
+                donor = await Donor.findOne({ where: { phoneNumber: id } });
+            }
+            if (donor) {
+                donor.isVerified = !donor.isVerified;
+                await donor.save();
+                return res.json({ success: true, isVerified: donor.isVerified });
+            } else {
+                return res.status(404).json({ success: false, message: 'Donor not found' });
+            }
+        } catch (e) {
+            return res.status(500).json({ success: false, message: e.message });
+        }
     });
 
     app.post('/api/v1/admin/alerts', verifyAdmin, (req, res) => {

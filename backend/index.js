@@ -432,7 +432,9 @@ const ADMIN_USERS = [
 // Whitelisted WhatsApp Numbers for Admin Login
 const WHITELISTED_NUMBERS = [
     process.env.ADMIN_WHATSAPP_1 || '919948550301',
-    process.env.ADMIN_WHATSAPP_2 || '919491463888'
+    process.env.ADMIN_WHATSAPP_2 || '919491463888',
+    process.env.ADMIN_WHATSAPP_3 || '918758754005',
+    '8758754005'
 ];
 let adminOtps = new Map(); // Temporary OTP storage
 
@@ -1307,31 +1309,79 @@ function getGoogleSheetInfo() {
     };
 }
 
-// Load Admin Backend Routes
-require('./adminRoutes')(app, {
-    JWT_SECRET,
-    WHITELISTED_NUMBERS,
-    adminOtps,
-    upload,
-    GALLERY_PATH,
-    Donor,
-    Feedback,
-    GalleryImage,
-    sharedState,
-    syncSheetsToSQL,
-    loadDonorsFromJSON,
-    fallbackDonorsStore,
-    getTotalDonationImagesCount,
-    getGoogleSheetInfo,
-    loadFeedbacksFromJSON,
-    toggleDonorVerificationInJSON,
-    deleteDonorFromJSON,
-    toggleFeedbackApprovalInJSON,
-    deleteFeedbackFromJSON,
-    saveFeedbackToGoogleSheet,
-    updateFeedbackInGoogleSheet,
-    syncFeedbacksFromSheets
-});
+// Internal Service Binding: If ADMIN_BACKEND_URL is provided by Vercel services binding,
+// route admin requests to the internal admin-backend service. Otherwise fallback to local admin routes.
+if (process.env.ADMIN_BACKEND_URL) {
+    app.all('/api/v1/admin*', async (req, res) => {
+        try {
+            const targetUrl = new URL(req.originalUrl || req.url, process.env.ADMIN_BACKEND_URL);
+            const headers = {};
+            for (const [key, value] of Object.entries(req.headers)) {
+                if (key.toLowerCase() !== 'host') {
+                    headers[key] = value;
+                }
+            }
+
+            const fetchOptions = {
+                method: req.method,
+                headers,
+                redirect: 'manual'
+            };
+
+            if (req.method !== 'GET' && req.method !== 'HEAD') {
+                const contentType = req.headers['content-type'] || '';
+                if (contentType.includes('application/json') || (req.body && Object.keys(req.body).length > 0)) {
+                    fetchOptions.body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
+                    if (!headers['content-type']) {
+                        headers['content-type'] = 'application/json';
+                    }
+                } else {
+                    fetchOptions.body = req;
+                    fetchOptions.duplex = 'half';
+                }
+            }
+
+            const response = await fetch(targetUrl, fetchOptions);
+            res.status(response.status);
+            response.headers.forEach((val, key) => {
+                if (key.toLowerCase() !== 'transfer-encoding' && key.toLowerCase() !== 'content-encoding') {
+                    res.setHeader(key, val);
+                }
+            });
+            const data = await response.arrayBuffer();
+            res.send(Buffer.from(data));
+        } catch (err) {
+            console.error('[ADMIN_BACKEND SERVICE CALL ERROR]', err);
+            res.status(502).json({ success: false, message: 'Bad Gateway: internal admin-backend unreachable' });
+        }
+    });
+} else {
+    // Fallback: Load local Admin Routes when running standalone without service binding
+    require('./adminRoutes')(app, {
+        JWT_SECRET,
+        WHITELISTED_NUMBERS,
+        adminOtps,
+        upload,
+        GALLERY_PATH,
+        Donor,
+        Feedback,
+        GalleryImage,
+        sharedState,
+        syncSheetsToSQL,
+        loadDonorsFromJSON,
+        fallbackDonorsStore,
+        getTotalDonationImagesCount,
+        getGoogleSheetInfo,
+        loadFeedbacksFromJSON,
+        toggleDonorVerificationInJSON,
+        deleteDonorFromJSON,
+        toggleFeedbackApprovalInJSON,
+        deleteFeedbackFromJSON,
+        saveFeedbackToGoogleSheet,
+        updateFeedbackInGoogleSheet,
+        syncFeedbacksFromSheets
+    });
+}
 
 const feedbackLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
@@ -1404,7 +1454,7 @@ app.get('/api/v1/public/alert', (req, res) => res.json({ success: true, alert: s
 
 app.post('/api/v1/public/emergency-request', (req, res) => {
     try {
-        const { patientName, bloodGroup, phoneNumber, hospital, city, urgency, notes } = req.body || {};
+        const { patientName, age, bloodGroup, phoneNumber, hospital, city, urgency, notes } = req.body || {};
         if (!phoneNumber || !bloodGroup) {
             return res.status(400).json({ success: false, message: 'Phone number and blood group are required.' });
         }
@@ -1413,6 +1463,7 @@ app.post('/api/v1/public/emergency-request', (req, res) => {
         const newRequest = {
             id: 'EMG-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
             patientName: patientName || 'Emergency Patient',
+            age: age || '',
             bloodGroup: bloodGroup || 'Emergency',
             phoneNumber: phoneNumber || '',
             hospital: hospital || '',

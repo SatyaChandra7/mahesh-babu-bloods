@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="x-apple-disable-message-reformatting">
+    <title>Urgent: {{OTP_CODE}} is your Privileged Verification Code - {{APPLICATION_NAME}}</title>
+    <!--[if mso]>
+    <noscript>
+        <xml>
+            <o:OfficeDocumentSettings>
+                <o:PixelsPerInch>96</o:PixelsPerInch>
+            </o:OfficeDocumentSettings>
+        </xml>
+    </noscript>
+    <![endif]-->
+    <style>
+        /* Base Reset */
+        body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+        table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+        img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+        body { margin: 0; padding: 0; width: 100% !important; background-color: #0b0f19; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        /* Mobile Adaptability */
+        @media only screen and (max-width: 600px) {
+            .email-container { width: 100% !important; padding: 12px !important; }
+            .otp-code { font-size: 30px !important; letter-spacing: 8px !important; padding: 18px 12px !important; }
+            .meta-label, .meta-value { display: block !important; width: 100% !important; text-align: left !important; }
+            .meta-value { padding-top: 4px !important; padding-bottom: 12px !important; }
+            .stack-column { display: block !important; width: 100% !important; }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #0b0f19; -webkit-font-smoothing: antialiased;">
+
+    <!-- Preview / Preheader Text (Hidden in body, visible in inbox list) -->
+    <div style="display: none; font-size: 1px; color: #0b0f19; line-height: 1px; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;">
+        URGENT SECURITY ALERT: {{OTP_CODE}} is your privileged one-time verification code for {{APPLICATION_NAME}}. High-security admin action requested. Valid for {{EXPIRATION_TIME}}.
+    </div>
+
+    <!-- Outer Wrapper -->
+    <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #0b0f19;">
+        <tr>
+            <td align="center" style="padding: 30px 15px;">
+                
+                <!-- Main Container Card (600px max) -->
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" class="email-container" style="max-width: 600px; background-color: #111827; border: 1px solid #1f2937; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);">
+                    
+                    <!-- Top Security Header Bar -->
+                    <tr>
+                        <td style="background: linear-gradient(90deg, #dc2626 0%, #991b1b 100%); height: 4px; font-size: 0; line-height: 0;">&nbsp;</td>
+                    </tr>
+
+                    <!-- Brand & Classification Header -->
+                    <tr>
+                        <td style="padding: 28px 32px 20px 32px; border-bottom: 1px solid #1f2937;">
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td valign="middle">
+                                        <div style="font-size: 11px; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 2px;">
+                                            🛡️ IDENTITY & ACCESS MANAGEMENT
+                                        </div>
+                                        <div style="font-size: 20px; font-weight: 900; color: #f9fafb; letter-spacing: -0.5px; margin-top: 4px;">
+                                            {{APPLICATION_NAME}}
+                                        </div>
+                                    </td>
+                                    <td align="right" valign="middle">
+                                        <span style="display: inline-block; padding: 4px 10px; background-color: rgba(220, 38, 38, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 9999px; font-size: 10px; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 1px;">
+                                            CONFIDENTIAL
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 32px;">
+
+                            <!-- Salutation -->
+                            <p style="margin: 0 0 12px 0; font-size: 15px; color: #9ca3af; font-weight: 500;">
+                                Hello <strong style="color: #f3f4f6;">{{ADMIN_NAME}}</strong>,
+                            </p>
+
+                            <!-- Alert Headline -->
+                            <h1 style="margin: 0 0 16px 0; font-size: 22px; font-weight: 800; color: #ffffff; line-height: 1.3;">
+                                High-Privilege Action Authorization
+                            </h1>
+
+                            <p style="margin: 0 0 28px 0; font-size: 14px; color: #9ca3af; line-height: 1.6;">
+                                An authorization request was triggered on your administrative account. To verify your identity and authorize the privileged operation <strong style="color: #e5e7eb;">&ldquo;{{ACTION_NAME}}&rdquo;</strong>, enter the one-time verification code below:
+                            </p>
+
+                            <!-- Prominent OTP Display Box -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 24px;">
+                                <tr>
+                                    <td align="center" style="background-color: #030712; border: 2px solid #ef4444; border-radius: 12px; padding: 24px 16px;">
+                                        <div style="font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px;">
+                                            One-Time Security Passcode
+                                        </div>
+                                        <div class="otp-code" style="font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 38px; font-weight: 900; color: #ffffff; letter-spacing: 12px; margin: 6px 0; text-shadow: 0 0 12px rgba(239, 68, 68, 0.4);">
+                                            {{OTP_CODE}}
+                                        </div>
+                                        <div style="font-size: 12px; font-weight: 600; color: #f87171; margin-top: 8px;">
+                                            ⏳ Valid for {{EXPIRATION_TIME}} (One-time use only)
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Privilege Warning Callout -->
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="margin-bottom: 28px; background-color: rgba(220, 38, 38, 0.08); border-left: 4px solid #dc2626; border-radius: 0 8px 8px 0;">
+                                <tr>
+                                    <td style="padding: 16px 20px;">
+                                        <div style="font-size: 13px; font-weight: 800; color: #fca5a5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+                                            ⚠️ CRITICAL ELEVATED PRIVILEGE NOTICE
+                                        </div>
+                                        <div style="font-size: 13px; color: #e5e7eb; line-height: 1.5;">
+                                            Your account has full write/delete permissions across the system. <strong>Never share this passcode with anyone</strong>. Support engineers and system operators will <strong>never</strong> request this code via chat, phone, or ticket.
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- Request Audit Metadata Table -->
+                            <div style="font-size: 12px; font-weight: 800; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;">
+                                📋 Audit & Request Context
+                            </div>
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #1f2937; border-radius: 8px; font-size: 13px; margin-bottom: 28px;">
+                                <tr>
+                                    <td class="meta-label" style="padding: 12px 16px; color: #9ca3af; border-bottom: 1px solid #374151; width: 35%;">Action</td>
+                                    <td class="meta-value" style="padding: 12px 16px; color: #f3f4f6; font-weight: 600; border-bottom: 1px solid #374151;">{{ACTION_NAME}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="meta-label" style="padding: 12px 16px; color: #9ca3af; border-bottom: 1px solid #374151;">Timestamp</td>
+                                    <td class="meta-value" style="padding: 12px 16px; color: #f3f4f6; font-family: monospace; border-bottom: 1px solid #374151;">{{TIMESTAMP}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="meta-label" style="padding: 12px 16px; color: #9ca3af; border-bottom: 1px solid #374151;">Source IP Address</td>
+                                    <td class="meta-value" style="padding: 12px 16px; color: #f3f4f6; font-family: monospace; border-bottom: 1px solid #374151;">{{IP_ADDRESS}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="meta-label" style="padding: 12px 16px; color: #9ca3af;">Client / Browser</td>
+                                    <td class="meta-value" style="padding: 12px 16px; color: #f3f4f6;">{{DEVICE_INFO}}</td>
+                                </tr>
+                            </table>
+
+                            <!-- Incident Containment Protocol -->
+                            <div style="background-color: #030712; border: 1px solid #374151; border-radius: 10px; padding: 20px;">
+                                <div style="font-size: 13px; font-weight: 800; color: #f87171; margin-bottom: 6px;">
+                                    Did you NOT initiate this request?
+                                </div>
+                                <p style="margin: 0 0 16px 0; font-size: 12px; color: #9ca3af; line-height: 1.5;">
+                                    If this action was not initiated by you, your administrative credentials may be compromised. Take immediate containment action:
+                                </p>
+                                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+                                    <tr>
+                                        <td>
+                                            <a href="{{LOCKOUT_URL}}" target="_blank" style="display: inline-block; background-color: #dc2626; color: #ffffff; text-decoration: none; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(220, 38, 38, 0.4);">
+                                                🚨 Terminate Sessions & Lock Account
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p style="margin: 14px 0 0 0; font-size: 11px; color: #6b7280; line-height: 1.4;">
+                                    Or notify Security Operations immediately: <a href="mailto:{{SECURITY_CONTACT}}" style="color: #93c5fd; text-decoration: underline;">{{SECURITY_CONTACT}}</a>
+                                </p>
+                            </div>
+
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 24px 32px; background-color: #0d121f; border-top: 1px solid #1f2937; text-align: center;">
+                            <p style="margin: 0 0 6px 0; font-size: 11px; color: #6b7280; font-weight: 600;">
+                                {{APPLICATION_NAME}} Security Operations & Identity Protection
+                            </p>
+                            <p style="margin: 0; font-size: 10px; color: #4b5563; line-height: 1.4;">
+                                Automated high-priority cryptographic security dispatch. Please do not reply directly to this email.
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+                <!-- /Main Container Card -->
+
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

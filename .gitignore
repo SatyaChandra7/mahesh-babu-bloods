@@ -12,3 +12,4 @@ mahesh-babu-bloods-*.json
 scratch/
 *.backup.gz
 
+.vercel_backup/

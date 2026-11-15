@@ -1,28 +1,29 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "admin-backend": {
+      "root": "admin-backend",
+      "framework": "express"
+    },
+    "backend": {
+      "root": "backend",
+      "framework": "express",
+      "bindings": [
+        {
+          "type": "service",
+          "service": "admin-backend",
+          "format": "url",
+          "env": "ADMIN_BACKEND_URL"
+        }
+      ]
+    }
+  },
   "rewrites": [
     {
-      "source": "/health",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
-    },
-    {
-      "source": "/admin",
-      "destination": "/admin-frontend/admin.html"
-    },
-    {
-      "source": "/admin.html",
-      "destination": "/admin-frontend/admin.html"
-    },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/frontend/assets/$1"
-    },
-    {
       "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "destination": {
+        "service": "backend"
+      }
     }
   ]
 }

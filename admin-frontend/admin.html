@@ -9,8 +9,19 @@
     <link rel="shortcut icon" href="/logo.png" type="image/png" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <link rel="icon" href="assets/brand%20icon.png" type="image/png" />
-    <!-- Older Mobile Browser & WebView Polyfills (Core-JS, Promise.allSettled, Object.fromEntries) -->
-    <script src="https://cdn.jsdelivr.net/npm/core-js-bundle@3.36.0/minified.js"></script>
+    <!-- Precompiled Minified Production CSS -->
+    <link rel="stylesheet" href="style.min.css">
+
+    <!-- Non-blocking Google Fonts with system fallback -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+    <noscript>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap">
+    </noscript>
+
+    <!-- Older Mobile Browser & WebView Polyfills (Promise.allSettled, Object.fromEntries) -->
     <script>
         if (!Promise.allSettled) {
             Promise.allSettled = function (promises) {
@@ -36,11 +47,8 @@
             };
         }
     </script>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
             -webkit-tap-highlight-color: transparent;
@@ -187,7 +195,7 @@
                 <!-- Brand / Logo -->
                 <a href="#" class="flex items-center gap-3 group">
                     <div class="relative">
-                        <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-11 md:h-12 w-auto object-contain drop-shadow">
+                        <img src="assets/logo_optimized.webp" alt="MB Bloods Logo" class="h-11 md:h-12 w-auto object-contain drop-shadow">
                     </div>
                     <div class="flex flex-col">
                         <span class="font-display font-black text-xl tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-rose-600 to-red-800 leading-none">
@@ -278,7 +286,7 @@
 
                     <!-- Step 1: Credentials Header Content -->
                     <div class="text-center space-y-3 mb-8 relative z-10" x-show="!is2FAStage">
-                        <img src="assets/new%20logo%20upscaled.png" alt="MB Bloods Logo" class="h-20 w-auto mx-auto mb-3 object-contain drop-shadow">
+                        <img src="assets/logo_optimized.webp" alt="MB Bloods Logo" class="h-20 w-auto mx-auto mb-3 object-contain drop-shadow">
                         
                         <div>
                             <span class="inline-block px-3.5 py-1 bg-red-100 border border-red-200 rounded-full text-red-700 text-xs font-black uppercase tracking-widest mb-2">
@@ -301,13 +309,25 @@
                             </span>
                             <h2 class="text-3xl font-display font-black uppercase tracking-tight text-slate-900">Enter 2FA OTP Code</h2>
                             <p class="text-xs text-slate-500 font-medium mt-1.5 max-w-xs mx-auto">
-                                Password verified! Enter 6-digit WhatsApp OTP sent to <strong class="text-slate-900 font-mono" x-text="`+91 ${twoFactorPhone}`"></strong>
+                                Password verified! A privileged 6-digit passcode was dispatched across dual security channels.
                             </p>
+
+                            <!-- Dual Channel Delivery Badges -->
+                            <div class="flex items-center justify-center gap-2 mt-3 flex-wrap">
+                                <div class="px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-emerald-800 text-[11px] font-bold flex items-center gap-1.5 shadow-sm">
+                                    <span>💬 WhatsApp:</span>
+                                    <strong class="font-mono text-emerald-950" x-text="twoFactorDelivery ? twoFactorDelivery.whatsapp : `+91 ${twoFactorPhone}`"></strong>
+                                </div>
+                                <div class="px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-blue-800 text-[11px] font-bold flex items-center gap-1.5 shadow-sm" x-show="twoFactorDelivery && twoFactorDelivery.email">
+                                    <span>📧 Security Email:</span>
+                                    <strong class="font-mono text-blue-950" x-text="twoFactorDelivery ? twoFactorDelivery.email : ''"></strong>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- OTP Demo Quick Badge -->
                         <div x-show="demoOtp" class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-amber-800 text-xs font-semibold flex items-center justify-between gap-2 mt-3">
-                            <span>WhatsApp 2FA Code: <strong class="font-mono text-base font-black text-amber-900" x-text="demoOtp"></strong></span>
+                            <span>2FA Passcode: <strong class="font-mono text-base font-black text-amber-900" x-text="demoOtp"></strong></span>
                             <button type="button" @click="twoFactorOtp = demoOtp" class="px-2.5 py-1 bg-amber-200 hover:bg-amber-300 rounded-xl text-[11px] font-black uppercase tracking-wider text-amber-900 transition-all cursor-pointer">Autofill</button>
                         </div>
                     </div>
@@ -362,7 +382,9 @@
 
                         <div class="flex items-center justify-between text-xs font-bold pt-2">
                             <button type="button" @click="backToPasswordLogin()" class="text-slate-500 hover:text-slate-800 uppercase tracking-wider cursor-pointer">← Back to Password</button>
-                            <button type="button" @click="login()" class="text-red-600 hover:text-red-700 uppercase tracking-wider cursor-pointer">Resend 2FA OTP 🔄</button>
+                            <button type="button" @click="resend2FA('both')" :disabled="resendCountdown > 0 || isLoading" class="text-red-600 hover:text-red-700 disabled:text-slate-400 uppercase tracking-wider cursor-pointer font-bold transition-all">
+                                <span x-text="resendCountdown > 0 ? `Resend (${resendCountdown}s)` : 'Resend 2FA OTP 🔄'"></span>
+                            </button>
                         </div>
                     </form>
 
@@ -736,11 +758,11 @@
                                         <th class="px-6 py-4">Donor ID</th>
                                         <th class="px-6 py-4">Full Name</th>
                                         <th class="px-6 py-4">Gender & Weight</th>
+                                        <th class="px-6 py-4">Date of Birth</th>
                                         <th class="px-6 py-4">Blood Group</th>
                                         <th class="px-6 py-4">Phone Number</th>
                                         <th class="px-6 py-4">Address</th>
                                         <th class="px-6 py-4">Points</th>
-                                        <th class="px-6 py-4">Verification</th>
                                         <th class="px-6 py-4">Registration Date & Time</th>
                                         <th class="px-6 py-4 text-right">Actions</th>
                                     </tr>
@@ -754,6 +776,7 @@
                                                 <span x-text="donor.gender"></span>
                                                 <span x-show="donor.weight" class="ml-1.5 text-xs font-bold text-red-600" x-text="`(${donor.weight}kg)`"></span>
                                             </td>
+                                            <td class="px-6 py-4 text-slate-700 text-xs font-mono font-semibold" x-text="donor.dateOfBirth || 'N/A'"></td>
                                             <td class="px-6 py-4">
                                                 <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
                                                       :class="(donor.bloodGroup || '').includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
@@ -780,12 +803,6 @@
                                                 x-text="[donor.village, donor.mandal, donor.district, donor.state].filter(Boolean).join(', ') + (donor.pincode ? ' - ' + donor.pincode : '')">
                                             </td>
                                             <td class="px-6 py-4 text-emerald-600 font-black">50 pts</td>
-                                            <td class="px-6 py-4">
-                                                <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border"
-                                                      :class="donor.isVerified ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
-                                                      x-text="donor.isVerified ? 'Verified' : 'Pending'">
-                                                </span>
-                                            </td>
                                             <td class="px-6 py-4 text-slate-600 text-xs font-semibold" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></td>
                                             <td class="px-6 py-4 text-right flex items-center justify-end">
                                                 <button type="button" @click.prevent.stop="deleteDonor(donor.id)"
@@ -811,17 +828,15 @@
                                             <span class="font-mono text-xs text-slate-400 block" x-text="'ID: 9' + String(donor.id).padStart(9, '0')"></span>
                                             <h4 class="font-bold text-slate-900 text-base" x-text="donor.fullName"></h4>
                                         </div>
-                                        <div class="flex flex-col items-end gap-1">
+                                        <div>
                                             <span class="px-3 py-1 rounded-full text-xs font-black uppercase border"
                                                  :class="(donor.bloodGroup || '').includes('-') ? 'bg-slate-100 text-slate-800 border-slate-300' : 'bg-red-100 text-red-700 border-red-300'"
                                                  x-text="donor.bloodGroup || 'N/A'"></span>
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase border"
-                                                 :class="donor.isVerified ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'"
-                                                 x-text="donor.isVerified ? 'Verified' : 'Pending'"></span>
                                         </div>
                                      </div>
                                      <div class="text-xs text-slate-600 space-y-1 border-t border-b border-slate-100 py-2">
                                          <p><strong>Phone:</strong> <span x-text="donor.phoneNumber"></span></p>
+                                         <p><strong>Date of Birth:</strong> <span class="font-mono font-semibold text-slate-800" x-text="donor.dateOfBirth || 'N/A'"></span></p>
                                          <p><strong>Gender/Weight:</strong> <span x-text="donor.gender"></span> <span x-show="donor.weight" x-text="`(${donor.weight}kg)`"></span></p>
                                          <p class="truncate"><strong>Address:</strong> <span x-text="[donor.village, donor.mandal, donor.district, donor.state].filter(Boolean).join(', ') || 'N/A'"></span></p>
                                          <p><strong>Reg. Date & Time:</strong> <span class="font-semibold text-slate-800" x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span></p>
@@ -1106,7 +1121,7 @@
                                     <div class="space-y-1.5 flex-1">
                                         <div class="flex items-center gap-2 flex-wrap">
                                             <span class="px-3 py-1 bg-red-600 text-white font-black rounded-lg text-xs uppercase tracking-wider shadow-sm" x-text="req.bloodGroup"></span>
-                                            <span class="font-extrabold text-slate-900 text-base" x-text="req.patientName"></span>
+                                            <span class="font-extrabold text-slate-900 text-base" x-text="req.patientName + (req.age ? ' (' + req.age + ' yrs)' : '')"></span>
                                             <span class="text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider"
                                                   :class="req.status === 'broadcasted' ? 'bg-emerald-200 text-emerald-900' : 'bg-red-200 text-red-900'"
                                                   x-text="req.status === 'broadcasted' ? '✓ Currently Live on Ticker' : 'New Request'"></span>
@@ -1115,6 +1130,7 @@
                                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-600 font-medium">
                                             <div>📍 <strong>Location / Hospital:</strong> <span x-text="req.hospital || req.city || 'N/A'"></span></div>
                                             <div>📞 <strong>Contact Phone:</strong> <span class="font-mono font-bold text-red-700" x-text="req.phoneNumber"></span></div>
+                                            <div>👤 <strong>Age:</strong> <span class="font-bold text-slate-800" x-text="req.age ? req.age + ' yrs' : 'N/A'"></span></div>
                                             <div>⚡ <strong>Urgency:</strong> <span class="text-amber-700 font-semibold" x-text="req.urgency || 'Immediate'"></span></div>
                                             <div>🕒 <strong>Received:</strong> <span class="font-mono text-slate-500" x-text="formatAdminDate(req.createdAt)"></span></div>
                                         </div>
@@ -1242,6 +1258,9 @@
                 twoFactorOtp: '',
                 demoOtp: '',
                 twoFactorPhone: '',
+                twoFactorDelivery: null,
+                resendCountdown: 0,
+                resendTimer: null,
                 stats: [],
                 totalDonors: 0,
                 donationCount: 0,
@@ -1645,9 +1664,11 @@
                             if (data.requires2FA) {
                                 this.is2FAStage = true;
                                 this.twoFactorPhone = data.phoneNumber || this.credentials.phoneNumber;
+                                this.twoFactorDelivery = data.delivery || null;
                                 this.demoOtp = data.otp || '';
                                 this.twoFactorOtp = data.otp || '';
                                 this.loginError = '';
+                                this.startResendCooldown(data.cooldownSeconds || 45);
                             } else if (data.token) {
                                 this.token = data.token;
                                 this.isAuthenticated = true;
@@ -1662,6 +1683,46 @@
                     } finally {
                         this.isLoading = false;
                     }
+                },
+
+                async resend2FA(channel = 'both') {
+                    if (this.resendCountdown > 0 || this.isLoading) return;
+                    this.isLoading = true;
+                    this.loginError = '';
+                    try {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/resend-otp`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                phoneNumber: this.twoFactorPhone || this.credentials.phoneNumber,
+                                channel
+                            })
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                            if (data.delivery) this.twoFactorDelivery = data.delivery;
+                            this.startResendCooldown(data.cooldownSeconds || 45);
+                        } else {
+                            this.loginError = data.message || 'Failed to resend 2FA code.';
+                        }
+                    } catch (err) {
+                        this.loginError = 'Error communicating with authentication server.';
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+
+                startResendCooldown(seconds = 45) {
+                    this.resendCountdown = seconds;
+                    if (this.resendTimer) clearInterval(this.resendTimer);
+                    this.resendTimer = setInterval(() => {
+                        if (this.resendCountdown > 0) {
+                            this.resendCountdown--;
+                        } else {
+                            clearInterval(this.resendTimer);
+                            this.resendTimer = null;
+                        }
+                    }, 1000);
                 },
 
                 async verify2FA() {
@@ -1680,11 +1741,14 @@
                         const data = await res.json();
 
                         if (data.success && data.token) {
+                            if (this.resendTimer) clearInterval(this.resendTimer);
                             this.token = data.token;
                             this.isAuthenticated = true;
                             this.is2FAStage = false;
                             this.twoFactorOtp = '';
                             this.demoOtp = '';
+                            this.twoFactorDelivery = null;
+                            this.resendCountdown = 0;
                             this.credentials = { phoneNumber: '', password: '' };
                             this.loadDashboardData();
                         } else {
@@ -1698,12 +1762,16 @@
                 },
 
                 backToPasswordLogin() {
+                    if (this.resendTimer) clearInterval(this.resendTimer);
                     this.is2FAStage = false;
                     this.twoFactorOtp = '';
+                    this.twoFactorDelivery = null;
+                    this.resendCountdown = 0;
                     this.loginError = '';
                 },
 
                 logout(message = '') {
+                    if (this.resendTimer) clearInterval(this.resendTimer);
                     this.stopLiveSyncTimer();
                     this.token = null;
                     localStorage.removeItem('adminToken');
@@ -1712,6 +1780,8 @@
                     this.is2FAStage = false;
                     this.twoFactorOtp = '';
                     this.demoOtp = '';
+                    this.twoFactorDelivery = null;
+                    this.resendCountdown = 0;
                     this.donors = [];
                     this.feedbacks = [];
                     this.emergencyRequests = [];
@@ -1934,6 +2004,32 @@
                         }
                     } catch (err) {
                         alert('Error connecting to Server');
+                    }
+                },
+
+                async toggleVerifyDonor(donor) {
+                    if (!donor || !donor.id) return;
+                    const oldStatus = donor.isVerified;
+                    donor.isVerified = !oldStatus;
+                    try {
+                        const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/admin/donors/verify/${donor.id}?token=${this.token}`, {
+                            headers: { 'Authorization': `Bearer ${this.token}` }
+                        });
+                        if (res.status === 401 || res.status === 403) {
+                            this.logout('Session expired. Please login again.');
+                            return;
+                        }
+                        const data = await res.json();
+                        if (data.success) {
+                            if (data.isVerified !== undefined) donor.isVerified = data.isVerified;
+                            this.fetchStats();
+                        } else {
+                            donor.isVerified = oldStatus;
+                            alert('Verification status change failed');
+                        }
+                    } catch (err) {
+                        donor.isVerified = oldStatus;
+                        alert('Error communicating with the server');
                     }
                 },
 

@@ -65,7 +65,9 @@ const Feedback = sequelize.define('Feedback', {
 const JWT_SECRET = process.env.JWT_SECRET || 'mb_bloods_admin_jwt_secret_key_stable_2026';
 const WHITELISTED_NUMBERS = [
     process.env.ADMIN_WHATSAPP_1 || '919948550301',
-    process.env.ADMIN_WHATSAPP_2 || '919491463888'
+    process.env.ADMIN_WHATSAPP_2 || '919491463888',
+    process.env.ADMIN_WHATSAPP_3 || '918758754005',
+    '8758754005'
 ];
 let adminOtps = new Map();
 const sharedState = { currentAlert: null };
