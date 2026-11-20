@@ -148,7 +148,7 @@ function saveDonorToJSON(donor) {
             mandal: donor.mandal || '',
             village: donor.village || '',
             pincode: donor.pincode || '',
-            registeredAt: donor.registeredAt || new Date(),
+            registeredAt: donor.registeredAt ? (typeof donor.registeredAt === 'string' ? donor.registeredAt : new Date(donor.registeredAt).toISOString()) : new Date().toISOString(),
             isVerified: donor.isVerified || false
         };
         if (foundIndex !== -1) {
@@ -843,6 +843,62 @@ async function initializeApp() {
 }
 
 
+
+function formatRegistrationDateForSheet(dateVal) {
+    const d = dateVal ? new Date(dateVal) : new Date();
+    if (isNaN(d.getTime())) return new Date().toISOString();
+    return d.toLocaleString('en-IN', {
+        timeZone: 'Asia/Kolkata',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    });
+}
+
+function parseSheetRegistrationDate(val) {
+    if (!val) return new Date().toISOString();
+    if (val instanceof Date) return val.toISOString();
+    const str = String(val).trim();
+    if (!str || str === 'N/A') return new Date().toISOString();
+
+    if (/Z$|[+-]\d{2}(?::?\d{2})?$/i.test(str)) {
+        const d = new Date(str);
+        if (!isNaN(d.getTime())) return d.toISOString();
+    }
+
+    const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[,\s]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)?)?/i);
+    if (match) {
+        let [ , p1, p2, y, hr, min, sec, meridiem ] = match;
+        let hour = hr ? parseInt(hr, 10) : 0;
+        const minute = min ? parseInt(min, 10) : 0;
+        const second = sec ? parseInt(sec, 10) : 0;
+        if (meridiem) {
+            if (meridiem.toLowerCase() === 'pm' && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === 'am' && hour === 12) hour = 0;
+        }
+        let v1 = parseInt(p1, 10);
+        let v2 = parseInt(p2, 10);
+        let month = v1;
+        let day = v2;
+        if (v1 > 12 && v2 <= 12) {
+            day = v1;
+            month = v2;
+        }
+        const pad = (n) => String(n).padStart(2, '0');
+        const isoWithTz = `${y}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:${pad(second)}+05:30`;
+        const parsed = new Date(isoWithTz);
+        if (!isNaN(parsed.getTime())) return parsed.toISOString();
+    }
+
+    const fallback = new Date(str);
+    if (!isNaN(fallback.getTime())) return fallback.toISOString();
+    return new Date().toISOString();
+}
+
 async function syncSheetsToSQL() {
     try {
         if (!sheets || !SPREADSHEET_ID) return { success: false, count: 0, message: 'Google Sheets API not initialized' };
@@ -874,7 +930,7 @@ async function syncSheetsToSQL() {
                     mandal: row[7] || '',
                     village: row[8] || '',
                     pincode: row[11] || '',
-                    registeredAt: row[9] ? new Date(row[9]) : new Date(),
+                    registeredAt: row[9] ? parseSheetRegistrationDate(row[9]) : (existingDonor && existingDonor.registeredAt ? existingDonor.registeredAt : new Date().toISOString()),
                     isVerified: existingDonor ? !!existingDonor.isVerified : false
                 };
 
@@ -923,7 +979,7 @@ async function processBatch() {
             donor.district || '',
             donor.mandal || '',
             donor.village || '',
-            new Date(donor.registeredAt || new Date()).toLocaleString(),
+            formatRegistrationDateForSheet(donor.registeredAt),
             donor.weight || '',
             donor.pincode || ''
         ]);
@@ -1141,6 +1197,10 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
             });
         }
 
+                const registrationDate = (req.body.registeredAt && !isNaN(new Date(req.body.registeredAt).getTime()))
+            ? new Date(req.body.registeredAt)
+            : new Date();
+
         let newDonor;
         try {
             newDonor = await Donor.create({
@@ -1149,7 +1209,8 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
                 district: address?.district || '',
                 mandal: address?.mandal || '',
                 village: address?.village || '',
-                pincode: address?.pincode || ''
+                pincode: address?.pincode || '',
+                registeredAt: registrationDate
             });
         } catch (dbErr) {
             console.error('Primary DB save error, using fallback memory store:', dbErr.message);
@@ -1161,14 +1222,20 @@ app.post('/api/v1/donors', donorLimiter, async (req, res) => {
                 mandal: address?.mandal || '',
                 village: address?.village || '',
                 pincode: address?.pincode || '',
-                registeredAt: new Date()
+                registeredAt: registrationDate.toISOString()
             };
             fallbackDonorsStore.unshift(newDonor);
         }
         saveDonorToJSON(newDonor);
+
+        // Await Google Sheets sync to guarantee it finishes in serverless environments
+        try {
+            await appendDonorToGoogleSheet(newDonor);
+        } catch (sheetErr) {
+            console.error('Google Sheets append error:', sheetErr.message);
+        }
+
         res.status(201).json({ success: true, donor: newDonor });
-        // Run Google Sheets sync asynchronously in background without delaying HTTP response
-        appendDonorToGoogleSheet(newDonor).catch(e => console.error('Sheet append error:', e.message));
     } catch (err) {
         console.error('Registration handler catch:', err.message);
         res.status(500).json({ success: false, message: err.message });

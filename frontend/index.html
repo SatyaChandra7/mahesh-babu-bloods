@@ -759,6 +759,7 @@
                                 weight: data.weight,
                                 phoneNumber: data.phoneNumber,
                                 bloodGroup: data.bloodGroup,
+                                registeredAt: new Date().toISOString(),
                                 address: {
                                     state: data.state,
                                     district: data.district,
@@ -890,16 +891,67 @@
 
                 formatAdminDate(val) {
                     if (!val) return 'N/A';
-                    if (typeof val === 'number') {
-                        const d = new Date(val);
-                        return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+                    try {
+                        if (typeof val === 'number') {
+                            if (val > 1577836800000 && val < 4102444800000) {
+                                const d = new Date(val);
+                                return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString('en-IN', {
+                                    timeZone: 'Asia/Kolkata',
+                                    year: 'numeric',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                });
+                            }
+                            return 'N/A';
+                        }
+                        let str = String(val).trim();
+                        if (!str || str === 'null' || str === 'undefined' || str === 'N/A') return 'N/A';
+
+                        let d;
+                        if (/Z$|[+-]\d{2}(?::?\d{2})?$/i.test(str)) {
+                            d = new Date(str);
+                        } else {
+                            const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[,\s]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)?)?/i);
+                            if (match) {
+                                let [ , p1, p2, y, hr, min, sec, meridiem ] = match;
+                                let hour = hr ? parseInt(hr, 10) : 0;
+                                const minute = min ? parseInt(min, 10) : 0;
+                                const second = sec ? parseInt(sec, 10) : 0;
+                                if (meridiem) {
+                                    if (meridiem.toLowerCase() === 'pm' && hour < 12) hour += 12;
+                                    if (meridiem.toLowerCase() === 'am' && hour === 12) hour = 0;
+                                }
+                                let v1 = parseInt(p1, 10);
+                                let v2 = parseInt(p2, 10);
+                                let month = v1;
+                                let day = v2;
+                                if (v1 > 12 && v2 <= 12) {
+                                    day = v1;
+                                    month = v2;
+                                }
+                                const pad = (n) => String(n).padStart(2, '0');
+                                d = new Date(`${y}-${pad(month)}-${pad(day)}T${pad(hour)}:${pad(minute)}:${pad(second)}+05:30`);
+                            } else {
+                                d = new Date(str);
+                            }
+                        }
+
+                        if (!d || isNaN(d.getTime())) return str;
+                        return d.toLocaleString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                    } catch (e) {
+                        return String(val || 'N/A');
                     }
-                    let str = String(val).trim();
-                    if (str.includes(' ') && !str.includes('T')) {
-                        str = str.replace(' ', 'T');
-                    }
-                    const d = new Date(str);
-                    return isNaN(d.getTime()) ? 'N/A' : d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
                 },
 
                 formatAdminLocation(donor) {
@@ -3327,7 +3379,7 @@
                                                 x-text="formatAdminLocation(donor)"></span></p>
                                         <p class="text-[11px] text-gray-500 font-medium">Reg. Date & Time: <span
                                                 class="font-semibold text-gray-900"
-                                                x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)"></span>
+                                                x-text="formatAdminDate(donor.registeredAt || donor.createdAt)"></span>
                                         </p>
                                     </div>
                                     <div class="space-y-2 pt-1">
@@ -3406,7 +3458,7 @@
                                                 <span x-text="formatAdminLocation(donor)"></span>
                                             </td>
                                             <td class="px-6 py-4 text-xs font-semibold text-gray-500"
-                                                x-text="formatAdminDate(donor.registeredAt || donor.createdAt || donor.id)">
+                                                x-text="formatAdminDate(donor.registeredAt || donor.createdAt)">
                                             </td>
                                             <td class="px-6 py-4 text-right">
                                                 <button @click="deleteDonorAdmin(donor.id)"

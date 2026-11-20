@@ -99,7 +99,11 @@ module.exports = function(app, deps) {
             d.isVerified = !!d.isVerified;
         });
 
-        merged.sort((a, b) => new Date(b.registeredAt || b.createdAt || b.id || 0) - new Date(a.registeredAt || a.createdAt || a.id || 0));
+        merged.sort((a, b) => {
+            const timeB = b.registeredAt ? new Date(b.registeredAt).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+            const timeA = a.registeredAt ? new Date(a.registeredAt).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+            return timeB - timeA;
+        });
         cachedMergedDonors = merged;
         lastMergedTime = Date.now();
         return merged;
@@ -673,7 +677,7 @@ async function sendWhatsAppOTP(phoneNumber, otp) {
                     const s = String(str).replace(/"/g, '""').replace(/\r?\n|\r/g, ' ');
                     return `"${s}"`;
                 };
-                csv += `${escapeCsv(d.fullName)},${escapeCsv(d.dateOfBirth)},${escapeCsv(d.gender)},${escapeCsv(d.weight)},${escapeCsv(d.phoneNumber)},${escapeCsv(d.bloodGroup)},${escapeCsv(d.state)},${escapeCsv(d.district)},${escapeCsv(d.mandal)},${escapeCsv(d.village)},${escapeCsv(d.pincode)},${escapeCsv(d.registeredAt)},${d.isVerified ? 'YES' : 'NO'}\n`;
+                csv += `${escapeCsv(d.fullName)},${escapeCsv(d.dateOfBirth)},${escapeCsv(d.gender)},${escapeCsv(d.weight)},${escapeCsv(d.phoneNumber)},${escapeCsv(d.bloodGroup)},${escapeCsv(d.state)},${escapeCsv(d.district)},${escapeCsv(d.mandal)},${escapeCsv(d.village)},${escapeCsv(d.pincode)},${escapeCsv(d.registeredAt ? new Date(d.registeredAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }) : '')},${d.isVerified ? 'YES' : 'NO'}\n`;
             });
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader('Content-Disposition', 'attachment; filename="mb-bloods-donors.csv"');
