@@ -520,13 +520,22 @@ async function syncLocalImagesToDB() {
     }
 }
 
-const FEEDBACKS_FILE = path.join(__dirname, 'feedbacks.json');
+const SEED_FEEDBACKS_FILE = path.join(__dirname, 'feedbacks.json');
+const PERSISTENT_FEEDBACKS_FILE = (process.env.VERCEL || process.env.NODE_ENV === 'production')
+    ? path.join('/tmp', 'feedbacks_persistent.json')
+    : SEED_FEEDBACKS_FILE;
 
 function loadFeedbacksFromJSON() {
     try {
-        if (fs.existsSync(FEEDBACKS_FILE)) {
-            const data = fs.readFileSync(FEEDBACKS_FILE, 'utf8');
-            return JSON.parse(data) || [];
+        if (fs.existsSync(PERSISTENT_FEEDBACKS_FILE)) {
+            const data = fs.readFileSync(PERSISTENT_FEEDBACKS_FILE, 'utf8');
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+        if (fs.existsSync(SEED_FEEDBACKS_FILE)) {
+            const data = fs.readFileSync(SEED_FEEDBACKS_FILE, 'utf8');
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed)) return parsed;
         }
     } catch (e) {
         console.error('loadFeedbacksFromJSON error:', e.message);
@@ -534,11 +543,23 @@ function loadFeedbacksFromJSON() {
     return [];
 }
 
+let fallbackFeedbacksStore = loadFeedbacksFromJSON();
+
 function saveFeedbackToJSON(fb) {
     try {
         const list = loadFeedbacksFromJSON();
-        list.unshift(fb);
-        fs.writeFileSync(FEEDBACKS_FILE, JSON.stringify(list, null, 2), 'utf8');
+        const strId = String(fb.id || '').trim();
+        const foundIdx = list.findIndex(f => 
+            (strId && String(f.id).trim() === strId) || 
+            (f.name && fb.name && String(f.name).trim().toLowerCase() === String(fb.name).trim().toLowerCase() && f.comment === fb.comment)
+        );
+        if (foundIdx !== -1) {
+            list[foundIdx] = { ...list[foundIdx], ...fb };
+        } else {
+            list.unshift(fb);
+        }
+        fallbackFeedbacksStore = list;
+        try { fs.writeFileSync(PERSISTENT_FEEDBACKS_FILE, JSON.stringify(list, null, 2), 'utf8'); } catch (err) {}
     } catch (e) {
         console.error('saveFeedbackToJSON error:', e.message);
     }
@@ -546,7 +567,8 @@ function saveFeedbackToJSON(fb) {
 
 function saveAllFeedbacksToJSON(feedbacksList) {
     try {
-        fs.writeFileSync(FEEDBACKS_FILE, JSON.stringify(feedbacksList, null, 2), 'utf8');
+        fallbackFeedbacksStore = feedbacksList;
+        try { fs.writeFileSync(PERSISTENT_FEEDBACKS_FILE, JSON.stringify(feedbacksList, null, 2), 'utf8'); } catch (err) {}
     } catch (e) {
         console.error('saveAllFeedbacksToJSON error:', e.message);
     }
@@ -562,6 +584,12 @@ function toggleFeedbackApprovalInJSON(id) {
             saveAllFeedbacksToJSON(list);
             return target;
         }
+        const memTarget = fallbackFeedbacksStore.find(f => String(f.id).trim() === strId || String(f.name).trim().toLowerCase() === strId.toLowerCase());
+        if (memTarget) {
+            memTarget.isApproved = !memTarget.isApproved;
+            saveAllFeedbacksToJSON(fallbackFeedbacksStore);
+            return memTarget;
+        }
     } catch (e) {
         console.error('toggleFeedbackApprovalInJSON error:', e.message);
     }
@@ -574,33 +602,12 @@ function deleteFeedbackFromJSON(id) {
         const strId = String(id).trim();
         const filtered = list.filter(f => String(f.id).trim() !== strId && String(f.name).trim().toLowerCase() !== strId.toLowerCase());
         saveAllFeedbacksToJSON(filtered);
+        fallbackFeedbacksStore = filtered;
+        return true;
     } catch (e) {
         console.error('deleteFeedbackFromJSON error:', e.message);
     }
-}
-
-async function syncFeedbacksToDB() {
-    try {
-        const jsonFbs = loadFeedbacksFromJSON();
-        if (jsonFbs.length > 0 && isDbConnected && Feedback) {
-            for (const fb of jsonFbs) {
-                if (!fb.name || !fb.comment) continue;
-                await Feedback.findOrCreate({
-                    where: { name: fb.name, comment: fb.comment },
-                    defaults: {
-                        name: fb.name,
-                        rating: fb.rating || 5,
-                        comment: fb.comment,
-                        isApproved: fb.isApproved !== undefined ? fb.isApproved : true,
-                        createdAt: fb.createdAt ? new Date(fb.createdAt) : new Date()
-                    }
-                }).catch(e => {});
-            }
-            console.log(`✅ Synced ${jsonFbs.length} feedbacks to database.`);
-        }
-    } catch (e) {
-        console.error('syncFeedbacksToDB error:', e.message);
-    }
+    return false;
 }
 
 const FEEDBACK_SHEET_NAME = 'Feedbacks';
@@ -665,17 +672,14 @@ async function saveFeedbackToGoogleSheet(fb) {
     }
 }
 
-let lastFeedbackSheetSyncTime = 0;
-const FEEDBACK_SYNC_TTL_MS = 60000;
-
+let isFeedbackSheetTabChecked = false;
 async function syncFeedbacksFromSheets(force = false) {
-    if (!sheets || !SPREADSHEET_ID) return [];
-    if (!force && Date.now() - lastFeedbackSheetSyncTime < FEEDBACK_SYNC_TTL_MS) {
-        return loadFeedbacksFromJSON();
-    }
-    lastFeedbackSheetSyncTime = Date.now();
+    if (!sheets || !SPREADSHEET_ID) return fallbackFeedbacksStore || loadFeedbacksFromJSON();
     try {
-        await ensureFeedbackSheetExists();
+        if (!isFeedbackSheetTabChecked) {
+            await ensureFeedbackSheetExists();
+            isFeedbackSheetTabChecked = true;
+        }
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId: SPREADSHEET_ID,
             range: `${FEEDBACK_SHEET_NAME}!A2:F`,
@@ -684,35 +688,22 @@ async function syncFeedbacksFromSheets(force = false) {
         const fetchedFbs = [];
         for (const row of rows) {
             if (!row || (!row[0] && !row[1])) continue;
-            const id = row[0] || '';
-            const name = row[1] || '';
+            const id = String(row[0] || '').trim();
+            const name = String(row[1] || '').trim();
             const rating = parseInt(row[2], 10) || 5;
-            const comment = row[3] || '';
+            const comment = String(row[3] || '').trim();
             const isApprovedStr = String(row[4] || '').toUpperCase();
             const isApproved = isApprovedStr === 'YES' || isApprovedStr === 'TRUE' || isApprovedStr === '1';
             const createdAt = row[5] || new Date().toISOString();
 
             if (!name || !comment) continue;
 
-            const fbObj = { id, name, rating, comment, isApproved, createdAt };
+            const fbObj = { id: id || `${name}_${comment}`, name, rating, comment, isApproved, createdAt };
             fetchedFbs.push(fbObj);
 
-            // Upsert into JSON
-            const existingFbs = loadFeedbacksFromJSON();
-            const exists = existingFbs.find(f => (id && String(f.id) === String(id)) || (f.name === name && f.comment === comment));
-            if (!exists) {
-                existingFbs.unshift(fbObj);
-                saveAllFeedbacksToJSON(existingFbs);
-            } else {
-                if (exists.isApproved !== isApproved) {
-                    exists.isApproved = isApproved;
-                    saveAllFeedbacksToJSON(existingFbs);
-                }
-            }
-
-            // Upsert into SQL DB
+            // Upsert into SQL DB if connected
             if (isDbConnected && Feedback) {
-                await Feedback.findOrCreate({
+                Feedback.findOrCreate({
                     where: { name, comment },
                     defaults: { id: id ? id : undefined, name, rating, comment, isApproved, createdAt: new Date(createdAt) }
                 }).then(([instance, created]) => {
@@ -723,10 +714,13 @@ async function syncFeedbacksFromSheets(force = false) {
                 }).catch(() => {});
             }
         }
+        if (fetchedFbs.length > 0) {
+            saveAllFeedbacksToJSON(fetchedFbs);
+        }
         return fetchedFbs;
     } catch (err) {
         console.error('syncFeedbacksFromSheets error:', err.message);
-        return [];
+        return fallbackFeedbacksStore || loadFeedbacksFromJSON();
     }
 }
 
@@ -1412,7 +1406,8 @@ require('./adminRoutes')(app, {
     deleteFeedbackFromJSON,
     saveFeedbackToGoogleSheet,
     updateFeedbackInGoogleSheet,
-    syncFeedbacksFromSheets
+    syncFeedbacksFromSheets,
+    fallbackFeedbacksStore
 });
 
 const feedbackLimiter = rateLimit({
@@ -1431,19 +1426,36 @@ app.post('/api/v1/feedbacks', feedbackLimiter, async (req, res) => {
         if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
             return res.status(400).json({ success: false, message: 'Rating must be an integer between 1 and 5.' });
         }
-        let newFeedback;
-        try {
-            newFeedback = await Feedback.create({ name, rating: parsedRating, comment });
-        } catch (e) {
-            newFeedback = { id: Date.now(), name, rating: parsedRating, comment, isApproved: false, createdAt: new Date() };
+        const fbObj = {
+            id: String(Date.now()),
+            name: String(name).trim(),
+            rating: parsedRating,
+            comment: String(comment).trim(),
+            isApproved: false,
+            createdAt: new Date().toISOString()
+        };
+
+        if (isDbConnected && Feedback) {
+            try {
+                const dbCreated = await Feedback.create({
+                    name: fbObj.name,
+                    rating: fbObj.rating,
+                    comment: fbObj.comment
+                });
+                if (dbCreated && dbCreated.id) fbObj.id = String(dbCreated.id);
+            } catch (e) {}
         }
-        const fbObj = newFeedback.toJSON ? newFeedback.toJSON() : newFeedback;
+
         saveFeedbackToJSON(fbObj);
 
-        // Save to Google Sheet tab "Feedbacks"
-        saveFeedbackToGoogleSheet(fbObj).catch(e => console.error('Sheet feedback save error:', e.message));
+        // Await Google Sheet save to guarantee it finishes in serverless environments
+        try {
+            await saveFeedbackToGoogleSheet(fbObj);
+        } catch (sheetErr) {
+            console.error('Google Sheet feedback save error:', sheetErr.message);
+        }
 
-        res.status(201).json({ success: true, feedback: newFeedback });
+        res.status(201).json({ success: true, feedback: fbObj });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -1451,29 +1463,47 @@ app.post('/api/v1/feedbacks', feedbackLimiter, async (req, res) => {
 
 app.get('/api/v1/public/feedbacks', async (req, res) => {
     try {
-        // Attempt quick sync from Google Sheet if connected
-        await syncFeedbacksFromSheets().catch(() => {});
-
+        let sheetFbs = [];
+        if (typeof syncFeedbacksFromSheets === 'function') {
+            try {
+                sheetFbs = await syncFeedbacksFromSheets(true);
+            } catch (e) {}
+        }
         let dbFbs = [];
         if (isDbConnected && Feedback) {
             try {
                 dbFbs = await Feedback.findAll({
                     where: { isApproved: true },
                     order: [['createdAt', 'DESC']],
-                    limit: 50
+                    limit: 30
                 });
             } catch (e) {}
         }
         let jsonFbs = loadFeedbacksFromJSON().filter(f => f.isApproved);
         const map = new Map();
+
+        if (Array.isArray(sheetFbs)) {
+            sheetFbs.filter(f => f.isApproved).forEach(f => {
+                const key = String(f.id || `${f.name}_${f.comment}`).trim();
+                map.set(key, f);
+            });
+        }
         dbFbs.forEach(f => {
             const item = f.toJSON ? f.toJSON() : f;
-            map.set(`${item.name}_${item.comment}`, item);
+            const key = String(item.id || `${item.name}_${item.comment}`).trim();
+            if (!map.has(key)) map.set(key, item);
         });
         jsonFbs.forEach(f => {
-            const key = `${f.name}_${f.comment}`;
+            const key = String(f.id || `${f.name}_${f.comment}`).trim();
             if (!map.has(key)) map.set(key, f);
         });
+        if (Array.isArray(fallbackFeedbacksStore)) {
+            fallbackFeedbacksStore.filter(f => f.isApproved).forEach(f => {
+                const key = String(f.id || `${f.name}_${f.comment}`).trim();
+                if (!map.has(key)) map.set(key, f);
+            });
+        }
+
         const merged = Array.from(map.values());
         merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         res.json({ success: true, feedbacks: merged });

@@ -11,7 +11,7 @@ const {
 } = require('./services/adminEmailService');
 
 module.exports = function(app, deps) {
-    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, GalleryImage, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore, getTotalDonationImagesCount, getGoogleSheetInfo, loadFeedbacksFromJSON, toggleDonorVerificationInJSON, deleteDonorFromJSON, toggleFeedbackApprovalInJSON, deleteFeedbackFromJSON, saveFeedbackToGoogleSheet, updateFeedbackInGoogleSheet, syncFeedbacksFromSheets } = deps;
+    const { JWT_SECRET, WHITELISTED_NUMBERS, adminOtps, upload, GALLERY_PATH, Donor, Feedback, GalleryImage, sharedState, syncSheetsToSQL, loadDonorsFromJSON, fallbackDonorsStore, getTotalDonationImagesCount, getGoogleSheetInfo, loadFeedbacksFromJSON, toggleDonorVerificationInJSON, deleteDonorFromJSON, toggleFeedbackApprovalInJSON, deleteFeedbackFromJSON, saveFeedbackToGoogleSheet, updateFeedbackInGoogleSheet, syncFeedbacksFromSheets, fallbackFeedbacksStore } = deps;
     const fs = require('fs');
     const path = require('path');
 
@@ -861,23 +861,60 @@ async function sendWhatsAppOTP(phoneNumber, otp) {
     // Admin Feedback Endpoints
     app.get('/api/v1/admin/feedbacks', verifyAdmin, async (req, res) => {
         try {
+            let sheetFbs = [];
             if (typeof syncFeedbacksFromSheets === 'function') {
-                await syncFeedbacksFromSheets().catch(() => {});
+                try {
+                    sheetFbs = await syncFeedbacksFromSheets(true);
+                } catch (e) {
+                    console.error('syncFeedbacksFromSheets error:', e.message);
+                }
             }
             let dbFbs = [];
-            try {
-                dbFbs = await Feedback.findAll({ order: [['createdAt', 'DESC']] });
-            } catch (e) {}
+            if (Feedback) {
+                try {
+                    dbFbs = await Feedback.findAll({ order: [['createdAt', 'DESC']] });
+                } catch (e) {}
+            }
             let jsonFbs = typeof loadFeedbacksFromJSON === 'function' ? loadFeedbacksFromJSON() : [];
             const map = new Map();
+
+            // 1. From sheets
+            if (Array.isArray(sheetFbs)) {
+                sheetFbs.forEach(f => {
+                    if (f && (f.id || f.name)) {
+                        const key = String(f.id || `${f.name}_${f.comment}`).trim();
+                        map.set(key, f);
+                    }
+                });
+            }
+
+            // 2. From DB
             dbFbs.forEach(f => {
                 const item = f.toJSON ? f.toJSON() : f;
-                map.set(item.id || `${item.name}_${item.comment}`, item);
+                if (item && (item.id || item.name)) {
+                    const key = String(item.id || `${item.name}_${item.comment}`).trim();
+                    if (!map.has(key)) map.set(key, item);
+                }
             });
+
+            // 3. From JSON store
             jsonFbs.forEach(f => {
-                const key = f.id || `${f.name}_${f.comment}`;
-                if (!map.has(key)) map.set(key, f);
+                if (f && (f.id || f.name)) {
+                    const key = String(f.id || `${f.name}_${f.comment}`).trim();
+                    if (!map.has(key)) map.set(key, f);
+                }
             });
+
+            // 4. From in-memory store
+            if (Array.isArray(fallbackFeedbacksStore)) {
+                fallbackFeedbacksStore.forEach(f => {
+                    if (f && (f.id || f.name)) {
+                        const key = String(f.id || `${f.name}_${f.comment}`).trim();
+                        if (!map.has(key)) map.set(key, f);
+                    }
+                });
+            }
+
             const merged = Array.from(map.values());
             merged.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
             res.json({ success: true, feedbacks: merged });
@@ -912,13 +949,31 @@ async function sendWhatsAppOTP(phoneNumber, otp) {
                 }
             }
 
+            // Also check fallbackFeedbacksStore directly if not yet in JSON
+            if (!found && Array.isArray(fallbackFeedbacksStore)) {
+                const target = fallbackFeedbacksStore.find(f => String(f.id).trim() === String(id).trim() || String(f.name).trim().toLowerCase() === String(id).trim().toLowerCase());
+                if (target) {
+                    target.isApproved = !target.isApproved;
+                    isApproved = target.isApproved;
+                    found = true;
+                }
+            }
+
             if (found) {
                 if (typeof updateFeedbackInGoogleSheet === 'function') {
-                    updateFeedbackInGoogleSheet(id, isApproved).catch(e => console.error('Sheet update error:', e.message));
+                    await updateFeedbackInGoogleSheet(id, isApproved).catch(e => console.error('Sheet update error:', e.message));
                 }
                 return res.json({ success: true, isApproved });
             } else {
-                return res.status(404).json({ success: false, message: 'Feedback not found' });
+                // If it exists in Google Sheet, toggle it directly in the sheet
+                if (typeof updateFeedbackInGoogleSheet === 'function') {
+                    const updated = await updateFeedbackInGoogleSheet(id, true).catch(() => false);
+                    if (updated) {
+                        if (typeof syncFeedbacksFromSheets === 'function') await syncFeedbacksFromSheets(true).catch(() => {});
+                        return res.json({ success: true, isApproved: true });
+                    }
+                }
+                res.status(404).json({ success: false, message: 'Review not found' });
             }
         } catch (err) {
             res.status(500).json({ success: false, message: err.message });
@@ -934,10 +989,14 @@ async function sendWhatsAppOTP(phoneNumber, otp) {
             if (typeof deleteFeedbackFromJSON === 'function') {
                 deleteFeedbackFromJSON(id);
             }
-            if (typeof updateFeedbackInGoogleSheet === 'function') {
-                updateFeedbackInGoogleSheet(id, false, true).catch(e => console.error('Sheet delete error:', e.message));
+            if (Array.isArray(fallbackFeedbacksStore)) {
+                const idx = fallbackFeedbacksStore.findIndex(f => String(f.id).trim() === String(id).trim() || String(f.name).trim().toLowerCase() === String(id).trim().toLowerCase());
+                if (idx !== -1) fallbackFeedbacksStore.splice(idx, 1);
             }
-            res.json({ success: true });
+            if (typeof updateFeedbackInGoogleSheet === 'function') {
+                await updateFeedbackInGoogleSheet(id, false, true).catch(e => console.error('Sheet delete error:', e.message));
+            }
+            res.json({ success: true, message: 'Review deleted successfully' });
         } catch (err) {
             res.status(500).json({ success: false, message: err.message });
         }
