@@ -142,7 +142,6 @@
                 if (/Lighthouse|PageSpeed|HeadlessChrome|Chrome-Lighthouse|bot|crawler|spider|googlebot|bingbot/i.test(ua)) return false;
                 if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
                 if (navigator.connection && (navigator.connection.saveData || /2g|slow-2g/i.test(navigator.connection.effectiveType))) return false;
-                if (sessionStorage.getItem('mb_bloods_intro_seen')) return false;
                 return true;
             } catch (e) {
                 return false;
@@ -294,7 +293,7 @@
 
                 closeIntro() {
                     this.showIntro = false;
-                    try { sessionStorage.setItem('mb_bloods_intro_seen', '1'); } catch (e) { }
+                    
                     if (this.$refs.introVideo) {
                         try {
                             this.$refs.introVideo.pause();
@@ -358,7 +357,7 @@
                     });
 
                     if (this.showIntro) {
-                        try { sessionStorage.setItem('mb_bloods_intro_seen', '1'); } catch (e) { }
+                        
                         this.$nextTick(() => {
                             if (this.$refs.introVideo) {
                                 const playPromise = this.$refs.introVideo.play();
@@ -1634,12 +1633,7 @@
         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-105"
         class="fixed inset-0 z-[99999] bg-black flex items-center justify-center overflow-hidden" x-cloak>
 
-        <!-- Skip Intro Button -->
-        <button type="button" @click="closeIntro()" aria-label="Skip Intro"
-            class="absolute top-5 right-5 z-[100000] px-4 py-2 bg-black/60 hover:bg-black/80 text-white rounded-full text-xs font-bold uppercase tracking-wider border border-white/20 transition-all flex items-center gap-1.5 backdrop-blur-md cursor-pointer shadow-lg active:scale-95">
-            <span>Skip</span>
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-        </button>
+        
 
         <!-- Intro Video Player Display -->
         <div class="relative w-full h-full flex items-center justify-center">
