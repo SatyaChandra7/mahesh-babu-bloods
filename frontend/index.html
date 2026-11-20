@@ -1768,8 +1768,7 @@
                 <a href="#" @click.prevent="goHome()" class="hover:text-red-600 transition-colors">Home</a>
                 <a href="#about" class="hover:text-red-600 transition-colors">About</a>
                 <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
-                <a href="https://wa.me/918758754005?text=We kindly request your support for blood donation."
-                    target="_blank" class="hover:text-red-600 transition-colors">Request</a>
+                <a href="#" @click.prevent="requestBloodModalOpen = true" class="hover:text-red-600 transition-colors cursor-pointer">Request</a>
                 <a href="#" @click.prevent="reviewOpen = true" class="hover:text-red-600 transition-colors">Review</a>
             </div>
 
@@ -1803,9 +1802,8 @@
                         class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">About</a>
                     <a href="#" @click.prevent="donateOpen = true; mobileMenuOpen = false"
                         class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Donate</a>
-                    <a href="https://wa.me/918758754005?text=I_need_blood_request" target="_blank"
-                        @click="mobileMenuOpen = false"
-                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors">Request</a>
+                    <a href="#" @click.prevent="requestBloodModalOpen = true; mobileMenuOpen = false"
+                        class="py-3 hover:text-red-600 border-b border-slate-100 transition-colors cursor-pointer">Request</a>
                     <a href="#" @click.prevent="reviewOpen = true; mobileMenuOpen = false"
                         class="py-3 hover:text-red-600 transition-colors">Review</a>
                 </div>
@@ -2622,7 +2620,7 @@
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Patient
                                 Name</label>
-                            <input type="text" x-model="requestData.patientName" placeholder="Name of the patient"
+                            <input type="text" x-model="requestData.patientName" @input="requestData.patientName = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="Name of the patient"
                                 class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-semibold focus:bg-white focus:outline-none focus:border-red-600">
                         </div>
                         <div>
@@ -2667,7 +2665,7 @@
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">City /
                                 District</label>
-                            <input type="text" x-model="requestData.city" placeholder="e.g. KONASEEMA"
+                            <input type="text" x-model="requestData.city" @input="requestData.city = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="e.g. KONASEEMA"
                                 class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-semibold focus:bg-white focus:outline-none focus:border-red-600">
                         </div>
                     </div>
