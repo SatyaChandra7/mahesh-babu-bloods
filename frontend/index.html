@@ -393,6 +393,29 @@
                             }
                         }, 3500);
                     }
+
+                    // Setup IntersectionObserver so count animation plays when user scrolls to footer
+                    this.$nextTick(() => {
+                        const targetEl = this.$refs.counterContainer || document.getElementById('donationCounterContainer');
+                        if (targetEl && 'IntersectionObserver' in window) {
+                            let hasAnimated = false;
+                            const observer = new IntersectionObserver((entries) => {
+                                entries.forEach(entry => {
+                                    if (entry.isIntersecting) {
+                                        if (!hasAnimated) {
+                                            hasAnimated = true;
+                                            this.playCountAnimation(true);
+                                        }
+                                    } else {
+                                        hasAnimated = false;
+                                    }
+                                });
+                            }, { threshold: 0.25 });
+                            observer.observe(targetEl);
+                        } else {
+                            this.playCountAnimation(true);
+                        }
+                    });
                 },
 
                 async fetchAlert() {
@@ -405,21 +428,28 @@
 
                 counterAnimId: null,
 
-                animateCounter(target) {
+                playCountAnimation(fromZero = true) {
+                    const target = Math.max(200, Number(this.donationCount) || 200);
+                    this.animateCounter(target, fromZero);
+                },
+
+                animateCounter(target, fromZero = true) {
                     target = Math.max(200, Number(target) || 200);
                     if (this.counterAnimId) {
                         cancelAnimationFrame(this.counterAnimId);
                         this.counterAnimId = null;
                     }
 
-                    let start = this.displayCount || 0;
-                    let duration = 1500; // 1.5 seconds smooth animation
+                    let start = fromZero ? 0 : (this.displayCount || 0);
+                    this.displayCount = start;
+                    let duration = 1600; // 1.6s smooth easing animation
                     let startTime = null;
 
                     const step = (timestamp) => {
                         if (!startTime) startTime = timestamp;
                         let progress = Math.min((timestamp - startTime) / duration, 1);
-                        this.displayCount = Math.floor(progress * (target - start) + start);
+                        let ease = 1 - Math.pow(1 - progress, 3); // Smooth cubic ease-out
+                        this.displayCount = Math.floor(ease * (target - start) + start);
                         if (progress < 1) {
                             this.counterAnimId = window.requestAnimationFrame(step);
                         } else {
@@ -2005,8 +2035,10 @@
                 </picture>
 
                 <!-- Square Total Container -->
-                <div
-                    class="flex flex-col items-center justify-center aspect-square w-40 md:w-56 glass-red-card rounded-full border border-white/50 shadow-[0_20px_60px_-15px_rgba(211,47,47,0.25)] hover:scale-105 transition-all duration-500 relative group overflow-hidden">
+                <div x-ref="counterContainer" id="donationCounterContainer"
+                    @click="playCountAnimation(true)"
+                    title="Tap to replay animation"
+                    class="flex flex-col items-center justify-center aspect-square w-40 md:w-56 glass-red-card rounded-full border border-white/50 shadow-[0_20px_60px_-15px_rgba(211,47,47,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 relative group overflow-hidden cursor-pointer select-none">
                     <!-- Decorative background glow -->
                     <div
                         class="absolute inset-0 bg-red-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
