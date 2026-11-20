@@ -1,0 +1,21 @@
+{
+  "name": "MB Bloods - Mahesh Babu Bloods",
+  "short_name": "MB Bloods",
+  "description": "Official Mahesh Babu Bloods (mbbloods.org) Blood Donation & Emergency Blood Donor Platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#dc2626",
+  "icons": [
+    {
+      "src": "/assets/brand%20icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/brand%20icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

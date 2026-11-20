@@ -14,4 +14,5 @@ Disallow: /admin
 Disallow: /admin.html
 Disallow: /api/v1/admin/
 
-Sitemap: https://maheshbabubloods.org/sitemap.xml
+Sitemap: https://www.mbbloods.org/sitemap.xml
+Sitemap: https://mbbloods.org/sitemap.xml
