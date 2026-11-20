@@ -1812,7 +1812,7 @@
 </head>
 
 <body class="bg-gray-50 text-gray-900" x-data="mainApp"
-    x-bind:class="galleryOpen || donateOpen || reviewOpen || declareOpen || adminOpen || showIntro || sorryOpen || under18Open ? 'overflow-hidden' : ''">
+    x-bind:class="galleryOpen || donateOpen || reviewOpen || declareOpen || adminOpen || showIntro || sorryOpen || under18Open || requestBloodModalOpen ? 'overflow-hidden' : ''">
 
     <!-- Video Intro Overlay -->
     <div x-show="showIntro" x-transition:leave="transition ease-in-out duration-700"
@@ -2747,49 +2747,67 @@
     </div>
 
     <!-- Emergency Blood Request Modal -->
+    <!-- Request Emergency Blood Modal -->
     <div x-show="requestBloodModalOpen" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 scale-100"
         x-transition:leave-end="opacity-0 scale-95"
-        class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md" x-cloak>
-        <div
-            class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl relative border border-red-100 max-h-[92vh] flex flex-col">
-            <button @click="requestBloodModalOpen = false"
-                class="absolute top-4 right-4 text-slate-400 hover:text-red-600 p-2 rounded-full font-bold text-lg cursor-pointer z-20">✕</button>
+        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+        @keydown.window.escape="requestBloodModalOpen = false" x-cloak>
 
-            <div class="overflow-y-auto w-full pr-1 space-y-5">
-                <div class="text-center">
-                    <div
-                        class="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-lg shadow-red-600/20">
-                        🩸
-                    </div>
-                    <h3 class="text-xl sm:text-2xl font-black font-display uppercase text-slate-900">Request Emergency
-                        Blood</h3>
-                    <p class="text-xs text-slate-500 font-medium mt-1">Submit your requirement to trigger immediate live
-                        alerts in the Admin Portal and message our WhatsApp emergency desk.</p>
+        <!-- Backdrop click handler (Empty space around form) -->
+        <div class="absolute inset-0 z-0 cursor-pointer" @click="requestBloodModalOpen = false"></div>
+
+        <div
+            class="glass rounded-[2rem] w-full max-w-6xl max-h-[90vh] md:aspect-[9/6] overflow-hidden flex flex-col md:flex-row relative z-10">
+
+            <!-- Left Side: Image -->
+            <div
+                class="absolute inset-0 z-0 md:relative md:inset-auto w-full md:w-1/2 h-full md:h-auto bg-transparent border-none md:border-r md:border-solid border-white/20 md:p-6 shrink-0 pointer-events-none md:pointer-events-auto flex items-center justify-center">
+                <picture>
+                    <source type="image/webp" srcset="assets/111_optimized.webp">
+                    <img src="assets/111.png" alt="Mahesh Babu" loading="lazy" decoding="async"
+                        class="w-full h-full object-contain p-6 md:p-0 opacity-40 md:opacity-100">
+                </picture>
+            </div>
+
+            <!-- Form Content -->
+            <div class="flex-1 p-6 md:p-12 overflow-y-auto custom-scrollbar relative z-10">
+                <!-- Close Button -->
+                <button @click="requestBloodModalOpen = false"
+                    class="absolute top-6 right-6 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all z-20">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+
+                <div class="mb-10">
+                    <h2 class="text-4xl font-black mb-2 font-display uppercase tracking-tight text-red-600">Request Blood</h2>
+                    <p class="text-black font-medium">Fill in the details to immediately broadcast an emergency blood request.</p>
                 </div>
 
-                <div class="space-y-4 text-left">
-                    <div class="grid grid-cols-3 gap-3">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Patient
-                                Name</label>
-                            <input type="text" x-model="requestData.patientName" @input="requestData.patientName = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="Name of the patient"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-semibold focus:bg-white focus:outline-none focus:border-red-600">
+                <form class="space-y-6" @submit.prevent="sendWhatsAppBloodRequest()">
+                    <!-- Patient Details Frame -->
+                    <div class="glass rounded-[2rem] p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Patient Full Name</label>
+                            <input type="text" x-model="requestData.patientName" @input="requestData.patientName = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="Patient Name" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Age</label>
-                            <input type="number" x-model="requestData.age" placeholder="e.g. 35"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-semibold focus:bg-white focus:outline-none focus:border-red-600">
+                        <div class="space-y-2 md:col-span-1">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Patient Age</label>
+                            <input type="number" x-model="requestData.age" placeholder="Age (e.g. 35)" min="1" max="120"
+                                class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Blood
-                                Group *</label>
-                            <select x-model="requestData.bloodGroup"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-black focus:bg-white focus:outline-none focus:border-red-600">
+                    <!-- Blood Group & Contact Frame -->
+                    <div class="glass rounded-[2rem] p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="space-y-2 md:col-span-1">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Blood Group Needed *</label>
+                            <select x-model="requestData.bloodGroup" required
+                                class="w-full px-2 md:px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base font-bold text-red-600">
                                 <option value="A+">A+</option>
                                 <option value="A-">A-</option>
                                 <option value="B+">B+</option>
@@ -2800,46 +2818,60 @@
                                 <option value="AB-">AB-</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Contact
-                                Phone *</label>
-                            <input type="tel" x-model="requestData.phoneNumber" placeholder="e.g. 9876543210"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-bold focus:bg-white focus:outline-none focus:border-red-600">
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="text-sm font-bold text-gray-700 ml-1">Contact Phone Number *</label>
+                            <div class="flex items-center bg-white/50 border border-white/20 rounded-2xl focus-within:ring-2 focus-within:ring-red-500 transition-all overflow-hidden">
+                                <span class="px-3 md:px-5 py-4 font-bold text-gray-500 bg-gray-100/30 border-r border-white/20 text-xs md:text-base">+91</span>
+                                <input type="tel" x-model="requestData.phoneNumber" placeholder="00000 00000" maxlength="10" pattern="[0-9]{10}" required
+                                    @input="requestData.phoneNumber = $event.target.value.replace(/[^0-9]/g, '')"
+                                    class="w-full px-3 md:px-5 py-4 bg-transparent focus:outline-none font-bold placeholder:font-normal text-sm md:text-base">
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label
-                                class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Hospital
-                                Name</label>
-                            <input type="text" x-model="requestData.hospital" placeholder="HOSPITAL NAME"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-semibold focus:bg-white focus:outline-none focus:border-red-600">
+                    <!-- Hospital & Location Details Frame -->
+                    <div class="glass rounded-[2rem] p-4 md:p-6 space-y-4 md:space-y-6">
+                        <p class="text-[10px] md:text-xs font-bold text-red-800 uppercase tracking-widest pl-1">Hospital & Location Details</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Hospital Name</label>
+                                <input type="text" x-model="requestData.hospital" placeholder="e.g. Government General Hospital"
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">City / District</label>
+                                <input type="text" x-model="requestData.city" @input="requestData.city = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="e.g. Konaseema / Vijayawada" pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">City /
-                                District</label>
-                            <input type="text" x-model="requestData.city" @input="requestData.city = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="e.g. KONASEEMA"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-semibold focus:bg-white focus:outline-none focus:border-red-600">
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                            <div class="space-y-2 md:col-span-1">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Urgency Level</label>
+                                <select x-model="requestData.urgency"
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base font-semibold">
+                                    <option value="Immediate">Critical (Immediate)</option>
+                                    <option value="Within 2-4 hours">Urgent (2-4 hours)</option>
+                                    <option value="Within 24 hours">Within 24 hours</option>
+                                </select>
+                            </div>
+                            <div class="space-y-2 md:col-span-2">
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Required Units / Additional Notes</label>
+                                <input type="text" x-model="requestData.notes" placeholder="e.g. 2 units required immediately"
+                                    class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
+                            </div>
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-widest mb-1">Additional
-                            Notes</label>
-                        <input type="text" x-model="requestData.notes" placeholder="e.g. 2 units required immediately"
-                            class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-sm font-medium focus:bg-white focus:outline-none focus:border-red-600">
-                    </div>
-
-                    <button type="button" @click="sendWhatsAppBloodRequest()"
-                        class="w-full py-4 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-700 hover:to-rose-800 text-white rounded-2xl text-xs font-black uppercase tracking-wider shadow-xl shadow-red-600/30 flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer">
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="w-full chrome-3d font-black py-5 rounded-2xl hover:brightness-110 transition-all uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 cursor-pointer shadow-xl">
                         <span>Send WhatsApp Emergency Request</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                        <svg class="w-6 h-6 icon-red" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 .587l3.668 7.431 8.2 1.191-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.209l8.2-1.191L12 .587z" />
                         </svg>
                     </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>
