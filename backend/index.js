@@ -1225,9 +1225,9 @@ async function getTotalDonationImagesCount() {
 app.get('/api/v1/donations/count', async (req, res) => {
     try {
         const count = await getTotalDonationImagesCount();
-        res.json({ count: Math.max(100, count || 100) });
+        res.json({ count: Math.max(200, count || 200) });
     } catch (err) {
-        res.json({ count: 100 });
+        res.json({ count: 200 });
     }
 });
 

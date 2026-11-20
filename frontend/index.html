@@ -86,6 +86,7 @@
     <link rel="preload" as="image" href="assets/4444_mobile.webp" media="(max-width: 767px)" fetchpriority="high">
     <link rel="preload" as="image" href="assets/4444_optimized.webp" media="(min-width: 768px)" fetchpriority="high">
     <link rel="preload" as="image" href="assets/logo_optimized.webp" fetchpriority="high">
+    <link rel="preload" as="audio" href="assets/denoise_video_20260406_145944_edit.mp3.mpeg" type="audio/mpeg">
 
     <!-- Precompiled Minified Production CSS -->
     <link rel="stylesheet" href="style.min.css">
@@ -162,7 +163,7 @@
                 activeImageIndex: 0,
                 galleryImages: [],
                 displayCount: 0,
-                donationCount: 100,
+                donationCount: 200,
                 isSubmitting: false,
                 serverWaking: false,
                 emergencyMessage: '',
@@ -315,7 +316,22 @@
 
                 _cachedCardImg: null,
 
+                closeSuccessModal() {
+                    this.successOpen = false;
+                    const sound = document.getElementById('successSound');
+                    if (sound) {
+                        try {
+                            sound.pause();
+                            sound.currentTime = 0;
+                        } catch (e) {}
+                    }
+                },
+
                 warmDonorCard() {
+                    try {
+                        const sound = document.getElementById('successSound');
+                        if (sound && sound.load) sound.load();
+                    } catch (e) {}
                     if (this._cachedCardImg) return;
                     try {
                         const cardImg = new Image();
@@ -390,7 +406,7 @@
                 counterAnimId: null,
 
                 animateCounter(target) {
-                    target = Math.max(100, Number(target) || 100);
+                    target = Math.max(200, Number(target) || 200);
                     if (this.counterAnimId) {
                         cancelAnimationFrame(this.counterAnimId);
                         this.counterAnimId = null;
@@ -429,16 +445,16 @@
                         const res = await this.fetchWithRetry(`${this.apiBase}/api/v1/donations/count`);
                         const data = await res.json();
                         if (data.count !== undefined) {
-                            this.donationCount = Math.max(100, Number(data.count) || 100);
+                            this.donationCount = Math.max(200, Number(data.count) || 200);
                             this.animateCounter(this.donationCount);
                         } else {
-                            this.donationCount = 100;
-                            this.animateCounter(100);
+                            this.donationCount = 200;
+                            this.animateCounter(200);
                         }
                     } catch (err) {
                         console.log('Backend not connected, using default count');
-                        this.donationCount = 100;
-                        this.animateCounter(100);
+                        this.donationCount = 200;
+                        this.animateCounter(200);
                     }
                 },
 
@@ -1998,7 +2014,7 @@
 
                     <span
                         class="relative z-10 text-6xl md:text-8xl font-black tracking-tighter font-display bg-gradient-to-br from-red-600 to-orange-500 bg-clip-text text-transparent leading-none"
-                        x-text="displayCount ? (displayCount + '+') : '100+'">100+</span>
+                        x-text="displayCount ? (displayCount + '+') : '200+'">200+</span>
                     <span
                         class="relative z-10 text-[10px] md:text-sm font-black text-red-600 uppercase tracking-[0.3em] mt-3">Donations</span>
                 </div>
@@ -2699,7 +2715,7 @@
                                 </svg>
                                 <span>Download Card</span>
                             </button>
-                            <button @click="successOpen = false"
+                            <button @click="closeSuccessModal()"
                                 class="w-full sm:w-auto py-3 px-6 rounded-xl border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50 font-bold transition-all text-xs uppercase tracking-wider">
                                 Close
                             </button>
@@ -3562,7 +3578,7 @@
     </div>
 
     <!-- Success Sound -->
-    <audio id="successSound" src="assets/denoise_video_20260406_145944_edit.mp3.mpeg" preload="none"></audio>
+    <audio id="successSound" src="assets/denoise_video_20260406_145944_edit.mp3.mpeg" preload="auto"></audio>
 
 </body>
 
