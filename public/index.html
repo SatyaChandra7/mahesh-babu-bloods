@@ -161,7 +161,7 @@
       }
     ]
     </script>
-<!-- Performance & Resource Preloads: High-priority Hero Image & Fonts -->
+    <!-- Performance & Resource Preloads: High-priority Hero Image & Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preload" as="image" href="assets/4444_mobile.webp" media="(max-width: 767px)" fetchpriority="high">
@@ -173,10 +173,14 @@
     <link rel="stylesheet" href="style.min.css">
 
     <!-- Non-blocking Google Fonts with system fallback -->
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap" media="print" onload="this.media='all'">
+    <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap"
+        media="print" onload="this.media='all'">
     <noscript>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap">
+        <link rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Inter:wght@400;500;600&family=Poppins:wght@800&display=swap">
     </noscript>
 
     <!-- Older Mobile Browser & WebView Polyfills (Promise.allSettled, Object.fromEntries) -->
@@ -375,7 +379,7 @@
 
                 closeIntro() {
                     this.showIntro = false;
-                    
+
                     if (this.$refs.introVideo) {
                         try {
                             this.$refs.introVideo.pause();
@@ -404,7 +408,7 @@
                         try {
                             sound.pause();
                             sound.currentTime = 0;
-                        } catch (e) {}
+                        } catch (e) { }
                     }
                 },
 
@@ -412,7 +416,7 @@
                     try {
                         const sound = document.getElementById('successSound');
                         if (sound && sound.load) sound.load();
-                    } catch (e) {}
+                    } catch (e) { }
                     if (this._cachedCardImg) return;
                     try {
                         const cardImg = new Image();
@@ -454,7 +458,7 @@
                     });
 
                     if (this.showIntro) {
-                        
+
                         this.$nextTick(() => {
                             if (this.$refs.introVideo) {
                                 const playPromise = this.$refs.introVideo.play();
@@ -997,7 +1001,7 @@
                         } else {
                             const match = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})(?:[,\s]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?\s*(am|pm)?)?/i);
                             if (match) {
-                                let [ , p1, p2, y, hr, min, sec, meridiem ] = match;
+                                let [, p1, p2, y, hr, min, sec, meridiem] = match;
                                 let hour = hr ? parseInt(hr, 10) : 0;
                                 const minute = min ? parseInt(min, 10) : 0;
                                 const second = sec ? parseInt(sec, 10) : 0;
@@ -1819,7 +1823,7 @@
         x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-105"
         class="fixed inset-0 z-[99999] bg-black flex items-center justify-center overflow-hidden" x-cloak>
 
-        
+
 
         <!-- Intro Video Player Display -->
         <div class="relative w-full h-full flex items-center justify-center">
@@ -1889,8 +1893,7 @@
                 class="flex items-center absolute left-1/2 -translate-x-1/2 md:static md:left-auto md:translate-x-0 cursor-pointer">
                 <picture>
                     <source type="image/webp" srcset="assets/logo_optimized.webp">
-                    <img src="assets/logo_optimized.png" alt="MB Bloods Logo"
-                        width="300" height="103"
+                    <img src="assets/logo_optimized.png" alt="MB Bloods Logo" width="300" height="103"
                         class="h-8 sm:h-10 md:h-12 lg:h-14 w-auto object-contain transition-all duration-300 drop-shadow-md">
                 </picture>
             </div>
@@ -1901,7 +1904,8 @@
                 <a href="#" @click.prevent="goHome()" class="hover:text-red-600 transition-colors">Home</a>
                 <a href="#about" class="hover:text-red-600 transition-colors">About</a>
                 <a href="#" @click.prevent="donateOpen = true" class="hover:text-red-600 transition-colors">Donate</a>
-                <a href="#" @click.prevent="requestBloodModalOpen = true" class="hover:text-red-600 transition-colors cursor-pointer">Request</a>
+                <a href="#" @click.prevent="requestBloodModalOpen = true"
+                    class="hover:text-red-600 transition-colors cursor-pointer">Request</a>
                 <a href="#" @click.prevent="reviewOpen = true" class="hover:text-red-600 transition-colors">Review</a>
             </div>
 
@@ -1948,7 +1952,8 @@
     <section
         class="relative min-h-[90vh] flex flex-col items-center justify-center overflow-hidden px-6 bg-gradient-to-b from-black via-slate-950/80 to-slate-950">
         <!-- Search Engine Semantic H1 for Top-Ranking Visibility -->
-        <h1 class="sr-only">MB Bloods - Mahesh Babu Bloods | Blood Donation, Blood Donor Finder & Emergency Support at mbbloods.org</h1>
+        <h1 class="sr-only">MB Bloods - Mahesh Babu Bloods | Blood Donation, Blood Donor Finder & Emergency Support at
+            mbbloods.org</h1>
 
 
 
@@ -1987,10 +1992,8 @@
                             <picture>
                                 <source type="image/webp" media="(max-width: 767px)" srcset="assets/4444_mobile.webp">
                                 <source type="image/webp" srcset="assets/4444_optimized.webp">
-                                <img src="assets/4444_optimized.webp" alt="Mahesh Babu"
-                                    width="1200" height="1200"
-                                    fetchpriority="high"
-                                    decoding="async"
+                                <img src="assets/4444_optimized.webp" alt="Mahesh Babu" width="1200" height="1200"
+                                    fetchpriority="high" decoding="async"
                                     class="w-full h-auto object-contain max-h-[75vh] md:max-h-[85vh] drop-shadow-[0_20px_50px_rgba(211,47,47,0.35)]">
                             </picture>
                         </div>
@@ -2064,7 +2067,9 @@
                 </div>
                 <div class="h-2 w-24 bg-red-600 mx-auto rounded-full mb-10"></div>
                 <p class="text-xl md:text-2xl text-gray-600 leading-relaxed font-medium italic">
-                    "Welcome to <strong class="text-gray-900">MB Bloods</strong> (<a href="https://www.mbbloods.org/" class="text-red-600 font-semibold hover:underline">mbbloods.org</a>), the premier voluntary <span class="text-red-600 font-semibold">blood donation and blood donor platform</span> inspired by Superstar Mahesh Babu. Whether you need emergency blood, want to donate blood, or are looking for voluntary blood donors across Andhra Pradesh, Telangana, and India, our mission connects donors and patients instantly at zero cost."
+                    "Welcome to a <span class="text-red-600 font-bold">free blood donation platform</span> where generosity meets urgency. Find donors, request
+                    blood, and save lives—all at no cost. Be a Donor and Join our mission to make blood available to
+                    everyone, anytime, anywhere."
                 </p>
             </div>
 
@@ -2160,14 +2165,13 @@
             <div class="flex flex-col md:flex-row items-center gap-12 mb-12">
                 <picture>
                     <source type="image/webp" srcset="assets/logo_optimized.webp">
-                    <img src="assets/logo_optimized.png" alt="MB Bloods Logo" @click="goHome()"
-                        loading="lazy" decoding="async"
+                    <img src="assets/logo_optimized.png" alt="MB Bloods Logo" @click="goHome()" loading="lazy"
+                        decoding="async"
                         class="h-20 sm:h-28 md:h-36 lg:h-40 w-auto drop-shadow-xl hover-scale transition-transform cursor-pointer">
                 </picture>
 
                 <!-- Square Total Container -->
-                <div x-ref="counterContainer" id="donationCounterContainer"
-                    @click="playCountAnimation(true)"
+                <div x-ref="counterContainer" id="donationCounterContainer" @click="playCountAnimation(true)"
                     title="Tap to replay animation"
                     class="flex flex-col items-center justify-center aspect-square w-40 md:w-56 glass-red-card rounded-full border border-white/50 shadow-[0_20px_60px_-15px_rgba(211,47,47,0.25)] hover:scale-105 active:scale-95 transition-all duration-300 relative group overflow-hidden cursor-pointer select-none">
                     <!-- Decorative background glow -->
@@ -2209,14 +2213,22 @@
         <div class="w-full bg-slate-100/70 py-8 border-t border-slate-200/80">
             <div class="container mx-auto px-6 text-center max-w-4xl">
                 <p class="text-xs text-gray-600 leading-relaxed font-medium">
-                    <strong class="text-gray-900">MB Bloods (<a href="https://www.mbbloods.org" class="text-red-600 hover:underline">mbbloods.org</a>)</strong> – Official voluntary blood donation network for 
-                    <strong>Mahesh Babu Bloods</strong>, <strong>MB Blood</strong>, <strong>Mahesh Blood</strong>, and <strong>Babu Bloods</strong>. 
-                    Connecting patients 24/7 with verified voluntary <strong>blood donors</strong> for A+, A-, B+, B-, O+, O-, AB+, AB- blood groups across Andhra Pradesh, Telangana, Hyderabad, Vijayawada, Guntur, and India.
+                    <strong class="text-gray-900">MB Bloods (<a href="https://www.mbbloods.org"
+                            class="text-red-600 hover:underline">mbbloods.org</a>)</strong> – Official voluntary blood
+                    donation network for
+                    <strong>Mahesh Babu Bloods</strong>, <strong>MB Blood</strong>, <strong>Mahesh Blood</strong>, and
+                    <strong>Babu Bloods</strong>.
+                    Connecting patients 24/7 with verified voluntary <strong>blood donors</strong> for A+, A-, B+, B-,
+                    O+, O-, AB+, AB- blood groups across Andhra Pradesh, Telangana, Hyderabad, Vijayawada, Guntur, and
+                    India.
                 </p>
-                <div class="flex flex-wrap justify-center items-center gap-2 mt-4 text-[11px] text-gray-500 font-bold uppercase tracking-wider">
+                <div
+                    class="flex flex-wrap justify-center items-center gap-2 mt-4 text-[11px] text-gray-500 font-bold uppercase tracking-wider">
                     <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">MB Bloods</span>
-                    <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">Mahesh Babu Bloods</span>
-                    <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">Blood Donation</span>
+                    <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">Mahesh Babu
+                        Bloods</span>
+                    <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">Blood
+                        Donation</span>
                     <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">Blood Donor</span>
                     <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">MB Blood</span>
                     <span class="px-3 py-1 bg-white rounded-full border border-slate-200 shadow-xs">Mahesh Blood</span>
@@ -2333,7 +2345,10 @@
                     <div class="glass rounded-[2rem] p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-gray-700 ml-1">Full Name</label>
-                            <input type="text" name="fullName" x-model="donorNameInput" @input="donorNameInput = $event.target.value.replace(/[^a-zA-Z\s]/g, ''); checkDuplicateDonor();" pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" placeholder="Mahesh Babu" required
+                            <input type="text" name="fullName" x-model="donorNameInput"
+                                @input="donorNameInput = $event.target.value.replace(/[^a-zA-Z\s]/g, ''); checkDuplicateDonor();"
+                                pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                placeholder="Mahesh Babu" required
                                 class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
                         </div>
                         <div class="space-y-2" x-data="{
@@ -2443,12 +2458,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">State</label>
-                                <input type="text" name="state" placeholder="e.g. Andhra Pradesh" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                                <input type="text" name="state" placeholder="e.g. Andhra Pradesh" required
+                                    pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                    oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">District</label>
-                                <input type="text" name="district" placeholder="e.g. Konaseema" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                                <input type="text" name="district" placeholder="e.g. Konaseema" required
+                                    pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                    oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                         </div>
@@ -2456,12 +2475,16 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">Mandal</label>
-                                <input type="text" name="mandal" placeholder="e.g. Amalapuram" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                                <input type="text" name="mandal" placeholder="e.g. Amalapuram" required
+                                    pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                    oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">Village / Street</label>
-                                <input type="text" name="village" placeholder="Village name" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
+                                <input type="text" name="village" placeholder="Village name" required
+                                    pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                    oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                         </div>
@@ -2783,8 +2806,10 @@
                 </button>
 
                 <div class="mb-10">
-                    <h2 class="text-4xl font-black mb-2 font-display uppercase tracking-tight text-red-600">Request Blood</h2>
-                    <p class="text-black font-medium">Fill in the details to immediately broadcast an emergency blood request.</p>
+                    <h2 class="text-4xl font-black mb-2 font-display uppercase tracking-tight text-red-600">Request
+                        Blood</h2>
+                    <p class="text-black font-medium">Fill in the details to immediately broadcast an emergency blood
+                        request.</p>
                 </div>
 
                 <form class="space-y-6" @submit.prevent="sendWhatsAppBloodRequest()">
@@ -2792,7 +2817,10 @@
                     <div class="glass rounded-[2rem] p-4 md:p-6 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                         <div class="space-y-2 md:col-span-2">
                             <label class="text-sm font-bold text-gray-700 ml-1">Patient Full Name</label>
-                            <input type="text" x-model="requestData.patientName" @input="requestData.patientName = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="Patient Name" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                            <input type="text" x-model="requestData.patientName"
+                                @input="requestData.patientName = $event.target.value.replace(/[^a-zA-Z\s]/g, '')"
+                                placeholder="Patient Name" required pattern="[A-Za-z\s]+"
+                                title="Please enter alphabetical characters only"
                                 class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
                         </div>
                         <div class="space-y-2 md:col-span-1">
@@ -2820,9 +2848,12 @@
                         </div>
                         <div class="space-y-2 md:col-span-2">
                             <label class="text-sm font-bold text-gray-700 ml-1">Contact Phone Number *</label>
-                            <div class="flex items-center bg-white/50 border border-white/20 rounded-2xl focus-within:ring-2 focus-within:ring-red-500 transition-all overflow-hidden">
-                                <span class="px-3 md:px-5 py-4 font-bold text-gray-500 bg-gray-100/30 border-r border-white/20 text-xs md:text-base">+91</span>
-                                <input type="tel" x-model="requestData.phoneNumber" placeholder="00000 00000" maxlength="10" pattern="[0-9]{10}" required
+                            <div
+                                class="flex items-center bg-white/50 border border-white/20 rounded-2xl focus-within:ring-2 focus-within:ring-red-500 transition-all overflow-hidden">
+                                <span
+                                    class="px-3 md:px-5 py-4 font-bold text-gray-500 bg-gray-100/30 border-r border-white/20 text-xs md:text-base">+91</span>
+                                <input type="tel" x-model="requestData.phoneNumber" placeholder="00000 00000"
+                                    maxlength="10" pattern="[0-9]{10}" required
                                     @input="requestData.phoneNumber = $event.target.value.replace(/[^0-9]/g, '')"
                                     class="w-full px-3 md:px-5 py-4 bg-transparent focus:outline-none font-bold placeholder:font-normal text-sm md:text-base">
                             </div>
@@ -2831,16 +2862,21 @@
 
                     <!-- Hospital & Location Details Frame -->
                     <div class="glass rounded-[2rem] p-4 md:p-6 space-y-4 md:space-y-6">
-                        <p class="text-[10px] md:text-xs font-bold text-red-800 uppercase tracking-widest pl-1">Hospital & Location Details</p>
+                        <p class="text-[10px] md:text-xs font-bold text-red-800 uppercase tracking-widest pl-1">Hospital
+                            & Location Details</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">Hospital Name</label>
-                                <input type="text" x-model="requestData.hospital" placeholder="e.g. Government General Hospital"
+                                <input type="text" x-model="requestData.hospital"
+                                    placeholder="e.g. Government General Hospital"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">City / District</label>
-                                <input type="text" x-model="requestData.city" @input="requestData.city = $event.target.value.replace(/[^a-zA-Z\s]/g, '')" placeholder="e.g. Konaseema / Vijayawada" pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only"
+                                <input type="text" x-model="requestData.city"
+                                    @input="requestData.city = $event.target.value.replace(/[^a-zA-Z\s]/g, '')"
+                                    placeholder="e.g. Konaseema / Vijayawada" pattern="[A-Za-z\s]+"
+                                    title="Please enter alphabetical characters only"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                         </div>
@@ -2856,8 +2892,10 @@
                                 </select>
                             </div>
                             <div class="space-y-2 md:col-span-2">
-                                <label class="text-xs md:text-sm font-semibold text-gray-600">Required Units / Additional Notes</label>
-                                <input type="text" x-model="requestData.notes" placeholder="e.g. 2 units required immediately"
+                                <label class="text-xs md:text-sm font-semibold text-gray-600">Required Units /
+                                    Additional Notes</label>
+                                <input type="text" x-model="requestData.notes"
+                                    placeholder="e.g. 2 units required immediately"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                         </div>
@@ -2868,7 +2906,8 @@
                         class="w-full chrome-3d font-black py-5 rounded-2xl hover:brightness-110 transition-all uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 cursor-pointer shadow-xl">
                         <span>Send WhatsApp Emergency Request</span>
                         <svg class="w-6 h-6 icon-red" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M12 .587l3.668 7.431 8.2 1.191-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.209l8.2-1.191L12 .587z" />
+                            <path
+                                d="M12 .587l3.668 7.431 8.2 1.191-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.209l8.2-1.191L12 .587z" />
                         </svg>
                     </button>
                 </form>
