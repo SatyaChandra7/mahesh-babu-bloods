@@ -929,6 +929,10 @@ async function sendWhatsAppOTP(phoneNumber, otp) {
             let isApproved = false;
             let found = false;
 
+            if (typeof syncFeedbacksFromSheets === 'function') {
+                await syncFeedbacksFromSheets(true).catch(() => {});
+            }
+
             if (Feedback) {
                 try {
                     const fb = await Feedback.findByPk(id);
