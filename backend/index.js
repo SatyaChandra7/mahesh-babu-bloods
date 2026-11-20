@@ -1090,9 +1090,22 @@ const donorLimiter = rateLimit({
 
 app.post('/api/v1/donors', donorLimiter, async (req, res) => {
     try {
-        const { fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup, address } = req.body;
+        let { fullName, dateOfBirth, gender, weight, phoneNumber, bloodGroup, address } = req.body;
         if (!fullName || !phoneNumber) {
             return res.status(400).json({ success: false, message: 'Full name and phone number are required.' });
+        }
+
+        // Enforce & sanitize alphabetical characters only for name, state, district, mandal, village
+        fullName = String(fullName || '').replace(/[^a-zA-Z\s]/g, '').trim();
+        if (!fullName) {
+            return res.status(400).json({ success: false, message: 'Please enter a valid full name with alphabetical characters only.' });
+        }
+
+        if (address && typeof address === 'object') {
+            if (address.state) address.state = String(address.state).replace(/[^a-zA-Z\s]/g, '').trim();
+            if (address.district) address.district = String(address.district).replace(/[^a-zA-Z\s]/g, '').trim();
+            if (address.mandal) address.mandal = String(address.mandal).replace(/[^a-zA-Z\s]/g, '').trim();
+            if (address.village) address.village = String(address.village).replace(/[^a-zA-Z\s]/g, '').trim();
         }
 
         if (dateOfBirth) {

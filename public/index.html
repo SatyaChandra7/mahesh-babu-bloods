@@ -670,6 +670,13 @@
                     const formData = new FormData(event.target);
                     const data = Object.fromEntries(formData.entries());
 
+                    // Sanitize alphabetical fields before validation and submission
+                    if (data.fullName) data.fullName = String(data.fullName).replace(/[^a-zA-Z\s]/g, '').trim();
+                    if (data.state) data.state = String(data.state).replace(/[^a-zA-Z\s]/g, '').trim();
+                    if (data.district) data.district = String(data.district).replace(/[^a-zA-Z\s]/g, '').trim();
+                    if (data.mandal) data.mandal = String(data.mandal).replace(/[^a-zA-Z\s]/g, '').trim();
+                    if (data.village) data.village = String(data.village).replace(/[^a-zA-Z\s]/g, '').trim();
+
                     this.donorNameInput = data.fullName || '';
                     this.donorPhoneInput = data.phoneNumber || '';
 
@@ -2126,8 +2133,7 @@
                     <div class="glass rounded-[2rem] p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         <div class="space-y-2">
                             <label class="text-sm font-bold text-gray-700 ml-1">Full Name</label>
-                            <input type="text" name="fullName" x-model="donorNameInput" @input="checkDuplicateDonor()"
-                                placeholder="Mahesh Babu" required
+                            <input type="text" name="fullName" x-model="donorNameInput" @input="donorNameInput = $event.target.value.replace(/[^a-zA-Z\s]/g, ''); checkDuplicateDonor();" pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" placeholder="Mahesh Babu" required
                                 class="w-full px-5 py-4 bg-white/50 border border-white/20 rounded-2xl focus:ring-2 focus:ring-red-500 focus:outline-none focus:bg-white transition-all text-sm md:text-base">
                         </div>
                         <div class="space-y-2" x-data="{
@@ -2237,12 +2243,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">State</label>
-                                <input type="text" name="state" placeholder="e.g. Andhra Pradesh" required
+                                <input type="text" name="state" placeholder="e.g. Andhra Pradesh" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">District</label>
-                                <input type="text" name="district" placeholder="e.g. Konaseema" required
+                                <input type="text" name="district" placeholder="e.g. Konaseema" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                         </div>
@@ -2250,12 +2256,12 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">Mandal</label>
-                                <input type="text" name="mandal" placeholder="e.g. Amalapuram" required
+                                <input type="text" name="mandal" placeholder="e.g. Amalapuram" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                             <div class="space-y-2">
                                 <label class="text-xs md:text-sm font-semibold text-gray-600">Village / Street</label>
-                                <input type="text" name="village" placeholder="Village name" required
+                                <input type="text" name="village" placeholder="Village name" required pattern="[A-Za-z\s]+" title="Please enter alphabetical characters only" oninput="this.value = this.value.replace(/[^a-zA-Z\s]/g, '')"
                                     class="w-full px-3 md:px-5 py-2 md:py-3 bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-red-500 focus:outline-none transition-all text-xs md:text-base">
                             </div>
                         </div>
